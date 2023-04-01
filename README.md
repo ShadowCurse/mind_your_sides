@@ -49,6 +49,6 @@ we would like it to be an intense experience
 Left Click
 ### HUD
 ### GUI
-
+![view](doc/GameView.png)
 ## Resources used
 [Project template](doc/template.md)
