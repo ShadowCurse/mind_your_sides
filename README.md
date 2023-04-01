@@ -13,7 +13,18 @@ The Game Jam theme is side effects
 
 ### Concept
 The idea comes in the balance of the castle which has 4 walls  each wall has  its own stats which you may 
-upgrade or decrease as a side effect
+upgrade or decrease as a side effect.
+
+Waves of monsters come to the castle from 1 side each time.You always see the next wave
+
+Monster gives experience which levels up.
+
+Level up gives upgrades 
+
+Upgrade comes with 4 random buff each related to 1 wall of the castle It also comes with side effects like 
+a curse on stats to other wall.
+
+
 ### Feel
 we would like it to be an intense experience
 ### Aesthetic
