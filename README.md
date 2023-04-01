@@ -9,8 +9,6 @@ The Game Jam theme is side effects
 > Tower in the center which you have to defend
 - Vampire Survivors
 > Waves of monsters that come from a side
-### Setting
-
 ### Concept
 The idea comes in the balance of the castle which has 4 walls  each wall has  its own stats which you may 
 upgrade or decrease as a side effect.
@@ -24,7 +22,7 @@ Level up gives upgrades
 Upgrade comes with 4 random buff each related to 1 wall of the castle It also comes with side effects like 
 a curse on stats to other wall.
 
-
+We also have different castles which you get from achievements that have other abilities or stats 
 ### Feel
 we would like it to be an intense experience
 ### Aesthetic
