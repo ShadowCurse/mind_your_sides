@@ -1,7 +1,15 @@
+# Rust
+
+.cargo/
 /target
+Cargo.lock
+**/*.rs.bk
+rust-toolchain
 
-
-
+# Nix
+.direnv
+.envrc
+shell.nix
 
 # IDEA
 
