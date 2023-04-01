@@ -1,6 +1,6 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
-use bevy::prelude::*;
+use bevy::{prelude::*, window::PresentMode};
 use bevy_rapier2d::prelude::*;
 
 mod game;
@@ -31,7 +31,11 @@ pub enum GlobalState {
 }
 impl_into_state!(GlobalState);
 
-fn setup(mut commands: Commands, mut physics: ResMut<RapierConfiguration>) {
+fn setup(
+    mut commands: Commands,
+    mut physics: ResMut<RapierConfiguration>,
+    mut windows: Query<&mut Window>,
+) {
     // disable gravity because game is 2d top down
     physics.gravity = Vec2::ZERO;
 
@@ -39,4 +43,8 @@ fn setup(mut commands: Commands, mut physics: ResMut<RapierConfiguration>) {
     // make everything smaller
     camera_bundle.projection.scale = 1.5;
     commands.spawn(camera_bundle);
+
+    for mut window in windows.iter_mut() {
+        window.present_mode = PresentMode::AutoVsync;
+    }
 }
