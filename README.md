@@ -3,51 +3,72 @@
 ## Overview
 
 ### Theme
-The Game Jam theme is side effects
+Side effects
+
 ## Genre
 - Tower Defense 
-> Tower in the center which you have to defend
+  - Castle in the center which you have to defend
 - Vampire Survivors
-> Waves of monsters that come from a side
+  - Waves of monsters that come from all sides
+
 ### Concept
-The idea comes in the balance of the castle which has 4 walls  each wall has  its own stats which you may 
-upgrade or decrease as a side effect.
+- There is a castle in the center of the map
+- Castle has 4 walls, one wall for each screen side (north, south, west, east)
+- Each wall has its own stats (damage, defence, health)
+- Map is divided into 4 sections, one for each wall
+- Enemies come from from all 4 sides
+- Each wall is responsible for its own side
+- Walls kill enemies (Archers, catapults)
+- Enemies give experience upon death
+- Castle levels up with experience
+- Upon reaching new level player has a choise of several upgrades
+- Each upgrade has side effect associated with it
+- Castle itself has several abilities it can use on any side
+- Castle abilities have cooldowns
 
-Waves of monsters come to the castle from 1 side each time.You always see the next wave
-
-Monster gives experience which levels up.
-
-Level up gives upgrades 
-
-Upgrade comes with 4 random buff each related to 1 wall of the castle It also comes with side effects like 
-a curse on stats to other wall.
-
-We also have different castles which you get from achievements that have other abilities or stats 
 ### Feel
-we would like it to be an intense experience
+We would like it to be an intense experience
+It is a survival game
+
 ### Aesthetic
 - medieval assets 
-- pixelArt
+- pixel art
+
 ## Game
-### Objectives
-> Normal : Hold the castle for 30 minutes to win.
-> Infinite mode
+### Modes and objectives
+- Normal mode: hold the castle for 30 minutes to win
+- Infinite mode: hold for as long as possible
+
 ### Progression
-- Enemies drop experience which you have to gather 
-- Experience levels up which gives upgrades  
-- Upgrade gives 4 random buffs which have side effects And each buff is related to a wall
+#### In session
+- Enemies drop experience with which castle levels up 
+- Level ups give a choise of 4 upgrades, each upgrade associated with its side/wall
+- Each upgrade have side effects
+
+#### Across the sessions
+- New types of castles are being unlock
+
 ### Duration
--  30 minutes Max
--  Infinite mode 
+- Normal mode: 30 minutes
+- Infinite mode: infinite 
+
 ### Difficulty
-- dynamic from easy to hard as it progress 
+Rises as time pases
+
 ### Loops
-- Just kill -> get Exp -> Lev up -> buff 
-- Waves -> 30m
+- Kill enemies -> get experience -> level up -> upgrade 
+
 ## Interface
 ### Input
-Left Click
+- Mouse for hud
+- Keybinds for castle abilities
+
 ### HUD
+- Timer
+- Castle experience bar
+- Walls health
+- Buffs/Debuffs for each side
+
 ### GUI
 ![view](doc/GameView.png)
 ## Resources used
