@@ -20,4 +20,5 @@ strip = true
 
 [dependencies]
 bevy = { version = "0.10.1", features = ["dynamic_linking", "wayland"] }
+bevy-inspector-egui = "0.18.3"
 bevy_rapier2d = "0.21.0"

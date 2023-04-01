@@ -1,6 +1,7 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
 use bevy::prelude::*;
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::*;
 
 mod game;
@@ -14,6 +15,7 @@ fn main() {
         .insert_resource(ClearColor(Color::GRAY))
         .add_state::<GlobalState>()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+        .add_plugin(WorldInspectorPlugin::new())// Just for Debug
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         // debug 2d physics
         .add_plugin(RapierDebugRenderPlugin::default())
