@@ -1,22 +1,53 @@
-// Bevy code commonly triggers these lints and they may be important signals
-// about code quality. They are sometimes hard to avoid though, and the CI
-// workflow treats them as errors, so this allows them throughout the project.
-// Feel free to delete this line.
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
-use bevy::prelude::*;
+use bevy::{prelude::*, window::PresentMode};
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use bevy_rapier2d::prelude::*;
+
+mod game;
+mod ui;
+mod utils;
+
+use utils::IntoState;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .insert_resource(ClearColor(Color::GRAY))
+        .add_state::<GlobalState>()
+        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+        // debug
+        .add_plugin(RapierDebugRenderPlugin::default())
+        .add_plugin(WorldInspectorPlugin::new())
+        //
+        .add_plugin(game::GamePlugin)
+        .add_plugin(ui::UiPlugin)
         .add_startup_system(setup)
         .run();
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(Camera2dBundle::default());
-    commands.spawn(SpriteBundle {
-        texture: asset_server.load("icon.png"),
-        ..Default::default()
-    });
+#[derive(Default, Debug, Clone, PartialEq, Eq, Hash, States)]
+pub enum GlobalState {
+    #[default]
+    MainMenu,
+    InGame,
+}
+impl_into_state!(GlobalState);
+
+fn setup(
+    mut commands: Commands,
+    mut physics: ResMut<RapierConfiguration>,
+    mut windows: Query<&mut Window>,
+) {
+    // disable gravity because game is 2d top down
+    physics.gravity = Vec2::ZERO;
+
+    let mut camera_bundle = Camera2dBundle::default();
+    // make everything smaller
+    camera_bundle.projection.scale = 1.5;
+    commands.spawn(camera_bundle);
+
+    for mut window in windows.iter_mut() {
+        window.present_mode = PresentMode::AutoVsync;
+    }
 }
