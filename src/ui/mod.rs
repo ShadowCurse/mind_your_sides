@@ -1,38 +1,15 @@
 use bevy::prelude::*;
 
-use crate::{
-    impl_into_state,
-    utils::{set_state, IntoState},
-    GlobalState,
-};
-
 mod main_menu;
 
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_state::<UiState>()
-            .add_startup_system(setup_ui_config)
-            .add_system(
-                set_state::<UiState, { UiState::MainMenu as u8 }>
-                    .in_schedule(OnEnter(GlobalState::MainMenu)),
-            )
-            .add_system(
-                set_state::<UiState, { UiState::InGame as u8 }>
-                    .in_schedule(OnEnter(GlobalState::InGame)),
-            )
+        app.add_startup_system(setup_ui_config)
             .add_plugin(main_menu::UiMainMenuPlugin);
     }
 }
-
-#[derive(Default, Debug, Clone, PartialEq, Eq, Hash, States)]
-enum UiState {
-    #[default]
-    MainMenu,
-    InGame,
-}
-impl_into_state!(UiState);
 
 #[derive(Debug, Clone, Resource)]
 pub struct UiConfig {
