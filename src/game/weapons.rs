@@ -3,7 +3,7 @@ use bevy_rapier2d::prelude::*;
 
 use crate::{utils::remove_all_with, GlobalState};
 
-use super::{enemies::Enemy, East, North, South, West};
+use super::{enemies::Enemy, East, North, Side, South, West};
 
 const DEFAULT_ARROW_SIZE: f32 = 3.0;
 const DEFAULT_ARROW_DAMAGE: i32 = 10;
@@ -65,15 +65,16 @@ pub struct Arrow {
 }
 
 #[derive(Bundle)]
-pub struct ArrowBundle {
+pub struct ArrowBundle<S: Side> {
     rigid_body: RigidBody,
     collider: Collider,
     velocity: Velocity,
     arrow: Arrow,
+    side: S,
     marker: ProjectileMarker,
 }
 
-impl ArrowBundle {
+impl<S: Side> ArrowBundle<S> {
     fn new(size: f32, damage: i32, speed: f32, direction: Vec2) -> Self {
         Self {
             rigid_body: RigidBody::Dynamic,
@@ -86,16 +87,17 @@ impl ArrowBundle {
                 damage,
                 lifespan: Timer::from_seconds(DEFAULT_ARROW_LIFESPAN, TimerMode::Once),
             },
+            side: S::default(),
             marker: ProjectileMarker,
         }
     }
 }
 
-fn archer_attack<D: Component + Default>(
+fn archer_attack<S: Side>(
     time: Res<Time>,
-    enemies: Query<&Transform, (With<Enemy>, With<D>)>,
+    enemies: Query<&Transform, (With<Enemy>, With<S>)>,
     mut commands: Commands,
-    mut archers: Query<(&Transform, &mut Archer), With<D>>,
+    mut archers: Query<(&Transform, &mut Archer), With<S>>,
 ) {
     for (transform, mut archer) in archers.iter_mut() {
         if !archer.attack_timer.tick(time.delta()).finished() {
@@ -123,22 +125,21 @@ fn archer_attack<D: Component + Default>(
         spawn_point.translation += (direction * DEFAULT_ARROW_SPAWN_OFFSET).extend(0.0);
         commands
             .spawn(TransformBundle::from_transform(spawn_point))
-            .insert(ArrowBundle::new(
+            .insert(ArrowBundle::<S>::new(
                 DEFAULT_ARROW_SIZE,
                 archer.damage,
                 archer.arrow_speed,
                 direction,
-            ))
-            .insert(D::default());
+            ));
     }
 }
 
-fn arrow_update<D: Component>(
+fn arrow_update<S: Side>(
     time: Res<Time>,
-    enemies: Query<Entity, (With<Enemy>, With<D>)>,
+    enemies: Query<Entity, (With<Enemy>, With<S>)>,
     rapier_context: Res<RapierContext>,
     mut commands: Commands,
-    mut arrows: Query<(Entity, &mut Arrow), With<D>>,
+    mut arrows: Query<(Entity, &mut Arrow), With<S>>,
 ) {
     for (arrow_entity, mut arrow) in arrows.iter_mut() {
         if arrow.lifespan.tick(time.delta()).finished() {

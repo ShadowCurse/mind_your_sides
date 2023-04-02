@@ -1,3 +1,5 @@
+use core::fmt::Debug;
+
 use bevy::prelude::*;
 
 mod castle;
@@ -25,3 +27,10 @@ pub struct West;
 
 #[derive(Debug, Default, Clone, Copy, Component)]
 pub struct East;
+
+pub trait Side: Debug + Default + Clone + Copy + Component {}
+
+impl Side for North {}
+impl Side for South {}
+impl Side for West {}
+impl Side for East {}

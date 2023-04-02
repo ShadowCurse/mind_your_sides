@@ -3,7 +3,7 @@ use bevy_rapier2d::prelude::*;
 
 use crate::{utils::remove_all_with, GlobalState};
 
-use super::{castle::CastleWall, East, North, South, West};
+use super::{castle::CastleWall, East, North, Side, South, West};
 
 /// Needed to make enemies move.
 /// Otherwise we would need set enormous speeds.
@@ -49,18 +49,20 @@ pub struct Enemy {
 pub struct EnemyMarker;
 
 #[derive(Component)]
-pub struct EnemySpawn {
+pub struct EnemySpawn<S: Side> {
     pub number: u32,
     pub radius: f32,
     pub timer: Timer,
+    pub side: S,
 }
 
-impl Default for EnemySpawn {
+impl<S: Side> Default for EnemySpawn<S> {
     fn default() -> Self {
         Self {
             number: DEFAULT_ENEMY_SPAWN_NUMBER,
             radius: DEFAULT_ENEMY_SPAWN_RADIUS,
             timer: Timer::from_seconds(DEFAULT_ENEMY_SPAWN_RATE, TimerMode::Repeating),
+            side: S::default(),
         }
     }
 }
@@ -71,16 +73,17 @@ pub struct Experience {
 }
 
 #[derive(Bundle)]
-pub struct EnemyBundle {
+pub struct EnemyBundle<S: Side> {
     rigid_body: RigidBody,
     collider: Collider,
     velocity: Velocity,
     damping: Damping,
     enemy: Enemy,
+    side: S,
     marker: EnemyMarker,
 }
 
-impl Default for EnemyBundle {
+impl<S: Side> Default for EnemyBundle<S> {
     fn default() -> Self {
         Self::new(
             DEFAULT_ENEMY_SIZE,
@@ -90,7 +93,7 @@ impl Default for EnemyBundle {
     }
 }
 
-impl EnemyBundle {
+impl<S: Side> EnemyBundle<S> {
     fn new(size: f32, health: i32, speed: f32) -> Self {
         Self {
             rigid_body: RigidBody::Dynamic,
@@ -101,11 +104,13 @@ impl EnemyBundle {
                 angular_damping: 10.0,
             },
             enemy: Enemy { health, speed },
+            side: S::default(),
             marker: EnemyMarker,
         }
     }
 }
 
+// TODO replace with sprites
 #[derive(Resource)]
 struct EnemyMeshMaterial {
     mesh: Handle<Mesh>,
@@ -130,8 +135,7 @@ fn setup(
             transform: Transform::from_translation(Vec3::new(0.0, 500.0, 0.0)),
             ..default()
         })
-        .insert(EnemySpawn::default())
-        .insert(North);
+        .insert(EnemySpawn::<North>::default());
     // South
     commands
         .spawn(MaterialMesh2dBundle {
@@ -140,8 +144,7 @@ fn setup(
             transform: Transform::from_translation(Vec3::new(0.0, -500.0, 0.0)),
             ..default()
         })
-        .insert(EnemySpawn::default())
-        .insert(South);
+        .insert(EnemySpawn::<South>::default());
     // West
     commands
         .spawn(MaterialMesh2dBundle {
@@ -150,8 +153,7 @@ fn setup(
             transform: Transform::from_translation(Vec3::new(-500.0, 0.0, 0.0)),
             ..default()
         })
-        .insert(EnemySpawn::default())
-        .insert(West);
+        .insert(EnemySpawn::<West>::default());
     // East
     commands
         .spawn(MaterialMesh2dBundle {
@@ -160,8 +162,7 @@ fn setup(
             transform: Transform::from_translation(Vec3::new(500.0, 0.0, 0.0)),
             ..default()
         })
-        .insert(EnemySpawn::default())
-        .insert(East);
+        .insert(EnemySpawn::<East>::default());
 
     let enemy_mesh = meshes.add(shape::Circle::new(10.0).into());
     let enemy_material = materials.add(ColorMaterial::from(Color::RED));
@@ -174,13 +175,13 @@ fn setup(
 
 /// Spawns enemies in a circle arond the spawn point equally spread
 /// on a circle
-fn enemy_spawn<D: Component + Copy>(
+fn enemy_spawn<S: Side>(
     time: Res<Time>,
     mesh_material: Res<EnemyMeshMaterial>,
     mut commands: Commands,
-    mut spawns: Query<(&Transform, &D, &mut EnemySpawn)>,
+    mut spawns: Query<(&Transform, &mut EnemySpawn<S>)>,
 ) {
-    for (transform, direction, mut spawn) in spawns.iter_mut() {
+    for (transform, mut spawn) in spawns.iter_mut() {
         if !spawn.timer.tick(time.delta()).finished() {
             continue;
         }
@@ -199,18 +200,17 @@ fn enemy_spawn<D: Component + Copy>(
                     transform: Transform::from_translation(position),
                     ..default()
                 })
-                .insert(EnemyBundle::default())
-                .insert(*direction);
+                .insert(EnemyBundle::<S>::default());
         }
     }
 }
 
 /// Moved enemies in direction of the wall
 /// Keeps them pointed at the wall
-fn enemy_movement<D: Component>(
+fn enemy_movement<S: Side>(
     time: Res<Time>,
-    wall: Query<&Transform, (With<CastleWall>, With<D>)>,
-    mut enemies: Query<(&Transform, &Enemy, &mut Velocity), With<D>>,
+    wall: Query<&Transform, (With<CastleWall>, With<S>)>,
+    mut enemies: Query<(&Transform, &Enemy, &mut Velocity), With<S>>,
 ) {
     let wall_transform = wall.single();
 

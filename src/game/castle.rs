@@ -3,7 +3,7 @@ use bevy_rapier2d::prelude::*;
 
 use crate::{utils::remove_all_with, GlobalState};
 
-use super::{weapons::Archer, East, North, South, West};
+use super::{weapons::Archer, East, North, Side, South, West};
 
 const WALL_LENGTH: f32 = 100.0;
 const WALL_THICKNESS: f32 = 10.0;
@@ -52,21 +52,21 @@ pub struct CastleWall {
 pub struct CastleWallMarker;
 
 #[derive(Bundle)]
-pub struct CastleWallBundle<D: Component> {
+pub struct CastleWallBundle<S: Side> {
     rigid_body: RigidBody,
     collider: Collider,
     wall: CastleWall,
-    direction: D,
+    side: S,
     marker: CastleWallMarker,
 }
 
-impl<D: Component + Default> CastleWallBundle<D> {
+impl<S: Side> CastleWallBundle<S> {
     fn new(health: i32, length: f32, thickness: f32) -> Self {
         Self {
             rigid_body: RigidBody::Fixed,
             collider: Collider::cuboid(length, thickness),
             wall: CastleWall { health },
-            direction: D::default(),
+            side: S::default(),
             marker: CastleWallMarker,
         }
     }
