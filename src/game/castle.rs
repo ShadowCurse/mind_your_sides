@@ -3,7 +3,7 @@ use bevy_rapier2d::prelude::*;
 
 use crate::{utils::remove_all_with, GlobalState};
 
-use super::{East, North, South, West};
+use super::{weapons::Archer, East, North, South, West};
 
 const WALL_LENGTH: f32 = 100.0;
 const WALL_THICKNESS: f32 = 10.0;
@@ -108,7 +108,8 @@ fn setup(
             100,
             WALL_LENGTH / 2.0,
             WALL_THICKNESS / 2.0,
-        ));
+        ))
+        .insert(Archer::default());
     // South
     commands
         .spawn(MaterialMesh2dBundle {
@@ -121,7 +122,8 @@ fn setup(
             100,
             WALL_LENGTH / 2.0,
             WALL_THICKNESS / 2.0,
-        ));
+        ))
+        .insert(Archer::default());
     // // West
     commands
         .spawn(MaterialMesh2dBundle {
@@ -134,7 +136,8 @@ fn setup(
             100,
             WALL_THICKNESS / 2.0,
             WALL_LENGTH / 2.0,
-        ));
+        ))
+        .insert(Archer::default());
     // // East
     commands
         .spawn(MaterialMesh2dBundle {
@@ -147,5 +150,6 @@ fn setup(
             100,
             WALL_THICKNESS / 2.0,
             WALL_LENGTH / 2.0,
-        ));
+        ))
+        .insert(Archer::default());
 }
