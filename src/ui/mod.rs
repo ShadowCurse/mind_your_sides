@@ -1,12 +1,14 @@
 use bevy::prelude::*;
 
+use crate::{GameAssets, GlobalState};
+
 mod main_menu;
 
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(setup_ui_config)
+        app.add_system(setup_ui_config.in_schedule(OnEnter(GlobalState::Initialization)))
             .add_plugin(main_menu::UiMainMenuPlugin);
     }
 }
@@ -22,7 +24,7 @@ pub struct UiConfig {
     pub text_style: TextStyle,
 }
 
-fn setup_ui_config(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup_ui_config(game_assets: Res<GameAssets>, mut commands: Commands) {
     commands.insert_resource(UiConfig {
         button_style: Style {
             size: Size::new(Val::Px(200.0), Val::Px(100.0)),
@@ -42,7 +44,7 @@ fn setup_ui_config(mut commands: Commands, asset_server: Res<AssetServer>) {
         },
         menu_color: Color::NONE,
         text_style: TextStyle {
-            font: asset_server.load("fonts/monaco.ttf"),
+            font: game_assets.font.clone(),
             font_size: 20.0,
             color: Color::BLACK,
         },
