@@ -11,3 +11,15 @@ impl Plugin for GamePlugin {
             .add_plugin(enemies::EnemyPlugin);
     }
 }
+
+#[derive(Debug, Default, Clone, Copy, Component)]
+pub struct North;
+
+#[derive(Debug, Default, Clone, Copy, Component)]
+pub struct South;
+
+#[derive(Debug, Default, Clone, Copy, Component)]
+pub struct West;
+
+#[derive(Debug, Default, Clone, Copy, Component)]
+pub struct East;

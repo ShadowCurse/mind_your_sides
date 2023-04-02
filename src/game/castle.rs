@@ -3,6 +3,8 @@ use bevy_rapier2d::prelude::*;
 
 use crate::{utils::remove_all_with, GlobalState};
 
+use super::{East, North, South, West};
+
 const WALL_LENGTH: f32 = 100.0;
 const WALL_THICKNESS: f32 = 10.0;
 
@@ -50,17 +52,21 @@ pub struct CastleWall {
 pub struct CastleWallMarker;
 
 #[derive(Bundle)]
-pub struct CastleWallBundle {
+pub struct CastleWallBundle<D: Component> {
     rigid_body: RigidBody,
     collider: Collider,
+    wall: CastleWall,
+    direction: D,
     marker: CastleWallMarker,
 }
 
-impl Default for CastleWallBundle {
-    fn default() -> Self {
+impl<D: Component + Default> CastleWallBundle<D> {
+    fn new(health: i32, length: f32, thickness: f32) -> Self {
         Self {
             rigid_body: RigidBody::Fixed,
-            collider: Collider::cuboid(WALL_LENGTH / 2.0, WALL_LENGTH / 2.0),
+            collider: Collider::cuboid(length, thickness),
+            wall: CastleWall { health },
+            direction: D::default(),
             marker: CastleWallMarker,
         }
     }
@@ -98,7 +104,11 @@ fn setup(
             transform: Transform::from_translation(Vec3::new(0.0, 50.0, 1.0)),
             ..default()
         })
-        .insert(Collider::cuboid(WALL_LENGTH / 2.0, WALL_THICKNESS / 2.0));
+        .insert(CastleWallBundle::<North>::new(
+            100,
+            WALL_LENGTH / 2.0,
+            WALL_THICKNESS / 2.0,
+        ));
     // South
     commands
         .spawn(MaterialMesh2dBundle {
@@ -107,7 +117,11 @@ fn setup(
             transform: Transform::from_translation(Vec3::new(0.0, -50.0, 1.0)),
             ..default()
         })
-        .insert(Collider::cuboid(WALL_LENGTH / 2.0, WALL_THICKNESS / 2.0));
+        .insert(CastleWallBundle::<South>::new(
+            100,
+            WALL_LENGTH / 2.0,
+            WALL_THICKNESS / 2.0,
+        ));
     // // West
     commands
         .spawn(MaterialMesh2dBundle {
@@ -116,7 +130,11 @@ fn setup(
             transform: Transform::from_translation(Vec3::new(-50.0, 0.0, 1.0)),
             ..default()
         })
-        .insert(Collider::cuboid(WALL_THICKNESS / 2.0, WALL_LENGTH / 2.0));
+        .insert(CastleWallBundle::<West>::new(
+            100,
+            WALL_THICKNESS / 2.0,
+            WALL_LENGTH / 2.0,
+        ));
     // // East
     commands
         .spawn(MaterialMesh2dBundle {
@@ -125,5 +143,9 @@ fn setup(
             transform: Transform::from_translation(Vec3::new(50.0, 0.0, 1.0)),
             ..default()
         })
-        .insert(Collider::cuboid(WALL_THICKNESS / 2.0, WALL_LENGTH / 2.0));
+        .insert(CastleWallBundle::<East>::new(
+            100,
+            WALL_THICKNESS / 2.0,
+            WALL_LENGTH / 2.0,
+        ));
 }
