@@ -5,6 +5,10 @@ use crate::{utils::remove_all_with, GlobalState};
 
 use super::{castle::CastleWall, East, North, South, West};
 
+/// Needed to make enemies move.
+/// Otherwise we would need set enormous speeds.
+const ENEMY_FORCE_MULTIPLIER: f32 = 1000.0;
+
 const DEFAULT_ENEMY_SPAWN_NUMBER: u32 = 3;
 const DEFAULT_ENEMY_SPAWN_RADIUS: f32 = 200.0;
 const DEFAULT_ENEMY_SPAWN_RATE: f32 = 1.0;
@@ -224,7 +228,7 @@ fn enemy_movement<D: Component>(
         let cos = direction.dot(enemy_direction);
 
         let movement = direction * time.delta().as_secs_f32();
-        enemy_velocity.linvel = movement * enemy.speed * 1000.0;
+        enemy_velocity.linvel = movement * enemy.speed * ENEMY_FORCE_MULTIPLIER;
         enemy_velocity.angvel = -cos;
     }
 }
