@@ -3,10 +3,10 @@ use bevy_rapier2d::prelude::*;
 
 use crate::{utils::remove_all_with, GlobalState};
 
-use super::{enemies::Enemy, East, North, Side, South, West};
+use super::{damage::EnemyDamageEvent, enemies::Enemy, East, North, Side, South, West};
 
 const DEFAULT_ARROW_SIZE: f32 = 3.0;
-const DEFAULT_ARROW_DAMAGE: i32 = 10;
+const DEFAULT_ARROW_DAMAGE: i32 = 50;
 const DEFAULT_ARROW_SPEED: f32 = 200.0;
 const DEFAULT_ARROW_LIFESPAN: f32 = 10.0;
 
@@ -120,7 +120,6 @@ fn archer_attack<S: Side>(
             continue;
         }
 
-        info!("Spawning arrow");
         let direction = enemy_vec.normalize();
         let mut spawn_point = *transform;
         spawn_point.translation += (direction * DEFAULT_ARROW_SPAWN_OFFSET).extend(0.0);
@@ -141,6 +140,7 @@ fn arrow_update<S: Side>(
     rapier_context: Res<RapierContext>,
     mut commands: Commands,
     mut arrows: Query<(Entity, &mut Arrow), With<S>>,
+    mut damage_event: EventWriter<EnemyDamageEvent<S>>,
 ) {
     for (arrow_entity, mut arrow) in arrows.iter_mut() {
         if arrow.lifespan.tick(time.delta()).finished() {
@@ -148,11 +148,12 @@ fn arrow_update<S: Side>(
         } else {
             let mut hit = false;
             for contact_pair in rapier_context.contacts_with(arrow_entity) {
-                if let Ok(_enemy) = enemies
+                if let Ok(enemy) = enemies
                     .get(contact_pair.collider1())
                     .or(enemies.get(contact_pair.collider2()))
                 {
                     hit = true;
+                    damage_event.send(EnemyDamageEvent::new(enemy, arrow.damage));
                 }
             }
             if hit {

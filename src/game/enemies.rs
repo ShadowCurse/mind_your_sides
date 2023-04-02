@@ -3,7 +3,10 @@ use bevy_rapier2d::prelude::*;
 
 use crate::{utils::remove_all_with, GlobalState};
 
-use super::{castle::CastleWall, East, North, Side, South, West};
+use super::{
+    castle::{Castle, CastleWall},
+    East, North, Side, South, West,
+};
 
 /// Needed to make enemies move.
 /// Otherwise we would need set enormous speeds.
@@ -16,6 +19,7 @@ const DEFAULT_ENEMY_SPAWN_RATE: f32 = 5.0;
 const DEFAULT_ENEMY_SIZE: f32 = 10.0;
 const DEFAULT_ENEMY_HEALTH: i32 = 100;
 const DEFAULT_ENEMY_SPEED: f32 = 10.0;
+const DEFAULT_ENEMY_EXP: u32 = 10;
 
 pub struct EnemyPlugin;
 
@@ -32,6 +36,10 @@ impl Plugin for EnemyPlugin {
                     enemy_movement::<South>,
                     enemy_movement::<West>,
                     enemy_movement::<East>,
+                    enemy_death::<North>,
+                    enemy_death::<South>,
+                    enemy_death::<West>,
+                    enemy_death::<East>,
                 )
                     .in_set(OnUpdate(GlobalState::InGame)),
             )
@@ -43,6 +51,7 @@ impl Plugin for EnemyPlugin {
 pub struct Enemy {
     pub health: i32,
     pub speed: f32,
+    pub exp: u32,
 }
 
 #[derive(Component)]
@@ -89,12 +98,13 @@ impl<S: Side> Default for EnemyBundle<S> {
             DEFAULT_ENEMY_SIZE,
             DEFAULT_ENEMY_HEALTH,
             DEFAULT_ENEMY_SPEED,
+            DEFAULT_ENEMY_EXP,
         )
     }
 }
 
 impl<S: Side> EnemyBundle<S> {
-    fn new(size: f32, health: i32, speed: f32) -> Self {
+    fn new(size: f32, health: i32, speed: f32, exp: u32) -> Self {
         Self {
             rigid_body: RigidBody::Dynamic,
             collider: Collider::ball(size),
@@ -103,7 +113,7 @@ impl<S: Side> EnemyBundle<S> {
                 linear_damping: 5.0,
                 angular_damping: 10.0,
             },
-            enemy: Enemy { health, speed },
+            enemy: Enemy { health, speed, exp },
             side: S::default(),
             marker: EnemyMarker,
         }
@@ -230,5 +240,19 @@ fn enemy_movement<S: Side>(
         let movement = direction * time.delta().as_secs_f32();
         enemy_velocity.linvel = movement * enemy.speed * ENEMY_FORCE_MULTIPLIER;
         enemy_velocity.angvel = -cos;
+    }
+}
+
+fn enemy_death<S: Side>(
+    enemies: Query<(Entity, &Enemy), With<S>>,
+    mut commands: Commands,
+    mut castle: Query<&mut Castle>,
+) {
+    let mut castle = castle.single_mut();
+    for (enemy_entity, enemy) in enemies.iter() {
+        if enemy.health <= 0 {
+            castle.exp += enemy.exp;
+            commands.entity(enemy_entity).despawn();
+        }
     }
 }
