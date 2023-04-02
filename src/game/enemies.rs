@@ -9,9 +9,9 @@ use super::{castle::CastleWall, East, North, Side, South, West};
 /// Otherwise we would need set enormous speeds.
 const ENEMY_FORCE_MULTIPLIER: f32 = 1000.0;
 
-const DEFAULT_ENEMY_SPAWN_NUMBER: u32 = 3;
+const DEFAULT_ENEMY_SPAWN_NUMBER: u32 = 1;
 const DEFAULT_ENEMY_SPAWN_RADIUS: f32 = 200.0;
-const DEFAULT_ENEMY_SPAWN_RATE: f32 = 1.0;
+const DEFAULT_ENEMY_SPAWN_RATE: f32 = 5.0;
 
 const DEFAULT_ENEMY_SIZE: f32 = 10.0;
 const DEFAULT_ENEMY_HEALTH: i32 = 100;

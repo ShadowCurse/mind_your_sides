@@ -116,10 +116,11 @@ fn archer_attack<S: Side>(
         }
 
         // no enemies in range
-        if archer.range < min_range {
+        if archer.range <= min_range {
             continue;
         }
 
+        info!("Spawning arrow");
         let direction = enemy_vec.normalize();
         let mut spawn_point = *transform;
         spawn_point.translation += (direction * DEFAULT_ARROW_SPAWN_OFFSET).extend(0.0);
