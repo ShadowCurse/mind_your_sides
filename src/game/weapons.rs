@@ -6,11 +6,11 @@ use crate::{utils::remove_all_with, GlobalState};
 use super::{damage::EnemyDamageEvent, enemies::Enemy, East, North, Side, South, West};
 
 const DEFAULT_ARROW_SIZE: f32 = 3.0;
-const DEFAULT_ARROW_DAMAGE: i32 = 50;
+const DEFAULT_ARROW_DAMAGE: i32 = 20;
 const DEFAULT_ARROW_SPEED: f32 = 200.0;
 const DEFAULT_ARROW_LIFESPAN: f32 = 10.0;
 
-const DEFAULT_ARCHER_RANGE: f32 = 400.0;
+const DEFAULT_ARCHER_RANGE: f32 = 200.0;
 const DEFAULT_ARCHER_ATTACK_SPEED: f32 = 1.0;
 /// Offsets arrow spawn point in the enemy direction
 const DEFAULT_ARROW_SPAWN_OFFSET: f32 = 30.0;

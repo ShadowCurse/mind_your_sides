@@ -36,6 +36,8 @@ pub struct EnemySpawnBuffs {
     pub health: f32,
     pub speed: f32,
     pub exp: f32,
+    pub damage: f32,
+    pub attack_speed: f32,
 }
 
 impl Default for EnemySpawnBuffs {
@@ -44,6 +46,8 @@ impl Default for EnemySpawnBuffs {
             health: 1.0,
             speed: 1.0,
             exp: 1.0,
+            damage: 1.0,
+            attack_speed: 1.0,
         }
     }
 }
