@@ -7,6 +7,7 @@ use crate::{
 };
 
 mod hud;
+mod level_up;
 mod pause;
 
 pub struct UiInGamePlugin;
@@ -24,6 +25,7 @@ impl Plugin for UiInGamePlugin {
             )
             .add_system(in_game_key_input.in_set(OnUpdate(UiInGameState::InGame)))
             .add_plugin(hud::HUDPlugin)
+            .add_plugin(level_up::LevelUpPlugin)
             .add_plugin(pause::PausePlugin);
     }
 }
