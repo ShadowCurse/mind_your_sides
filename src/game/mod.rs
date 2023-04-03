@@ -2,6 +2,7 @@ use core::fmt::Debug;
 
 use bevy::prelude::*;
 
+mod animation;
 mod castle;
 mod damage;
 mod enemies;
@@ -11,7 +12,8 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(castle::CastlePlugin)
+        app.add_plugin(animation::AnimationPlugin)
+            .add_plugin(castle::CastlePlugin)
             .add_plugin(damage::DamagePlugin)
             .add_plugin(enemies::EnemyPlugin)
             .add_plugin(weapons::WeaponsPlugin);

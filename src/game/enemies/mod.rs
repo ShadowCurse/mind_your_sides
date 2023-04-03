@@ -7,6 +7,7 @@ use crate::{utils::remove_all_with, GlobalState};
 use self::spawn::EnemySpawnBuffs;
 
 use super::{
+    animation::AnimationBundle,
     castle::{Castle, CastleWall},
     East, North, Side, South, West,
 };
@@ -43,10 +44,10 @@ impl Plugin for EnemyPlugin {
 #[derive(AssetCollection, Resource)]
 struct EnemySprites {
     #[asset(texture_atlas(tile_size_x = 32.0, tile_size_y = 32.0, columns = 4, rows = 1,))]
-    #[asset(path = "images/goblin.png")]
+    #[asset(path = "sprites/goblin.png")]
     pub goblin: Handle<TextureAtlas>,
     #[asset(texture_atlas(tile_size_x = 32.0, tile_size_y = 32.0, columns = 4, rows = 1,))]
-    #[asset(path = "images/spear_goblin.png")]
+    #[asset(path = "sprites/spear_goblin.png")]
     pub spear_goblin: Handle<TextureAtlas>,
 }
 
@@ -60,14 +61,14 @@ pub struct Enemy {
 #[derive(Debug, Default, Component)]
 pub struct EnemyMarker;
 
-#[derive(Default, Bundle)]
+#[derive(Bundle)]
 pub struct EnemyBundle<S: Side, E: EnemyType> {
+    #[bundle]
+    animation_bundle: AnimationBundle,
     rigid_body: RigidBody,
     collider: Collider,
     velocity: Velocity,
     damping: Damping,
-    #[bundle]
-    sprite: SpriteSheetBundle,
     enemy: Enemy,
     side: S,
     enemy_type: E,
@@ -75,24 +76,20 @@ pub struct EnemyBundle<S: Side, E: EnemyType> {
 }
 
 impl<S: Side, E: EnemyType> EnemyBundle<S, E> {
-    fn new(size: f32, sprite: Handle<TextureAtlas>, position: Vec3, buffs: &EnemySpawnBuffs) -> Self {
+    fn new(
+        size: f32,
+        texture_atlas: Handle<TextureAtlas>,
+        position: Vec3,
+        buffs: &EnemySpawnBuffs,
+    ) -> Self {
         Self {
+            animation_bundle: AnimationBundle::new(texture_atlas, 3, 12.0, position),
             rigid_body: RigidBody::Dynamic,
             collider: Collider::ball(size),
             velocity: Velocity::default(),
             damping: Damping {
                 linear_damping: 5.0,
                 angular_damping: 10.0,
-            },
-
-            sprite: SpriteSheetBundle {
-                sprite: TextureAtlasSprite {
-                    index: 0,
-                    ..default()
-                },
-                texture_atlas: sprite,
-                transform: Transform::from_translation(position),
-                ..default()
             },
             enemy: E::enemy(buffs),
             side: S::default(),
