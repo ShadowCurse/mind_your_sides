@@ -1,5 +1,7 @@
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+use bevy_asset_loader::prelude::*;
 use bevy_rapier2d::prelude::*;
+use rand::prelude::*;
 
 use crate::{utils::remove_all_with, GlobalState};
 
@@ -16,7 +18,7 @@ const DEFAULT_ENEMY_SPAWN_NUMBER: u32 = 1;
 const DEFAULT_ENEMY_SPAWN_RADIUS: f32 = 200.0;
 const DEFAULT_ENEMY_SPAWN_RATE: f32 = 5.0;
 
-const DEFAULT_ENEMY_SIZE: f32 = 10.0;
+const DEFAULT_ENEMY_SIZE: f32 = 16.0;
 const DEFAULT_ENEMY_HEALTH: i32 = 100;
 const DEFAULT_ENEMY_SPEED: f32 = 10.0;
 const DEFAULT_ENEMY_EXP: u32 = 10;
@@ -26,6 +28,7 @@ pub struct EnemyPlugin;
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(setup.in_schedule(OnEnter(GlobalState::InGame)))
+            .add_collection_to_loading_state::<_, EnemySprites>(GlobalState::AssetLoading)
             .add_systems(
                 (
                     enemy_spawn::<North>,
@@ -52,6 +55,12 @@ pub struct Enemy {
     pub health: i32,
     pub speed: f32,
     pub exp: u32,
+}
+
+#[derive(Component)]
+pub enum EnemyKind {
+    Goblin,
+    SpearGoblin,
 }
 
 #[derive(Component)]
@@ -89,6 +98,7 @@ pub struct EnemyBundle<S: Side> {
     damping: Damping,
     enemy: Enemy,
     side: S,
+    kind: EnemyKind,
     marker: EnemyMarker,
 }
 
@@ -99,12 +109,13 @@ impl<S: Side> Default for EnemyBundle<S> {
             DEFAULT_ENEMY_HEALTH,
             DEFAULT_ENEMY_SPEED,
             DEFAULT_ENEMY_EXP,
+            EnemyKind::Goblin,
         )
     }
 }
 
 impl<S: Side> EnemyBundle<S> {
-    fn new(size: f32, health: i32, speed: f32, exp: u32) -> Self {
+    fn new(size: f32, health: i32, speed: f32, exp: u32, kind: EnemyKind) -> Self {
         Self {
             rigid_body: RigidBody::Dynamic,
             collider: Collider::ball(size),
@@ -115,16 +126,42 @@ impl<S: Side> EnemyBundle<S> {
             },
             enemy: Enemy { health, speed, exp },
             side: S::default(),
+            kind,
             marker: EnemyMarker,
         }
     }
+
+    fn goblin() -> Self {
+        Self::new(
+            DEFAULT_ENEMY_SIZE,
+            DEFAULT_ENEMY_HEALTH,
+            DEFAULT_ENEMY_SPEED,
+            DEFAULT_ENEMY_EXP,
+            EnemyKind::Goblin,
+        )
+    }
+
+    fn spear_goblin() -> Self {
+        Self::new(
+            DEFAULT_ENEMY_SIZE,
+            // Maybe instead of unique values, these should be
+            // modifiers that act on the default values
+            80,
+            12.0,
+            DEFAULT_ENEMY_EXP,
+            EnemyKind::SpearGoblin,
+        )
+    }
 }
 
-// TODO replace with sprites
-#[derive(Resource)]
-struct EnemyMeshMaterial {
-    mesh: Handle<Mesh>,
-    material: Handle<ColorMaterial>,
+#[derive(AssetCollection, Resource)]
+struct EnemySprites {
+    #[asset(texture_atlas(tile_size_x = 32.0, tile_size_y = 32.0, columns = 4, rows = 1,))]
+    #[asset(path = "images/goblin.png")]
+    pub goblin: Handle<TextureAtlas>,
+    #[asset(texture_atlas(tile_size_x = 32.0, tile_size_y = 32.0, columns = 4, rows = 1,))]
+    #[asset(path = "images/spear_goblin.png")]
+    pub spear_goblin: Handle<TextureAtlas>,
 }
 
 /// Sets up 4 spawns at each side of the screen
@@ -173,21 +210,13 @@ fn setup(
             ..default()
         })
         .insert(EnemySpawn::<East>::default());
-
-    let enemy_mesh = meshes.add(shape::Circle::new(10.0).into());
-    let enemy_material = materials.add(ColorMaterial::from(Color::RED));
-
-    commands.insert_resource(EnemyMeshMaterial {
-        mesh: enemy_mesh,
-        material: enemy_material,
-    });
 }
 
 /// Spawns enemies in a circle arond the spawn point equally spread
 /// on a circle
 fn enemy_spawn<S: Side>(
     time: Res<Time>,
-    mesh_material: Res<EnemyMeshMaterial>,
+    enemy_sprites: Res<EnemySprites>,
     mut commands: Commands,
     mut spawns: Query<(&Transform, &mut EnemySpawn<S>)>,
 ) {
@@ -203,14 +232,32 @@ fn enemy_spawn<S: Side>(
                 )
                 .mul_vec3(Vec3::Y * spawn.radius);
 
-            commands
-                .spawn(MaterialMesh2dBundle {
-                    mesh: mesh_material.mesh.clone().into(),
-                    material: mesh_material.material.clone(),
-                    transform: Transform::from_translation(position),
-                    ..default()
-                })
-                .insert(EnemyBundle::<S>::default());
+            // Choose enemy at random for now
+            if random() {
+                commands
+                    .spawn(SpriteSheetBundle {
+                        sprite: TextureAtlasSprite {
+                            index: 0,
+                            ..default()
+                        },
+                        texture_atlas: enemy_sprites.goblin.clone(),
+                        transform: Transform::from_translation(position),
+                        ..default()
+                    })
+                    .insert(EnemyBundle::<S>::goblin());
+            } else {
+                commands
+                    .spawn(SpriteSheetBundle {
+                        sprite: TextureAtlasSprite {
+                            index: 0,
+                            ..default()
+                        },
+                        texture_atlas: enemy_sprites.spear_goblin.clone(),
+                        transform: Transform::from_translation(position),
+                        ..default()
+                    })
+                    .insert(EnemyBundle::<S>::spear_goblin());
+            }
         }
     }
 }
@@ -228,18 +275,21 @@ fn enemy_movement<S: Side>(
         let vector = (wall_transform.translation - enemy_transform.translation).truncate();
         let direction = vector.normalize();
 
+        // rotating the sprites looks a bit weird
+        // commenting out the rotation for aesthetic reasons
+
         // calculate cos between movement direction and direction enemy is looking at
         // we set the angvel to -cos to ratote enemies X axis in movement direction
-        let enemy_direction = enemy_transform
-            .rotation
-            .mul_vec3(Vec3::X)
-            .truncate()
-            .normalize();
-        let cos = direction.dot(enemy_direction);
+        // let enemy_direction = enemy_transform
+        //     .rotation
+        //     .mul_vec3(Vec3::X)
+        //     .truncate()
+        //     .normalize();
+        // let cos = direction.dot(enemy_direction);
 
         let movement = direction * time.delta().as_secs_f32();
         enemy_velocity.linvel = movement * enemy.speed * ENEMY_FORCE_MULTIPLIER;
-        enemy_velocity.angvel = -cos;
+        // enemy_velocity.angvel = -cos;
     }
 }
 
