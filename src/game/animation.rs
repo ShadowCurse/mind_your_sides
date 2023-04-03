@@ -49,6 +49,31 @@ impl AnimationBundle {
             state: AnimationState::default(),
         }
     }
+
+    pub fn new_with_size(
+        texture_atlas: Handle<TextureAtlas>,
+        custom_size: Vec2,
+        frames: usize,
+        fps: f64,
+        position: Vec3,
+    ) -> Self {
+        Self {
+            sprite: SpriteSheetBundle {
+                sprite: TextureAtlasSprite {
+                    custom_size: Some(custom_size),
+                    ..default()
+                },
+                texture_atlas,
+                transform: Transform::from_translation(position),
+                ..default()
+            },
+            animation: Animation(benimator::Animation::from_indices(
+                0..=frames,
+                FrameRate::from_fps(fps),
+            )),
+            state: AnimationState::default(),
+        }
+    }
 }
 
 fn animate(

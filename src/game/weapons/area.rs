@@ -1,15 +1,15 @@
-use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
 use crate::{
-    game::{damage::EnemyDamageEvent, East, North, Side, South, West},
+    game::{animation::AnimationBundle, damage::EnemyDamageEvent, East, North, Side, South, West},
     GlobalState,
 };
 
-use super::DamageMarker;
+use super::{DamageMarker, WeaponsAssets};
 
-const DEFAULT_AREA_SIZE: f32 = 30.0;
+const DEFAULT_AREA_SIZE: f32 = 64.0;
 const DEFAULT_AREA_DAMAGE: i32 = 10;
 const DEFAULT_AREA_ATTACK_SPEED: f32 = 0.5;
 const DEFAULT_AREA_LIFESPAN: f32 = 5.0;
@@ -69,14 +69,29 @@ pub struct Area {
 
 #[derive(Bundle)]
 pub struct AreaBundle<S: Side> {
+    #[bundle]
+    animation_bundle: AnimationBundle,
     area: Area,
     side: S,
     marker: DamageMarker,
 }
 
 impl<S: Side> AreaBundle<S> {
-    fn new(size: f32, damage: i32, attack_speed: f32) -> Self {
+    fn new(
+        texture_atlas: Handle<TextureAtlas>,
+        size: f32,
+        damage: i32,
+        attack_speed: f32,
+        position: Vec3,
+    ) -> Self {
         Self {
+            animation_bundle: AnimationBundle::new_with_size(
+                texture_atlas,
+                Vec2::new(size, size),
+                2,
+                12.0,
+                position,
+            ),
             area: Area {
                 size,
                 damage,
@@ -91,14 +106,10 @@ impl<S: Side> AreaBundle<S> {
 
 fn catapulte_attack<S: Side>(
     time: Res<Time>,
+    weapon_assets: Res<WeaponsAssets>,
     mut commands: Commands,
     mut catapultes: Query<(&Transform, &mut Catapulte), With<S>>,
-    // TODO replace with sprites
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    let area_material = materials.add(ColorMaterial::from(Color::RED));
-
     for (transform, mut catapulte) in catapultes.iter_mut() {
         if !catapulte.attack_timer.tick(time.delta()).finished() {
             continue;
@@ -113,22 +124,16 @@ fn catapulte_attack<S: Side>(
         // convert angle to radians
         let direction = Vec2::from_angle(angle / 360.0 * std::f32::consts::PI).rotate(S::DIRECTION);
 
-        let mut spawn_point = *transform;
-        spawn_point.translation += (direction * distance).extend(0.0);
+        let mut area_position = transform.translation;
+        area_position += (direction * distance).extend(0.0);
 
-        let area_mesh = meshes.add(shape::Circle::new(catapulte.area_size).into());
-        commands
-            .spawn(MaterialMesh2dBundle {
-                mesh: area_mesh.into(),
-                material: area_material.clone(),
-                transform: spawn_point,
-                ..default()
-            })
-            .insert(AreaBundle::<S>::new(
-                catapulte.area_size,
-                catapulte.damage,
-                catapulte.area_attack_speed,
-            ));
+        commands.spawn(AreaBundle::<S>::new(
+            weapon_assets.fire.clone(),
+            catapulte.area_size,
+            catapulte.damage,
+            catapulte.area_attack_speed,
+            area_position,
+        ));
     }
 }
 
