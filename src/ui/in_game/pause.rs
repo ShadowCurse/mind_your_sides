@@ -1,9 +1,10 @@
 use bevy::prelude::*;
 
 use crate::{
+    game::GameState,
     ui::{spawn_button, UiConfig},
     utils::remove_all_with,
-    GlobalState, game::GameState,
+    GlobalState,
 };
 
 use super::UiInGameState;

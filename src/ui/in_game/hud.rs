@@ -1,8 +1,9 @@
 use bevy::prelude::*;
 
 use crate::{
+    game::GameState,
     ui::{spawn_button, UiConfig},
-    utils::remove_all_with, game::GameState,
+    utils::remove_all_with,
 };
 
 use super::UiInGameState;
@@ -46,71 +47,41 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
                     style: Style {
                         size: Size::width(Val::Px(200.0)),
                         border: UiRect::all(Val::Px(2.0)),
+                        flex_direction: FlexDirection::Column,
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
                         ..default()
                     },
                     background_color: Color::rgb(0.65, 0.65, 0.65).into(),
                     ..default()
                 })
                 .with_children(|parent| {
-                    // left vertical fill (content)
-                    parent
-                        .spawn(NodeBundle {
-                            style: Style {
-                                size: Size::width(Val::Percent(100.0)),
-                                ..default()
-                            },
-                            background_color: Color::rgb(0.15, 0.15, 0.15).into(),
-                            ..default()
-                        })
-                        .with_children(|parent| {
-                            // left vertical fill (content)
-                            parent
-                                .spawn(NodeBundle {
-                                    style: Style {
-                                        flex_direction: FlexDirection::Column,
-                                        size: Size::width(Val::Percent(100.0)),
-                                        ..default()
-                                    },
-                                    background_color: Color::rgb(0.15, 0.15, 0.15).into(),
-                                    ..default()
-                                })
-                                .with_children(|parent| {
-                                    spawn_button(parent, &config, HUDButton::Pause);
-                                    // text
-                                    parent.spawn((TextBundle::from_section(
-                                        "Text on the left",
-                                        config.text_style.clone(),
-                                    )
-                                    .with_style(Style {
-                                        margin: UiRect::all(Val::Px(5.0)),
-                                        ..default()
-                                    }),));
-                                });
-                        });
+                    spawn_button(parent, &config, HUDButton::Pause);
+                    // text
+                    parent.spawn(TextBundle::from_section(
+                        "Text on the left",
+                        config.text_style.clone(),
+                    ));
                 });
             // right vertical fill
             parent
                 .spawn(NodeBundle {
                     style: Style {
+                        size: Size::width(Val::Px(200.0)),
                         flex_direction: FlexDirection::Column,
                         justify_content: JustifyContent::Center,
                         align_items: AlignItems::Center,
-                        size: Size::width(Val::Px(200.0)),
                         ..default()
                     },
-                    background_color: Color::rgb(0.15, 0.15, 0.15).into(),
+                    background_color: Color::rgb(0.65, 0.65, 0.65).into(),
                     ..default()
                 })
                 .with_children(|parent| {
                     // Title
-                    parent.spawn((TextBundle::from_section(
+                    parent.spawn(TextBundle::from_section(
                         "Text on the right",
                         config.text_style.clone(),
-                    )
-                    .with_style(Style {
-                        size: Size::height(Val::Px(25.)),
-                        ..default()
-                    }),));
+                    ));
                 });
         });
 }

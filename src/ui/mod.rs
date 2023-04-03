@@ -29,7 +29,7 @@ pub struct UiConfig {
 fn setup_ui_config(game_assets: Res<GameAssets>, mut commands: Commands) {
     commands.insert_resource(UiConfig {
         button_style: Style {
-            size: Size::new(Val::Px(200.0), Val::Px(100.0)),
+            size: Size::new(Val::Px(100.0), Val::Px(50.0)),
             margin: UiRect::all(Val::Percent(1.0)),
             justify_content: JustifyContent::Center,
             align_items: AlignItems::Center,
