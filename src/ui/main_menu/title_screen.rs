@@ -29,26 +29,18 @@ enum TitleScreenButton {
 
 fn setup(mut commands: Commands, config: Res<UiConfig>) {
     commands
-        .spawn(NodeBundle {
-            style: config.menu_style.clone(),
-            background_color: config.menu_color.into(),
-            ..default()
-        })
-        .insert(TitleScreenMarker)
+        .spawn((
+            NodeBundle {
+                style: config.menu_style.clone(),
+                background_color: config.menu_color.into(),
+                ..default()
+            },
+            TitleScreenMarker,
+        ))
         .with_children(|builder| {
-            spawn_button(
-                builder,
-                &config,
-                TitleScreenButton::Start,
-                TitleScreenMarker,
-            );
-            spawn_button(
-                builder,
-                &config,
-                TitleScreenButton::Settings,
-                TitleScreenMarker,
-            );
-            spawn_button(builder, &config, TitleScreenButton::Exit, TitleScreenMarker);
+            spawn_button(builder, &config, TitleScreenButton::Start);
+            spawn_button(builder, &config, TitleScreenButton::Settings);
+            spawn_button(builder, &config, TitleScreenButton::Exit);
         });
 }
 
