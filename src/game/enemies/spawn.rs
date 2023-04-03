@@ -1,7 +1,7 @@
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use rand::prelude::*;
 
-use crate::{utils::remove_all_with, GlobalState};
+use crate::{game::GameState, utils::remove_all_with, GlobalState};
 
 use super::{
     East, EnemyBundle, EnemyMarker, EnemySprites, Goblin, North, Side, South, SpearGoblin, West,
@@ -25,7 +25,7 @@ impl Plugin for SpawnPlugin {
                     enemy_spawn::<West>,
                     enemy_spawn::<East>,
                 )
-                    .in_set(OnUpdate(GlobalState::InGame)),
+                    .in_set(OnUpdate(GameState::InGame)),
             )
             .add_system(remove_all_with::<EnemyMarker>.in_schedule(OnEnter(GlobalState::MainMenu)))
             .add_system(

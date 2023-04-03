@@ -2,9 +2,7 @@ use std::marker::PhantomData;
 
 use bevy::prelude::*;
 
-use crate::GlobalState;
-
-use super::{castle::CastleWall, enemies::Enemy, East, North, Side, South, West};
+use super::{castle::CastleWall, enemies::Enemy, East, GameState, North, Side, South, West};
 
 pub struct DamagePlugin;
 
@@ -29,7 +27,7 @@ impl Plugin for DamagePlugin {
                     damage_wall::<West>,
                     damage_wall::<East>,
                 )
-                    .in_set(OnUpdate(GlobalState::InGame)),
+                    .in_set(OnUpdate(GameState::InGame)),
             );
     }
 }

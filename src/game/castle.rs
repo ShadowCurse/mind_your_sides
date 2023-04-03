@@ -16,9 +16,9 @@ pub struct CastlePlugin;
 impl Plugin for CastlePlugin {
     fn build(&self, app: &mut App) {
         app.add_system(setup.in_schedule(OnEnter(GlobalState::InGame)))
-            .add_system(remove_all_with::<CastleMarker>.in_schedule(OnEnter(GlobalState::InGame)))
+            .add_system(remove_all_with::<CastleMarker>.in_schedule(OnExit(GlobalState::InGame)))
             .add_system(
-                remove_all_with::<CastleWallMarker>.in_schedule(OnEnter(GlobalState::InGame)),
+                remove_all_with::<CastleWallMarker>.in_schedule(OnExit(GlobalState::InGame)),
             );
     }
 }

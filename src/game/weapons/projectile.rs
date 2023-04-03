@@ -1,9 +1,8 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::{
-    game::{damage::EnemyDamageEvent, enemies::Enemy, East, North, Side, South, West},
-    GlobalState,
+use crate::game::{
+    damage::EnemyDamageEvent, enemies::Enemy, East, GameState, North, Side, South, West,
 };
 
 use super::{DamageMarker, WeaponsAssets};
@@ -33,7 +32,7 @@ impl Plugin for ProjectilePlugin {
                 projectile_update::<West>,
                 projectile_update::<East>,
             )
-                .in_set(OnUpdate(GlobalState::InGame)),
+                .in_set(OnUpdate(GameState::InGame)),
         );
     }
 }

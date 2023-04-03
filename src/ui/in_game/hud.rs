@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     ui::{spawn_button, UiConfig},
-    utils::remove_all_with,
+    utils::remove_all_with, game::GameState,
 };
 
 use super::UiInGameState;
@@ -117,7 +117,7 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
 
 fn button_system(
     style: Res<UiConfig>,
-    mut in_game_state: ResMut<NextState<UiInGameState>>,
+    mut game_state: ResMut<NextState<GameState>>,
     mut interaction_query: Query<
         (&HUDButton, &Interaction, &mut BackgroundColor),
         (Changed<Interaction>, With<Button>),
@@ -129,7 +129,7 @@ fn button_system(
                 *color = style.button_color_pressed.into();
                 match button {
                     HUDButton::Pause => {
-                        in_game_state.set(UiInGameState::Pause);
+                        game_state.set(GameState::Paused);
                     }
                 }
             }

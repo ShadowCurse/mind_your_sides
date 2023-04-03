@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 
 use crate::{
+    game::GameState,
     impl_into_state,
     utils::{set_state, IntoState},
-    GlobalState,
 };
 
 mod hud;
@@ -17,11 +17,15 @@ impl Plugin for UiInGamePlugin {
         app.add_state::<UiInGameState>()
             .add_system(
                 set_state::<UiInGameState, { UiInGameState::InGame as u8 }>
-                    .in_schedule(OnEnter(GlobalState::InGame)),
+                    .in_schedule(OnEnter(GameState::InGame)),
             )
             .add_system(
                 set_state::<UiInGameState, { UiInGameState::Disabled as u8 }>
-                    .in_schedule(OnExit(GlobalState::InGame)),
+                    .in_schedule(OnEnter(GameState::NotInGame)),
+            )
+            .add_system(
+                set_state::<UiInGameState, { UiInGameState::Pause as u8 }>
+                    .in_schedule(OnEnter(GameState::Paused)),
             )
             .add_system(in_game_key_input.in_set(OnUpdate(UiInGameState::InGame)))
             .add_plugin(hud::HUDPlugin)
@@ -39,11 +43,8 @@ enum UiInGameState {
 }
 impl_into_state!(UiInGameState);
 
-fn in_game_key_input(
-    keyboard: Res<Input<KeyCode>>,
-    mut in_game_state: ResMut<NextState<UiInGameState>>,
-) {
+fn in_game_key_input(keyboard: Res<Input<KeyCode>>, mut game_state: ResMut<NextState<GameState>>) {
     if keyboard.pressed(KeyCode::Escape) {
-        in_game_state.set(UiInGameState::Pause);
+        game_state.set(GameState::Paused);
     }
 }

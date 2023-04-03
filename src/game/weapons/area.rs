@@ -2,9 +2,8 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
-use crate::{
-    game::{animation::AnimationBundle, damage::EnemyDamageEvent, East, North, Side, South, West},
-    GlobalState,
+use crate::game::{
+    animation::AnimationBundle, damage::EnemyDamageEvent, East, GameState, North, Side, South, West,
 };
 
 use super::{DamageMarker, WeaponsAssets};
@@ -33,7 +32,7 @@ impl Plugin for AreaPlugin {
                 area_update::<West>,
                 area_update::<East>,
             )
-                .in_set(OnUpdate(GlobalState::InGame)),
+                .in_set(OnUpdate(GameState::InGame)),
         );
     }
 }

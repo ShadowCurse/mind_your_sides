@@ -1,6 +1,9 @@
 use core::fmt::Debug;
 
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::RapierConfiguration;
+
+use crate::{impl_into_state, utils::set_state, GlobalState, IntoState};
 
 mod animation;
 mod castle;
@@ -12,13 +15,41 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(animation::AnimationPlugin)
+        app.add_state::<GameState>()
+            .add_system(
+                set_state::<GameState, { GameState::InGame as u8 }>
+                    .in_schedule(OnEnter(GlobalState::InGame)),
+            )
+            .add_system(
+                set_state::<GameState, { GameState::NotInGame as u8 }>
+                    .in_schedule(OnExit(GlobalState::InGame)),
+            )
+            .add_system(stop_physics.in_schedule(OnEnter(GameState::Paused)))
+            .add_system(resume_physics.in_schedule(OnExit(GameState::Paused)))
+            .add_plugin(animation::AnimationPlugin)
             .add_plugin(castle::CastlePlugin)
             .add_plugin(damage::DamagePlugin)
             .add_plugin(enemies::EnemyPlugin)
             .add_plugin(weapons::WeaponsPlugin);
     }
 }
+
+fn stop_physics(mut physics: ResMut<RapierConfiguration>) {
+    physics.physics_pipeline_active = false;
+}
+
+fn resume_physics(mut physics: ResMut<RapierConfiguration>) {
+    physics.physics_pipeline_active = true;
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Eq, Hash, States)]
+pub enum GameState {
+    #[default]
+    NotInGame,
+    InGame,
+    Paused,
+}
+impl_into_state!(GameState);
 
 #[derive(Debug, Default, Clone, Copy, Component)]
 pub struct North;

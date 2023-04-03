@@ -10,7 +10,7 @@ use super::{
     animation::AnimationBundle,
     castle::{Castle, CastleWall},
     damage::WallDamageEvent,
-    East, North, Side, South, West,
+    East, GameState, North, Side, South, West,
 };
 
 mod spawn;
@@ -40,7 +40,7 @@ impl Plugin for EnemyPlugin {
                     enemy_death::<West>,
                     enemy_death::<East>,
                 )
-                    .in_set(OnUpdate(GlobalState::InGame)),
+                    .in_set(OnUpdate(GameState::InGame)),
             )
             .add_system(remove_all_with::<EnemyMarker>.in_schedule(OnEnter(GlobalState::MainMenu)));
     }

@@ -2,13 +2,13 @@ use bevy::prelude::*;
 
 use benimator::FrameRate;
 
-use crate::GlobalState;
+use super::GameState;
 
 pub struct AnimationPlugin;
 
 impl Plugin for AnimationPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(animate.in_set(OnUpdate(GlobalState::InGame)));
+        app.add_system(animate.in_set(OnUpdate(GameState::InGame)));
     }
 }
 
