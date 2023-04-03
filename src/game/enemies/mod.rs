@@ -79,6 +79,7 @@ pub struct EnemyBundle<S: Side, E: EnemyType> {
     animation_bundle: AnimationBundle,
     rigid_body: RigidBody,
     collider: Collider,
+    locked_axis: LockedAxes,
     velocity: Velocity,
     damping: Damping,
     enemy: Enemy,
@@ -99,6 +100,7 @@ impl<S: Side, E: EnemyType> EnemyBundle<S, E> {
             animation_bundle: AnimationBundle::new(texture_atlas, 3, 12.0, position),
             rigid_body: RigidBody::Dynamic,
             collider: Collider::ball(size),
+            locked_axis: LockedAxes::ROTATION_LOCKED,
             velocity: Velocity::default(),
             damping: Damping {
                 linear_damping: 5.0,
