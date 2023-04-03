@@ -30,7 +30,12 @@ pub struct AnimationBundle {
 }
 
 impl AnimationBundle {
-    pub fn new(texture_atlas: Handle<TextureAtlas>, frames: usize, fps: f64, position: Vec3) -> Self {
+    pub fn new(
+        texture_atlas: Handle<TextureAtlas>,
+        frames: usize,
+        fps: f64,
+        position: Vec3,
+    ) -> Self {
         Self {
             sprite: SpriteSheetBundle {
                 texture_atlas,
@@ -48,13 +53,22 @@ impl AnimationBundle {
 
 fn animate(
     time: Res<Time>,
-    mut query: Query<(&mut AnimationState, &mut TextureAtlasSprite, &Animation)>,
+    mut query: Query<(
+        &Animation,
+        &Transform,
+        &mut AnimationState,
+        &mut TextureAtlasSprite,
+    )>,
 ) {
-    for (mut player, mut texture, animation) in query.iter_mut() {
+    for (animation, transform, mut player, mut texture) in query.iter_mut() {
         // Update the state
         player.update(animation, time.delta());
 
         // Update the texture atlas
         texture.index = player.frame_index();
+
+        if transform.translation.x > 0.0 {
+            texture.flip_x = true;
+        }
     }
 }
