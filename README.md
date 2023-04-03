@@ -6,10 +6,10 @@
 Side effects
 
 ## Genre
-- Tower Defense 
-  - Castle in the center which you have to defend
+- Tower Defense
+    - Castle in the center which you have to defend
 - Vampire Survivors
-  - Waves of monsters that come from all sides
+    - Waves of monsters that come from all sides
 
 ### Concept
 - There is a castle in the center of the map
@@ -31,7 +31,7 @@ We would like it to be an intense experience
 It is a survival game
 
 ### Aesthetic
-- medieval assets 
+- medieval assets
 - pixel art
 
 ## Game
@@ -41,7 +41,7 @@ It is a survival game
 
 ### Progression
 #### In session
-- Enemies drop experience with which castle levels up 
+- Enemies drop experience with which castle levels up
 - Level ups give a choise of 4 upgrades, each upgrade associated with its side/wall
 - Each upgrade have side effects
 
@@ -50,13 +50,13 @@ It is a survival game
 
 ### Duration
 - Normal mode: 30 minutes
-- Infinite mode: infinite 
+- Infinite mode: infinite
 
 ### Difficulty
 Rises as time pases
 
 ### Loops
-- Kill enemies -> get experience -> level up -> upgrade 
+- Kill enemies -> get experience -> level up -> upgrade
 
 ## Interface
 ### Input

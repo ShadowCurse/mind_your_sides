@@ -1,8 +1,7 @@
 use bevy::prelude::*;
 
-use crate::utils::remove_all_with;
-
 use super::{spawn_button, UiConfig, UiMainMenuState};
+use crate::utils::remove_all_with;
 
 pub struct SettingsPlugin;
 
@@ -30,18 +29,20 @@ enum SettingsButton {
 
 fn setup(mut commands: Commands, config: Res<UiConfig>) {
     commands
-        .spawn(NodeBundle {
-            style: config.menu_style.clone(),
-            background_color: config.menu_color.into(),
-            ..default()
-        })
-        .insert(SettingsMarker)
+        .spawn((
+            NodeBundle {
+                style: config.menu_style.clone(),
+                background_color: config.menu_color.into(),
+                ..default()
+            },
+            SettingsMarker,
+        ))
         .with_children(|builder| {
-            spawn_button(builder, &config, SettingsButton::FullScreen, SettingsMarker);
-            spawn_button(builder, &config, SettingsButton::Windowed, SettingsMarker);
-            spawn_button(builder, &config, SettingsButton::VolumeUp, SettingsMarker);
-            spawn_button(builder, &config, SettingsButton::VolumeDown, SettingsMarker);
-            spawn_button(builder, &config, SettingsButton::Back, SettingsMarker);
+            spawn_button(builder, &config, SettingsButton::FullScreen);
+            spawn_button(builder, &config, SettingsButton::Windowed);
+            spawn_button(builder, &config, SettingsButton::VolumeUp);
+            spawn_button(builder, &config, SettingsButton::VolumeDown);
+            spawn_button(builder, &config, SettingsButton::Back);
         });
 }
 

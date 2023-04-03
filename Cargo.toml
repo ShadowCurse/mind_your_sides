@@ -19,6 +19,7 @@ lto = "thin"
 strip = true
 
 [dependencies]
+benimator = "4.1.2"
 bevy = { version = "0.10.1", default-features = false, features = [
   "animation",
   "bevy_asset", 

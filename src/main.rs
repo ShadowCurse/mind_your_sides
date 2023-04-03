@@ -13,7 +13,7 @@ use utils::IntoState;
 
 fn main() {
     let mut app = App::new();
-        app.insert_resource(ClearColor(Color::GRAY))
+    app.insert_resource(ClearColor(Color::GRAY))
         .add_state::<GlobalState>()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
@@ -30,7 +30,7 @@ fn main() {
         .add_plugin(game::GamePlugin)
         .add_plugin(ui::UiPlugin)
         .add_system(setup.in_set(OnUpdate(GlobalState::Initialization)));
-        app.run();
+    app.run();
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Hash, States)]
@@ -51,7 +51,7 @@ struct GameAssets {
     font: Handle<Font>,
 }
 
-/// Used to create initial global config 
+/// Used to create initial global config
 /// and then changes state to `GlobalState::MainMenu`
 fn setup(
     mut commands: Commands,

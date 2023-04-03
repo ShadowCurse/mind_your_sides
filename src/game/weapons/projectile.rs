@@ -1,23 +1,25 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::{utils::remove_all_with, GlobalState};
+use crate::game::{
+    damage::EnemyDamageEvent, enemies::Enemy, East, GameState, North, Side, South, West,
+};
 
-use super::{damage::EnemyDamageEvent, enemies::Enemy, East, North, Side, South, West};
+use super::{DamageMarker, WeaponsAssets};
 
 const DEFAULT_ARROW_SIZE: f32 = 3.0;
-const DEFAULT_ARROW_DAMAGE: i32 = 50;
+const DEFAULT_ARROW_DAMAGE: i32 = 20;
 const DEFAULT_ARROW_SPEED: f32 = 200.0;
 const DEFAULT_ARROW_LIFESPAN: f32 = 10.0;
 
-const DEFAULT_ARCHER_RANGE: f32 = 400.0;
+const DEFAULT_ARCHER_RANGE: f32 = 200.0;
 const DEFAULT_ARCHER_ATTACK_SPEED: f32 = 1.0;
 /// Offsets arrow spawn point in the enemy direction
 const DEFAULT_ARROW_SPAWN_OFFSET: f32 = 30.0;
 
-pub struct WeaponsPlugin;
+pub struct ProjectilePlugin;
 
-impl Plugin for WeaponsPlugin {
+impl Plugin for ProjectilePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             (
@@ -25,19 +27,15 @@ impl Plugin for WeaponsPlugin {
                 archer_attack::<South>,
                 archer_attack::<West>,
                 archer_attack::<East>,
-                arrow_update::<North>,
-                arrow_update::<South>,
-                arrow_update::<West>,
-                arrow_update::<East>,
+                projectile_update::<North>,
+                projectile_update::<South>,
+                projectile_update::<West>,
+                projectile_update::<East>,
             )
-                .in_set(OnUpdate(GlobalState::InGame)),
-        )
-        .add_system(remove_all_with::<ProjectileMarker>.in_schedule(OnExit(GlobalState::InGame)));
+                .in_set(OnUpdate(GameState::InGame)),
+        );
     }
 }
-
-#[derive(Component)]
-pub struct ProjectileMarker;
 
 #[derive(Component)]
 pub struct Archer {
@@ -59,42 +57,57 @@ impl Default for Archer {
 }
 
 #[derive(Component)]
-pub struct Arrow {
+pub struct Projectile {
     damage: i32,
     lifespan: Timer,
 }
 
 #[derive(Bundle)]
-pub struct ArrowBundle<S: Side> {
+pub struct ProjectileBundle<S: Side> {
+    #[bundle]
+    sprite: SpriteBundle,
     rigid_body: RigidBody,
     collider: Collider,
     velocity: Velocity,
-    arrow: Arrow,
+    projectile: Projectile,
     side: S,
-    marker: ProjectileMarker,
+    marker: DamageMarker,
 }
 
-impl<S: Side> ArrowBundle<S> {
-    fn new(size: f32, damage: i32, speed: f32, direction: Vec2) -> Self {
+impl<S: Side> ProjectileBundle<S> {
+    fn new(
+        texture: Handle<Image>,
+        size: f32,
+        damage: i32,
+        speed: f32,
+        direction: Vec2,
+        transform: Transform,
+    ) -> Self {
         Self {
+            sprite: SpriteBundle {
+                texture,
+                transform,
+                ..default()
+            },
             rigid_body: RigidBody::Dynamic,
             collider: Collider::ball(size),
             velocity: Velocity {
                 linvel: speed * direction,
                 ..default()
             },
-            arrow: Arrow {
+            projectile: Projectile {
                 damage,
                 lifespan: Timer::from_seconds(DEFAULT_ARROW_LIFESPAN, TimerMode::Once),
             },
             side: S::default(),
-            marker: ProjectileMarker,
+            marker: DamageMarker,
         }
     }
 }
 
 fn archer_attack<S: Side>(
     time: Res<Time>,
+    weapon_assets: Res<WeaponsAssets>,
     enemies: Query<&Transform, (With<Enemy>, With<S>)>,
     mut commands: Commands,
     mut archers: Query<(&Transform, &mut Archer), With<S>>,
@@ -121,43 +134,49 @@ fn archer_attack<S: Side>(
         }
 
         let direction = enemy_vec.normalize();
-        let mut spawn_point = *transform;
-        spawn_point.translation += (direction * DEFAULT_ARROW_SPAWN_OFFSET).extend(0.0);
-        commands
-            .spawn(TransformBundle::from_transform(spawn_point))
-            .insert(ArrowBundle::<S>::new(
-                DEFAULT_ARROW_SIZE,
-                archer.damage,
-                archer.arrow_speed,
-                direction,
-            ));
+        let mut projectile_transform = *transform;
+        projectile_transform.translation += (direction * DEFAULT_ARROW_SPAWN_OFFSET).extend(0.0);
+
+        // rotates arrow in the enemy direaction
+        // arorw sprite looks to the left == NEG_X
+        let arrow_direction = Vec2::NEG_X;
+        projectile_transform.rotate_z(-direction.angle_between(arrow_direction));
+
+        commands.spawn(ProjectileBundle::<S>::new(
+            weapon_assets.arrow.clone(),
+            DEFAULT_ARROW_SIZE,
+            archer.damage,
+            archer.arrow_speed,
+            direction,
+            projectile_transform,
+        ));
     }
 }
 
-fn arrow_update<S: Side>(
+fn projectile_update<S: Side>(
     time: Res<Time>,
     enemies: Query<Entity, (With<Enemy>, With<S>)>,
     rapier_context: Res<RapierContext>,
     mut commands: Commands,
-    mut arrows: Query<(Entity, &mut Arrow), With<S>>,
+    mut projectiles: Query<(Entity, &mut Projectile), With<S>>,
     mut damage_event: EventWriter<EnemyDamageEvent<S>>,
 ) {
-    for (arrow_entity, mut arrow) in arrows.iter_mut() {
-        if arrow.lifespan.tick(time.delta()).finished() {
-            commands.entity(arrow_entity).despawn();
+    for (projectile_entity, mut projectile) in projectiles.iter_mut() {
+        if projectile.lifespan.tick(time.delta()).finished() {
+            commands.entity(projectile_entity).despawn();
         } else {
             let mut hit = false;
-            for contact_pair in rapier_context.contacts_with(arrow_entity) {
+            for contact_pair in rapier_context.contacts_with(projectile_entity) {
                 if let Ok(enemy) = enemies
                     .get(contact_pair.collider1())
                     .or(enemies.get(contact_pair.collider2()))
                 {
                     hit = true;
-                    damage_event.send(EnemyDamageEvent::new(enemy, arrow.damage));
+                    damage_event.send(EnemyDamageEvent::new(enemy, projectile.damage));
                 }
             }
             if hit {
-                commands.entity(arrow_entity).despawn();
+                commands.entity(projectile_entity).despawn();
             }
         }
     }

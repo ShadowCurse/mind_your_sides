@@ -3,7 +3,10 @@ use bevy_rapier2d::prelude::*;
 
 use crate::{utils::remove_all_with, GlobalState};
 
-use super::{weapons::Archer, East, North, Side, South, West};
+use super::{
+    weapons::{area::Catapulte, projectile::Archer},
+    East, North, Side, South, West,
+};
 
 const WALL_LENGTH: f32 = 100.0;
 const WALL_THICKNESS: f32 = 10.0;
@@ -13,9 +16,9 @@ pub struct CastlePlugin;
 impl Plugin for CastlePlugin {
     fn build(&self, app: &mut App) {
         app.add_system(setup.in_schedule(OnEnter(GlobalState::InGame)))
-            .add_system(remove_all_with::<CastleMarker>.in_schedule(OnEnter(GlobalState::InGame)))
+            .add_system(remove_all_with::<CastleMarker>.in_schedule(OnExit(GlobalState::InGame)))
             .add_system(
-                remove_all_with::<CastleWallMarker>.in_schedule(OnEnter(GlobalState::InGame)),
+                remove_all_with::<CastleWallMarker>.in_schedule(OnExit(GlobalState::InGame)),
             );
     }
 }
@@ -109,7 +112,8 @@ fn setup(
             WALL_LENGTH / 2.0,
             WALL_THICKNESS / 2.0,
         ))
-        .insert(Archer::default());
+        .insert(Archer::default())
+        .insert(Catapulte::default());
     // South
     commands
         .spawn(MaterialMesh2dBundle {
@@ -123,8 +127,9 @@ fn setup(
             WALL_LENGTH / 2.0,
             WALL_THICKNESS / 2.0,
         ))
-        .insert(Archer::default());
-    // // West
+        .insert(Archer::default())
+        .insert(Catapulte::default());
+    // West
     commands
         .spawn(MaterialMesh2dBundle {
             mesh: vertical_wall_mesh.clone().into(),
@@ -137,8 +142,9 @@ fn setup(
             WALL_THICKNESS / 2.0,
             WALL_LENGTH / 2.0,
         ))
-        .insert(Archer::default());
-    // // East
+        .insert(Archer::default())
+        .insert(Catapulte::default());
+    // East
     commands
         .spawn(MaterialMesh2dBundle {
             mesh: vertical_wall_mesh.into(),
@@ -151,5 +157,6 @@ fn setup(
             WALL_THICKNESS / 2.0,
             WALL_LENGTH / 2.0,
         ))
-        .insert(Archer::default());
+        .insert(Archer::default())
+        .insert(Catapulte::default());
 }
