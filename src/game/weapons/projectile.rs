@@ -6,7 +6,7 @@ use crate::{
     GlobalState,
 };
 
-use super::DamageMarker;
+use super::{DamageMarker, WeaponsAssets};
 
 const DEFAULT_ARROW_SIZE: f32 = 3.0;
 const DEFAULT_ARROW_DAMAGE: i32 = 20;
@@ -65,6 +65,8 @@ pub struct Projectile {
 
 #[derive(Bundle)]
 pub struct ProjectileBundle<S: Side> {
+    #[bundle]
+    sprite: SpriteBundle,
     rigid_body: RigidBody,
     collider: Collider,
     velocity: Velocity,
@@ -74,8 +76,20 @@ pub struct ProjectileBundle<S: Side> {
 }
 
 impl<S: Side> ProjectileBundle<S> {
-    fn new(size: f32, damage: i32, speed: f32, direction: Vec2) -> Self {
+    fn new(
+        texture: Handle<Image>,
+        size: f32,
+        damage: i32,
+        speed: f32,
+        direction: Vec2,
+        transform: Transform,
+    ) -> Self {
         Self {
+            sprite: SpriteBundle {
+                texture,
+                transform,
+                ..default()
+            },
             rigid_body: RigidBody::Dynamic,
             collider: Collider::ball(size),
             velocity: Velocity {
@@ -94,6 +108,7 @@ impl<S: Side> ProjectileBundle<S> {
 
 fn archer_attack<S: Side>(
     time: Res<Time>,
+    weapon_assets: Res<WeaponsAssets>,
     enemies: Query<&Transform, (With<Enemy>, With<S>)>,
     mut commands: Commands,
     mut archers: Query<(&Transform, &mut Archer), With<S>>,
@@ -120,16 +135,22 @@ fn archer_attack<S: Side>(
         }
 
         let direction = enemy_vec.normalize();
-        let mut spawn_point = *transform;
-        spawn_point.translation += (direction * DEFAULT_ARROW_SPAWN_OFFSET).extend(0.0);
-        commands
-            .spawn(TransformBundle::from_transform(spawn_point))
-            .insert(ProjectileBundle::<S>::new(
-                DEFAULT_ARROW_SIZE,
-                archer.damage,
-                archer.arrow_speed,
-                direction,
-            ));
+        let mut projectile_transform = *transform;
+        projectile_transform.translation += (direction * DEFAULT_ARROW_SPAWN_OFFSET).extend(0.0);
+
+        // rotates arrow in the enemy direaction
+        // arorw sprite looks to the left == NEG_X
+        let arrow_direction = Vec2::NEG_X;
+        projectile_transform.rotate_z(-direction.angle_between(arrow_direction));
+
+        commands.spawn(ProjectileBundle::<S>::new(
+            weapon_assets.arrow.clone(),
+            DEFAULT_ARROW_SIZE,
+            archer.damage,
+            archer.arrow_speed,
+            direction,
+            projectile_transform,
+        ));
     }
 }
 
