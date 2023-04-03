@@ -27,9 +27,15 @@ impl Plugin for SpawnPlugin {
                 )
                     .in_set(OnUpdate(GlobalState::InGame)),
             )
-            .add_system(remove_all_with::<EnemyMarker>.in_schedule(OnEnter(GlobalState::MainMenu)));
+            .add_system(remove_all_with::<EnemyMarker>.in_schedule(OnEnter(GlobalState::MainMenu)))
+            .add_system(
+                remove_all_with::<EnemySpawnMarker>.in_schedule(OnEnter(GlobalState::MainMenu)),
+            );
     }
 }
+
+#[derive(Debug, Default, Component)]
+pub struct EnemySpawnMarker;
 
 #[derive(Debug, Component)]
 pub struct EnemySpawnBuffs {
@@ -75,6 +81,7 @@ impl<S: Side> Default for EnemySpawn<S> {
 pub struct EnemySpawnBundle<S: Side> {
     spawn: EnemySpawn<S>,
     buffs: EnemySpawnBuffs,
+    marker: EnemySpawnMarker,
 }
 
 /// Sets up 4 spawns at each side of the screen
