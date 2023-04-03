@@ -32,9 +32,19 @@ pub struct West;
 #[derive(Debug, Default, Clone, Copy, Component)]
 pub struct East;
 
-pub trait Side: Debug + Default + Clone + Copy + Component {}
+pub trait Side: Debug + Default + Clone + Copy + Component {
+    const DIRECTION: Vec2;
+}
 
-impl Side for North {}
-impl Side for South {}
-impl Side for West {}
-impl Side for East {}
+impl Side for North {
+    const DIRECTION: Vec2 = Vec2::Y;
+}
+impl Side for South {
+    const DIRECTION: Vec2 = Vec2::NEG_Y;
+}
+impl Side for West {
+    const DIRECTION: Vec2 = Vec2::NEG_X;
+}
+impl Side for East {
+    const DIRECTION: Vec2 = Vec2::X;
+}

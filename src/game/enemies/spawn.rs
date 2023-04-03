@@ -9,8 +9,8 @@ use super::{
 
 const DEFAULT_ENEMY_SIZE: f32 = 16.0;
 
-const DEFAULT_ENEMY_SPAWN_NUMBER: u32 = 1;
-const DEFAULT_ENEMY_SPAWN_RADIUS: f32 = 200.0;
+const DEFAULT_ENEMY_SPAWN_NUMBER: u32 = 2;
+const DEFAULT_ENEMY_SPAWN_RADIUS: f32 = 150.0;
 const DEFAULT_ENEMY_SPAWN_RATE: f32 = 5.0;
 
 pub struct SpawnPlugin;
