@@ -1,7 +1,9 @@
 use bevy::prelude::*;
+use crate::ui::in_game::InGamePlugin;
 
 use crate::{GameAssets, GlobalState};
 
+mod in_game;
 mod main_menu;
 
 pub struct UiPlugin;
@@ -9,7 +11,8 @@ pub struct UiPlugin;
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(setup_ui_config.in_schedule(OnEnter(GlobalState::Initialization)))
-            .add_plugin(main_menu::UiMainMenuPlugin);
+            .add_plugin(main_menu::UiMainMenuPlugin)
+            .add_plugin(InGamePlugin);
     }
 }
 
