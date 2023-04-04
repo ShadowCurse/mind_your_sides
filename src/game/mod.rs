@@ -48,6 +48,7 @@ pub enum GameState {
     NotInGame,
     InGame,
     Paused,
+    GameOver,
 }
 impl_into_state!(GameState);
 
