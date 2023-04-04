@@ -13,7 +13,7 @@ use utils::IntoState;
 
 fn main() {
     let mut app = App::new();
-    app.insert_resource(ClearColor(Color::GRAY))
+    app.insert_resource(ClearColor(Color::rgb_u8(27, 62, 60)))
         .add_state::<GlobalState>()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
@@ -47,7 +47,7 @@ impl_into_state!(GlobalState);
 
 #[derive(AssetCollection, Resource)]
 struct GameAssets {
-    #[asset(path = "fonts/monaco.ttf")]
+    #[asset(path = "fonts/MinimalPixel.ttf")]
     font: Handle<Font>,
 }
 

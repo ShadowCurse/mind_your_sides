@@ -1,18 +1,32 @@
 use bevy::prelude::*;
 
 use crate::{
-    game::GameState,
+    game::{castle::CastleWall, East, GameState, North, Side, South, West},
     ui::{spawn_button, UiConfig},
     utils::remove_all_with,
     GlobalState,
 };
 
 use super::UiInGameState;
+
+pub struct GameOverEvent;
+
 pub struct GameOverPlugin;
 
 impl Plugin for GameOverPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(setup.in_schedule(OnEnter(UiInGameState::GameOver)))
+        app.add_event::<GameOverEvent>()
+            .add_system(game_over_event_reader)
+            .add_systems(
+                (
+                    wall_destroyed::<North>,
+                    wall_destroyed::<South>,
+                    wall_destroyed::<West>,
+                    wall_destroyed::<East>,
+                )
+                    .in_set(OnUpdate(GlobalState::InGame)),
+            )
+            .add_system(setup.in_schedule(OnEnter(UiInGameState::GameOver)))
             .add_system(button_system.in_set(OnUpdate(UiInGameState::GameOver)))
             .add_system(
                 remove_all_with::<GameOverMarker>.in_schedule(OnExit(UiInGameState::GameOver)),
@@ -56,10 +70,18 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
         });
 }
 
+fn game_over_event_reader(
+    mut game_state: ResMut<NextState<GameState>>,
+    mut event: EventReader<GameOverEvent>,
+) {
+    for _ev in event.iter() {
+        game_state.set(GameState::GameOver);
+    }
+}
+
 fn button_system(
     style: Res<UiConfig>,
     mut global_state: ResMut<NextState<GlobalState>>,
-    mut game_state: ResMut<NextState<GameState>>,
     mut interaction_query: Query<
         (&GameOverButton, &Interaction, &mut BackgroundColor),
         (Changed<Interaction>, With<Button>),
@@ -71,7 +93,7 @@ fn button_system(
                 *color = style.button_color_pressed.into();
                 match button {
                     GameOverButton::Restart => {
-                        game_state.set(GameState::InGame);
+                        global_state.set(GlobalState::InGame);
                     }
                     GameOverButton::MainMenu => {
                         global_state.set(GlobalState::MainMenu);
@@ -85,6 +107,24 @@ fn button_system(
             Interaction::None => {
                 *color = style.button_color_normal.into();
             }
+        }
+    }
+}
+
+/// Check if any wall's health is less or equal to zero
+fn wall_destroyed<S: Side>(
+    mut event: EventWriter<GameOverEvent>,
+    game_state: Res<State<GameState>>,
+    wall: Query<&CastleWall, With<S>>,
+) {
+    // this is a hack because I don't know how to implement it otherwise
+    //
+    // if this check is not made, the system keeps sending events
+    if !matches!(game_state.0, GameState::GameOver) {
+        let wall = wall.single();
+
+        if wall.health <= 0 {
+            event.send(GameOverEvent);
         }
     }
 }

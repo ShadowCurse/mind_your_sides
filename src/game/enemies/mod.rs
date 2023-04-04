@@ -42,7 +42,7 @@ impl Plugin for EnemyPlugin {
                 )
                     .in_set(OnUpdate(GameState::InGame)),
             )
-            .add_system(remove_all_with::<EnemyMarker>.in_schedule(OnEnter(GlobalState::MainMenu)));
+            .add_system(remove_all_with::<EnemyMarker>.in_schedule(OnExit(GlobalState::InGame)));
     }
 }
 

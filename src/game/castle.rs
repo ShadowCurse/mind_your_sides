@@ -10,6 +10,7 @@ use super::{
 
 const WALL_LENGTH: f32 = 100.0;
 const WALL_THICKNESS: f32 = 10.0;
+const WALL_HEALTH: i32 = 100;
 
 const CASTLE_FIRST_LEVEL_EXP: u32 = 100;
 const CASTLE_NEXT_LEVEL_EXP_GROWTH: f32 = 1.1;
@@ -120,7 +121,7 @@ fn setup(
             ..default()
         })
         .insert(CastleWallBundle::<North>::new(
-            100,
+            WALL_HEALTH,
             WALL_LENGTH / 2.0,
             WALL_THICKNESS / 2.0,
         ))
@@ -135,7 +136,7 @@ fn setup(
             ..default()
         })
         .insert(CastleWallBundle::<South>::new(
-            100,
+            WALL_HEALTH,
             WALL_LENGTH / 2.0,
             WALL_THICKNESS / 2.0,
         ))
@@ -150,7 +151,7 @@ fn setup(
             ..default()
         })
         .insert(CastleWallBundle::<West>::new(
-            100,
+            WALL_HEALTH,
             WALL_THICKNESS / 2.0,
             WALL_LENGTH / 2.0,
         ))
@@ -165,7 +166,7 @@ fn setup(
             ..default()
         })
         .insert(CastleWallBundle::<East>::new(
-            100,
+            WALL_HEALTH,
             WALL_THICKNESS / 2.0,
             WALL_LENGTH / 2.0,
         ))
