@@ -22,7 +22,16 @@ pub struct CastlePlugin;
 impl Plugin for CastlePlugin {
     fn build(&self, app: &mut App) {
         app.add_system(setup.in_schedule(OnEnter(GlobalState::InGame)))
-            .add_system(castle_level_up.in_set(OnUpdate(GlobalState::InGame)))
+            .add_systems(
+                (
+                    castle_level_up,
+                    check_wall_destroyed::<North>,
+                    check_wall_destroyed::<South>,
+                    check_wall_destroyed::<West>,
+                    check_wall_destroyed::<East>,
+                )
+                    .in_set(OnUpdate(GameState::InGame)),
+            )
             .add_system(remove_all_with::<CastleMarker>.in_schedule(OnExit(GlobalState::InGame)))
             .add_system(
                 remove_all_with::<CastleWallMarker>.in_schedule(OnExit(GlobalState::InGame)),
@@ -194,5 +203,15 @@ fn castle_level_up(mut castle: Query<&mut Castle>, mut game_state: ResMut<NextSt
             (castle.next_level_exp as f32 * castle.next_level_exp_growth) as u32;
 
         game_state.set(GameState::LevelUp);
+    }
+}
+
+fn check_wall_destroyed<S: Side>(
+    wall: Query<&CastleWall<S>>,
+    mut game_state: ResMut<NextState<GameState>>,
+) {
+    let wall = wall.single();
+    if wall.health <= 0 {
+        game_state.set(GameState::GameOver);
     }
 }
