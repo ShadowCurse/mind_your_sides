@@ -1,11 +1,10 @@
-use std::thread::spawn;
-use bevy::prelude::*;
 use crate::game::GameState;
-use crate::GlobalState;
 use crate::ui::in_game::hud::LevelUpEvent;
-use crate::ui::{UiConfig};
 use crate::ui::in_game::UiInGameState;
+use crate::ui::UiConfig;
 use crate::utils::remove_all_with;
+
+use bevy::prelude::*;
 
 pub struct LevelUpPlugin;
 
@@ -14,10 +13,13 @@ impl Plugin for LevelUpPlugin {
         app.add_system(level_up_event_reader)
             .add_system(setup.in_schedule(OnEnter(UiInGameState::LevelUp)))
             .add_system(button_system.in_set(OnUpdate(UiInGameState::LevelUp)))
-            .add_system(remove_all_with::<LevelUpMarker>.in_schedule(OnExit(UiInGameState::LevelUp)));
+            .add_system(
+                remove_all_with::<LevelUpMarker>.in_schedule(OnExit(UiInGameState::LevelUp)),
+            );
     }
 }
 
+#[allow(clippy::enum_variant_names)]
 #[derive(Debug, Clone, Copy, Component)]
 enum GameCards {
     WallNorth,
@@ -38,39 +40,38 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
                 ..default()
             },
             LevelUpMarker,
-        )).with_children(|parent| {
-        parent.spawn(TextBundle::from_section(
-            "Buffs",
-            config.title_text_style.clone(),
-        ));
-        parent.spawn(
-            NodeBundle {
-                style: Style {
-                    flex_direction: FlexDirection::Row,
-                    margin: UiRect::all(Val::Auto),
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
+        ))
+        .with_children(|parent| {
+            parent.spawn(TextBundle::from_section(
+                "Buffs",
+                config.title_text_style.clone(),
+            ));
+            parent
+                .spawn(NodeBundle {
+                    style: Style {
+                        flex_direction: FlexDirection::Row,
+                        margin: UiRect::all(Val::Auto),
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    background_color: config.menu_color.into(),
                     ..default()
-                },
-                background_color: config.menu_color.into(),
-                ..default()
-            }).with_children(|builder| {
-            spawn_card(builder, &config, GameCards::WallNorth);
-            spawn_card(builder, &config, GameCards::WallSouth);
-            spawn_card(builder, &config, GameCards::WallWest);
-            spawn_card(builder, &config, GameCards::WallEast);
+                })
+                .with_children(|builder| {
+                    spawn_card(builder, &config, GameCards::WallNorth);
+                    spawn_card(builder, &config, GameCards::WallSouth);
+                    spawn_card(builder, &config, GameCards::WallWest);
+                    spawn_card(builder, &config, GameCards::WallEast);
+                });
         });
-        ;
-    }
-    );
 }
-
 
 fn level_up_event_reader(
     mut game_state: ResMut<NextState<GameState>>,
     mut event: EventReader<LevelUpEvent>,
 ) {
-    for ev in event.iter() {
+    for _ev in event.iter() {
         println!("Level UP");
         game_state.set(GameState::LevelUp);
     }
@@ -114,8 +115,8 @@ fn button_system(
 }
 
 fn spawn_card<B>(child_builder: &mut ChildBuilder, style: &UiConfig, button: B)
-    where
-        B: Component + std::fmt::Debug + Copy,
+where
+    B: Component + std::fmt::Debug + Copy,
 {
     child_builder
         .spawn((

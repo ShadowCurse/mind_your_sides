@@ -1,22 +1,21 @@
 use bevy::prelude::*;
 
 use crate::{
-    game::GameState,
     game::castle::Castle,
+    game::GameState,
     ui::{spawn_button, UiConfig},
     utils::remove_all_with,
 };
 
 use super::UiInGameState;
-use crate::game::GamePlugin;
-pub struct HUDPlugin;
 
+pub struct HUDPlugin;
 
 const MAX_EXP: u32 = 600;
 
 impl Plugin for HUDPlugin {
     fn build(&self, app: &mut App) {
-        app .add_event::<LevelUpEvent>()
+        app.add_event::<LevelUpEvent>()
             .add_system(setup.in_schedule(OnEnter(UiInGameState::InGame)))
             .add_system(update_text_level.in_set(OnUpdate(UiInGameState::InGame)))
             .add_system(button_system.in_set(OnUpdate(UiInGameState::InGame)))
@@ -30,7 +29,6 @@ struct HUDMarker;
 struct LevelText;
 
 pub struct LevelUpEvent();
-
 
 #[derive(Debug, Clone, Copy, Component)]
 enum HUDButton {
@@ -75,12 +73,12 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
                     ));
                     parent.spawn(TextBundle::from_section(
                         "Exp : ",
-                        config.text_style.clone()
+                        config.text_style.clone(),
                     ));
-                    parent.spawn((TextBundle::from_section(
-                        "0",
-                        config.text_style.clone()
-                    ),LevelText));
+                    parent.spawn((
+                        TextBundle::from_section("0", config.text_style.clone()),
+                        LevelText,
+                    ));
                 });
             // right vertical fill
             parent
@@ -135,15 +133,15 @@ fn button_system(
 
 fn update_text_level(
     mut event: EventWriter<LevelUpEvent>,
-    mut level_text : Query<&mut Text, With<LevelText>>,
+    mut level_text: Query<&mut Text, With<LevelText>>,
     mut castle: Query<&mut Castle>,
-){
-    for mut text  in  &mut level_text  {
+) {
+    for mut text in &mut level_text {
         let mut castle = castle.single_mut();
-        if castle.exp > MAX_EXP{
-            castle.exp  = 0;
+        if castle.exp > MAX_EXP {
+            castle.exp = 0;
             event.send(LevelUpEvent())
         }
-        text.sections[0].value = format!("{}",castle.exp);
+        text.sections[0].value = format!("{}", castle.exp);
     }
 }

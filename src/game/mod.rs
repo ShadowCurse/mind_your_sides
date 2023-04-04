@@ -51,7 +51,7 @@ pub enum GameState {
     InGame,
     Paused,
     GameOver,
-    LevelUp
+    LevelUp,
 }
 impl_into_state!(GameState);
 
