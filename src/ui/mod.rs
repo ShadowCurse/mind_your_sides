@@ -85,3 +85,29 @@ where
             });
         });
 }
+fn spawn_card<B>(child_builder: &mut ChildBuilder, style: &UiConfig, button: B)
+where
+        B: Component + std::fmt::Debug + Copy,
+{
+    child_builder
+        .spawn((
+            ButtonBundle {
+                style: Style{
+                    size: Size::new(Val::Px(250.0), Val::Px(300.0)),
+                    margin: UiRect::all(Val::Percent(1.0)),
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
+                    ..default()
+                },
+                background_color: style.button_color_normal.into(),
+                ..default()
+            },
+            button,
+        ))
+        .with_children(|parent| {
+            parent.spawn(TextBundle {
+                text: Text::from_section(format!("{button:?}"), style.text_style.clone()),
+                ..default()
+            });
+        });
+}

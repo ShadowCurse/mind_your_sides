@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::game::GameState;
 use crate::GlobalState;
 use crate::ui::in_game::hud::LevelUpEvent;
-use crate::ui::{spawn_button, UiConfig};
+use crate::ui::{spawn_button, spawn_card, UiConfig};
 use crate::ui::in_game::UiInGameState;
 use crate::utils::remove_all_with;
 
@@ -11,7 +11,7 @@ pub struct LevelUpPlugin;
 
 impl Plugin for LevelUpPlugin {
     fn build(&self, app: &mut App) {
-        app .add_system(level_up_event_reader)
+        app.add_system(level_up_event_reader)
             .add_system(setup.in_schedule(OnEnter(UiInGameState::LevelUp)))
             .add_system(button_system.in_set(OnUpdate(UiInGameState::LevelUp)))
             .add_system(remove_all_with::<LevelUpMarker>.in_schedule(OnExit(UiInGameState::LevelUp)));
@@ -29,7 +29,7 @@ enum GameCards {
 #[derive(Debug, Clone, Copy, Component)]
 struct LevelUpMarker;
 
-fn setup(mut commands: Commands, config: Res<UiConfig>){
+fn setup(mut commands: Commands, config: Res<UiConfig>) {
     commands
         .spawn((
             NodeBundle {
@@ -38,24 +38,38 @@ fn setup(mut commands: Commands, config: Res<UiConfig>){
                 ..default()
             },
             LevelUpMarker,
-        ))
-        .with_children(|builder| {
-            builder.spawn(TextBundle::from_section(
-                "Buffs",
-                config.text_style.clone(),
-            ));
-            spawn_button(builder, &config, GameCards::WallNorth);
-            spawn_button(builder, &config, GameCards::WallSouth);
-            spawn_button(builder, &config, GameCards::WallWest);
-            spawn_button(builder, &config, GameCards::WallEast);
+        )).with_children(|parent| {
+        parent.spawn(TextBundle::from_section(
+            "Buffs",
+            config.title_text_style.clone(),
+        ));
+        parent.spawn(
+            NodeBundle {
+                style: Style {
+                    flex_direction: FlexDirection::Row,
+                    margin: UiRect::all(Val::Auto),
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
+                    ..default()
+                },
+                background_color: config.menu_color.into(),
+                ..default()
+            }).with_children(|builder| {
+            spawn_card(builder, &config, GameCards::WallNorth);
+            spawn_card(builder, &config, GameCards::WallSouth);
+            spawn_card(builder, &config, GameCards::WallWest);
+            spawn_card(builder, &config, GameCards::WallEast);
         });
+        ;
+    }
+    );
 }
 
 
 fn level_up_event_reader(
     mut game_state: ResMut<NextState<GameState>>,
-    mut event : EventReader<LevelUpEvent>
-){
+    mut event: EventReader<LevelUpEvent>,
+) {
     for ev in event.iter() {
         println!("Level UP");
         game_state.set(GameState::LevelUp);
