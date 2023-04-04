@@ -26,7 +26,7 @@ impl Plugin for UiInGamePlugin {
             )
             .add_system(
                 set_state::<UiInGameState, { UiInGameState::LevelUp as u8 }>
-                    .in_schedule(OnEnter(GameState::NotInGame)),
+                    .in_schedule(OnEnter(GameState::LevelUp)),
             )
             .add_system(
                 set_state::<UiInGameState, { UiInGameState::Pause as u8 }>

@@ -12,7 +12,7 @@ use crate::game::GamePlugin;
 pub struct HUDPlugin;
 
 
-const MAX_EXP: u32 = 300;
+const MAX_EXP: u32 = 600;
 
 impl Plugin for HUDPlugin {
     fn build(&self, app: &mut App) {
