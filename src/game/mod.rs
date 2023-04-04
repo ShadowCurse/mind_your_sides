@@ -6,7 +6,7 @@ use bevy_rapier2d::prelude::RapierConfiguration;
 use crate::{impl_into_state, utils::set_state, GlobalState, IntoState};
 
 mod animation;
-mod castle;
+pub mod castle;
 mod damage;
 mod enemies;
 mod weapons;

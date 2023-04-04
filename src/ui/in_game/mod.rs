@@ -25,6 +25,10 @@ impl Plugin for UiInGamePlugin {
                     .in_schedule(OnEnter(GameState::NotInGame)),
             )
             .add_system(
+                set_state::<UiInGameState, { UiInGameState::LevelUp as u8 }>
+                    .in_schedule(OnEnter(GameState::NotInGame)),
+            )
+            .add_system(
                 set_state::<UiInGameState, { UiInGameState::Pause as u8 }>
                     .in_schedule(OnEnter(GameState::Paused)),
             )
@@ -47,6 +51,7 @@ enum UiInGameState {
     InGame,
     Pause,
     GameOver,
+    LevelUp
 }
 impl_into_state!(UiInGameState);
 
