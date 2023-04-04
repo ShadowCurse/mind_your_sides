@@ -6,7 +6,7 @@ use bevy_rapier2d::prelude::RapierConfiguration;
 use crate::{impl_into_state, utils::set_state, GlobalState, IntoState};
 
 mod animation;
-mod castle;
+pub mod castle;
 mod damage;
 mod enemies;
 mod weapons;
@@ -26,6 +26,8 @@ impl Plugin for GamePlugin {
             )
             .add_system(stop_physics.in_schedule(OnEnter(GameState::Paused)))
             .add_system(resume_physics.in_schedule(OnExit(GameState::Paused)))
+            .add_system(stop_physics.in_schedule(OnEnter(GameState::LevelUp)))
+            .add_system(resume_physics.in_schedule(OnExit(GameState::LevelUp)))
             .add_plugin(animation::AnimationPlugin)
             .add_plugin(castle::CastlePlugin)
             .add_plugin(damage::DamagePlugin)
@@ -48,6 +50,8 @@ pub enum GameState {
     NotInGame,
     InGame,
     Paused,
+    GameOver,
+    LevelUp
 }
 impl_into_state!(GameState);
 

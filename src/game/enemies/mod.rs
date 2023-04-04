@@ -54,6 +54,15 @@ struct EnemySprites {
     #[asset(texture_atlas(tile_size_x = 32.0, tile_size_y = 32.0, columns = 4, rows = 1,))]
     #[asset(path = "sprites/spear_goblin.png")]
     pub spear_goblin: Handle<TextureAtlas>,
+    #[asset(texture_atlas(tile_size_x = 32.0, tile_size_y = 32.0, columns = 4, rows = 1,))]
+    #[asset(path = "sprites/bat.png")]
+    pub bat: Handle<TextureAtlas>,
+    #[asset(texture_atlas(tile_size_x = 32.0, tile_size_y = 32.0, columns = 4, rows = 1,))]
+    #[asset(path = "sprites/skull.png")]
+    pub skull: Handle<TextureAtlas>,
+    #[asset(texture_atlas(tile_size_x = 32.0, tile_size_y = 32.0, columns = 4, rows = 1,))]
+    #[asset(path = "sprites/poison_ivy.png")]
+    pub poison_ivy: Handle<TextureAtlas>,
 }
 
 #[derive(Debug, Default, Component)]
@@ -170,6 +179,42 @@ impl EnemyType for SpearGoblin {
     const DAMAGE: i32 = 15;
     const RANGE: f32 = 50.0;
     const ATTACK_SPEED: f32 = 1.2;
+}
+
+#[derive(Debug, Default, Component)]
+pub struct Bat;
+
+impl EnemyType for Bat {
+    const HEALTH: i32 = 30;
+    const SPEED: f32 = 20.0;
+    const EXP: u32 = 50;
+    const DAMAGE: i32 = 5;
+    const RANGE: f32 = 30.0;
+    const ATTACK_SPEED: f32 = 1.5;
+}
+
+#[derive(Debug, Default, Component)]
+pub struct Skull;
+
+impl EnemyType for Skull {
+    const HEALTH: i32 = 80;
+    const SPEED: f32 = 10.0;
+    const EXP: u32 = 50;
+    const DAMAGE: i32 = 15;
+    const RANGE: f32 = 10.0;
+    const ATTACK_SPEED: f32 = 1.0;
+}
+
+#[derive(Debug, Default, Component)]
+pub struct PoisonIvy;
+
+impl EnemyType for PoisonIvy {
+    const HEALTH: i32 = 60;
+    const SPEED: f32 = 15.0;
+    const EXP: u32 = 80;
+    const DAMAGE: i32 = 20;
+    const RANGE: f32 = 40.0;
+    const ATTACK_SPEED: f32 = 1.0;
 }
 
 /// Moved enemies in direction of the wall
