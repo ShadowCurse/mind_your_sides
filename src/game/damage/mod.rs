@@ -4,6 +4,9 @@ use bevy::prelude::*;
 
 use super::{castle::CastleWall, enemies::Enemy, East, GameState, North, Side, South, West};
 
+pub mod area;
+pub mod projectile;
+
 pub struct DamagePlugin;
 
 impl Plugin for DamagePlugin {
@@ -16,6 +19,8 @@ impl Plugin for DamagePlugin {
             .add_event::<WallDamageEvent<South>>()
             .add_event::<WallDamageEvent<West>>()
             .add_event::<WallDamageEvent<East>>()
+            .add_plugin(area::AreaPlugin)
+            .add_plugin(projectile::ProjectilePlugin)
             .add_systems(
                 (
                     damage_enemy::<North>,

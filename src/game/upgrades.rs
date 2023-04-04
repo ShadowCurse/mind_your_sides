@@ -7,7 +7,7 @@ use crate::{utils::remove_all_with, GlobalState};
 use super::{
     castle::CastleWall,
     enemies::spawn::EnemySpawnBuffs,
-    weapons::{area::Catapulte, projectile::Archer},
+    weapons::{crossbow::Crossbow, molotov::Molotov},
     East, GameState, North, Side, South, West,
 };
 
@@ -223,8 +223,8 @@ fn apply_upgrades(
 
 fn apply_weapon_upgrades_to_side<S: Side>(
     mut _wall: Query<&mut CastleWall<S>>,
-    mut _archer: Query<&mut Archer<S>>,
-    mut _catapulte: Query<&mut Catapulte<S>>,
+    mut _crossbow: Query<&mut Crossbow<S>>,
+    mut _molotov: Query<&mut Molotov<S>>,
     mut weapon_upgrade_events: EventReader<ApplyWeaponUpgradeToSide<S>>,
 ) {
     for event in weapon_upgrade_events.iter() {

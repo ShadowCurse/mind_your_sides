@@ -6,7 +6,7 @@ use bevy_rapier2d::prelude::*;
 use crate::{utils::remove_all_with, GlobalState};
 
 use super::{
-    weapons::{area::Catapulte, projectile::Archer},
+    weapons::{crossbow::CrossbowBundle, molotov::MolotovBundle},
     East, GameState, North, Side, South, West,
 };
 
@@ -93,6 +93,10 @@ pub struct CastleWallBundle<S: Side> {
     rigid_body: RigidBody,
     collider: Collider,
     wall: CastleWall<S>,
+    #[bundle]
+    crossbow: CrossbowBundle<S>,
+    #[bundle]
+    molotov: MolotovBundle<S>,
     marker: CastleWallMarker,
 }
 
@@ -102,6 +106,8 @@ impl<S: Side> CastleWallBundle<S> {
             rigid_body: RigidBody::Fixed,
             collider: Collider::cuboid(length, thickness),
             wall: CastleWall::new(health),
+            crossbow: Default::default(),
+            molotov: Default::default(),
             marker: CastleWallMarker,
         }
     }
@@ -143,9 +149,7 @@ fn setup(
             WALL_HEALTH,
             WALL_LENGTH / 2.0,
             WALL_THICKNESS / 2.0,
-        ))
-        .insert(Archer::<North>::default())
-        .insert(Catapulte::<North>::default());
+        ));
     // South
     commands
         .spawn(MaterialMesh2dBundle {
@@ -158,9 +162,7 @@ fn setup(
             WALL_HEALTH,
             WALL_LENGTH / 2.0,
             WALL_THICKNESS / 2.0,
-        ))
-        .insert(Archer::<South>::default())
-        .insert(Catapulte::<South>::default());
+        ));
     // West
     commands
         .spawn(MaterialMesh2dBundle {
@@ -173,9 +175,7 @@ fn setup(
             WALL_HEALTH,
             WALL_THICKNESS / 2.0,
             WALL_LENGTH / 2.0,
-        ))
-        .insert(Archer::<West>::default())
-        .insert(Catapulte::<West>::default());
+        ));
     // East
     commands
         .spawn(MaterialMesh2dBundle {
@@ -188,9 +188,7 @@ fn setup(
             WALL_HEALTH,
             WALL_THICKNESS / 2.0,
             WALL_LENGTH / 2.0,
-        ))
-        .insert(Archer::<East>::default())
-        .insert(Catapulte::<East>::default());
+        ));
 }
 
 fn castle_level_up(mut castle: Query<&mut Castle>, mut game_state: ResMut<NextState<GameState>>) {
