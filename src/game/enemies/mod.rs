@@ -49,6 +49,9 @@ impl Plugin for EnemyPlugin {
 #[derive(AssetCollection, Resource)]
 struct EnemySprites {
     #[asset(texture_atlas(tile_size_x = 32.0, tile_size_y = 32.0, columns = 4, rows = 1,))]
+    #[asset(path = "sprites/mad_crab.png")]
+    pub mad_crab: Handle<TextureAtlas>,
+    #[asset(texture_atlas(tile_size_x = 32.0, tile_size_y = 32.0, columns = 4, rows = 1,))]
     #[asset(path = "sprites/goblin.png")]
     pub goblin: Handle<TextureAtlas>,
     #[asset(texture_atlas(tile_size_x = 32.0, tile_size_y = 32.0, columns = 4, rows = 1,))]
@@ -155,6 +158,18 @@ pub trait EnemyType: Component + Default {
             attack_timer: timer,
         }
     }
+}
+
+#[derive(Debug, Default, Component)]
+pub struct MadCrab;
+
+impl EnemyType for MadCrab {
+    const HEALTH: i32 = 30;
+    const SPEED: f32 = 15.0;
+    const EXP: u32 = 30;
+    const DAMAGE: i32 = 5;
+    const RANGE: f32 = 10.0;
+    const ATTACK_SPEED: f32 = 1.1;
 }
 
 #[derive(Debug, Default, Component)]
