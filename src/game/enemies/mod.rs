@@ -54,6 +54,9 @@ struct EnemySprites {
     #[asset(texture_atlas(tile_size_x = 32.0, tile_size_y = 32.0, columns = 4, rows = 1,))]
     #[asset(path = "sprites/spear_goblin.png")]
     pub spear_goblin: Handle<TextureAtlas>,
+    #[asset(texture_atlas(tile_size_x = 32.0, tile_size_y = 32.0, columns = 4, rows = 1,))]
+    #[asset(path = "sprites/bat.png")]
+    pub bat: Handle<TextureAtlas>,
 }
 
 #[derive(Debug, Default, Component)]
@@ -170,6 +173,18 @@ impl EnemyType for SpearGoblin {
     const DAMAGE: i32 = 15;
     const RANGE: f32 = 50.0;
     const ATTACK_SPEED: f32 = 1.2;
+}
+
+#[derive(Debug, Default, Component)]
+pub struct Bat;
+
+impl EnemyType for Bat {
+    const HEALTH: i32 = 30;
+    const SPEED: f32 = 20.0;
+    const EXP: u32 = 50;
+    const DAMAGE: i32 = 5;
+    const RANGE: f32 = 30.0;
+    const ATTACK_SPEED: f32 = 1.5;
 }
 
 /// Moved enemies in direction of the wall

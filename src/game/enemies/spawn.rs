@@ -4,7 +4,8 @@ use rand::prelude::*;
 use crate::{game::GameState, utils::remove_all_with, GlobalState};
 
 use super::{
-    East, EnemyBundle, EnemyMarker, EnemySprites, Goblin, North, Side, South, SpearGoblin, West,
+    Bat, East, EnemyBundle, EnemyMarker, EnemySprites, Goblin, North, Side, South, SpearGoblin,
+    West,
 };
 
 const DEFAULT_ENEMY_SIZE: f32 = 16.0;
@@ -145,6 +146,8 @@ fn enemy_spawn<S: Side>(
             continue;
         }
 
+        let mut rng = rand::thread_rng();
+
         for n in 0..spawn.number {
             let position = transform.translation
                 + Quat::from_rotation_z(
@@ -153,21 +156,26 @@ fn enemy_spawn<S: Side>(
                 .mul_vec3(Vec3::Y * spawn.radius);
 
             // Choose enemy at random for now
-            if random() {
-                commands.spawn(EnemyBundle::<S, Goblin>::new(
+            match rng.gen_range(0..3) {
+                0 => commands.spawn(EnemyBundle::<S, Goblin>::new(
                     DEFAULT_ENEMY_SIZE,
                     enemy_sprites.goblin.clone(),
                     position,
                     buffs,
-                ));
-            } else {
-                commands.spawn(EnemyBundle::<S, SpearGoblin>::new(
+                )),
+                1 => commands.spawn(EnemyBundle::<S, SpearGoblin>::new(
                     DEFAULT_ENEMY_SIZE,
                     enemy_sprites.spear_goblin.clone(),
                     position,
                     buffs,
-                ));
-            }
+                )),
+                _ => commands.spawn(EnemyBundle::<S, Bat>::new(
+                    DEFAULT_ENEMY_SIZE,
+                    enemy_sprites.bat.clone(),
+                    position,
+                    buffs,
+                )),
+            };
         }
     }
 }
