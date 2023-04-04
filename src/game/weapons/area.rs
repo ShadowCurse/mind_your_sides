@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
@@ -27,10 +29,10 @@ impl Plugin for AreaPlugin {
                 catapulte_attack::<South>,
                 catapulte_attack::<West>,
                 catapulte_attack::<East>,
-                area_update::<North>,
-                area_update::<South>,
-                area_update::<West>,
-                area_update::<East>,
+                damage_area_update::<North>,
+                damage_area_update::<South>,
+                damage_area_update::<West>,
+                damage_area_update::<East>,
             )
                 .in_set(OnUpdate(GameState::InGame)),
         );
@@ -38,15 +40,16 @@ impl Plugin for AreaPlugin {
 }
 
 #[derive(Component)]
-pub struct Catapulte {
+pub struct Catapulte<S: Side> {
     damage: i32,
     range: f32,
     area_size: f32,
     area_attack_speed: f32,
     attack_timer: Timer,
+    _phatom: PhantomData<S>,
 }
 
-impl Default for Catapulte {
+impl<S: Side> Default for Catapulte<S> {
     fn default() -> Self {
         Self {
             damage: DEFAULT_AREA_DAMAGE,
@@ -54,24 +57,37 @@ impl Default for Catapulte {
             area_size: DEFAULT_AREA_SIZE,
             area_attack_speed: DEFAULT_AREA_ATTACK_SPEED,
             attack_timer: Timer::from_seconds(DEFAULT_CATAPULTE_ATTACK_SPEED, TimerMode::Repeating),
+            _phatom: PhantomData,
         }
     }
 }
 
 #[derive(Component)]
-pub struct Area {
+pub struct DamageArea<S: Side> {
     size: f32,
     damage: i32,
     attack_timer: Timer,
     lifespan: Timer,
+    _phatom: PhantomData<S>,
+}
+
+impl<S: Side> DamageArea<S> {
+    pub fn new(size: f32, damage: i32, attack_speed: f32, lifespan: f32) -> Self {
+        Self {
+            size,
+            damage,
+            attack_timer: Timer::from_seconds(attack_speed, TimerMode::Repeating),
+            lifespan: Timer::from_seconds(lifespan, TimerMode::Once),
+            _phatom: PhantomData,
+        }
+    }
 }
 
 #[derive(Bundle)]
 pub struct AreaBundle<S: Side> {
     #[bundle]
     animation_bundle: AnimationBundle,
-    area: Area,
-    side: S,
+    area: DamageArea<S>,
     marker: DamageMarker,
 }
 
@@ -91,13 +107,7 @@ impl<S: Side> AreaBundle<S> {
                 12.0,
                 position,
             ),
-            area: Area {
-                size,
-                damage,
-                attack_timer: Timer::from_seconds(attack_speed, TimerMode::Repeating),
-                lifespan: Timer::from_seconds(DEFAULT_AREA_LIFESPAN, TimerMode::Once),
-            },
-            side: S::default(),
+            area: DamageArea::new(size, damage, attack_speed, DEFAULT_AREA_LIFESPAN),
             marker: DamageMarker,
         }
     }
@@ -107,7 +117,7 @@ fn catapulte_attack<S: Side>(
     time: Res<Time>,
     weapon_assets: Res<WeaponsAssets>,
     mut commands: Commands,
-    mut catapultes: Query<(&Transform, &mut Catapulte), With<S>>,
+    mut catapultes: Query<(&Transform, &mut Catapulte<S>)>,
 ) {
     for (transform, mut catapulte) in catapultes.iter_mut() {
         if !catapulte.attack_timer.tick(time.delta()).finished() {
@@ -136,11 +146,11 @@ fn catapulte_attack<S: Side>(
     }
 }
 
-fn area_update<S: Side>(
+fn damage_area_update<S: Side>(
     time: Res<Time>,
     rapier_context: Res<RapierContext>,
     mut commands: Commands,
-    mut areas: Query<(Entity, &Transform, &mut Area), With<S>>,
+    mut areas: Query<(Entity, &Transform, &mut DamageArea<S>)>,
     mut damage_event: EventWriter<EnemyDamageEvent<S>>,
 ) {
     for (area_entity, area_transform, mut area) in areas.iter_mut() {

@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use bevy_rapier2d::prelude::*;
@@ -66,24 +68,53 @@ struct EnemySprites {
 }
 
 #[derive(Debug, Default, Component)]
-pub struct Enemy {
+pub struct Enemy<S: Side> {
     pub health: i32,
     pub speed: f32,
     pub exp: u32,
+    _phantom: PhantomData<S>,
+}
+
+impl<S: Side> Enemy<S> {
+    pub fn new(health: i32, speed: f32, exp: u32) -> Self {
+        Self {
+            health,
+            speed,
+            exp,
+            _phantom: PhantomData,
+        }
+    }
 }
 
 #[derive(Debug, Default, Component)]
-pub struct EnemyAttack {
+pub struct EnemyAttack<S: Side> {
     damage: i32,
     range: f32,
     attack_timer: Timer,
+    _phantom: PhantomData<S>,
+}
+
+impl<S: Side> EnemyAttack<S> {
+    pub fn new(damage: i32, range: f32, attack_speed: f32) -> Self {
+        // initially timer is paused
+        // unpause when in attack range
+        let mut attack_timer = Timer::from_seconds(attack_speed, TimerMode::Repeating);
+        attack_timer.pause();
+
+        Self {
+            damage,
+            range,
+            attack_timer,
+            _phantom: PhantomData,
+        }
+    }
 }
 
 #[derive(Debug, Default, Component)]
 pub struct EnemyMarker;
 
 #[derive(Bundle)]
-pub struct EnemyBundle<S: Side, E: EnemyType> {
+pub struct EnemyBundle<S: Side, E: EnemyType<S>> {
     #[bundle]
     animation_bundle: AnimationBundle,
     rigid_body: RigidBody,
@@ -91,19 +122,18 @@ pub struct EnemyBundle<S: Side, E: EnemyType> {
     locked_axis: LockedAxes,
     velocity: Velocity,
     damping: Damping,
-    enemy: Enemy,
-    attack: EnemyAttack,
-    side: S,
+    enemy: Enemy<S>,
+    attack: EnemyAttack<S>,
     enemy_type: E,
     marker: EnemyMarker,
 }
 
-impl<S: Side, E: EnemyType> EnemyBundle<S, E> {
+impl<S: Side, E: EnemyType<S>> EnemyBundle<S, E> {
     fn new(
         size: f32,
         texture_atlas: Handle<TextureAtlas>,
         position: Vec3,
-        buffs: &EnemySpawnBuffs,
+        buffs: &EnemySpawnBuffs<S>,
     ) -> Self {
         Self {
             animation_bundle: AnimationBundle::new(texture_atlas, 3, 12.0, position),
@@ -117,14 +147,13 @@ impl<S: Side, E: EnemyType> EnemyBundle<S, E> {
             },
             enemy: E::enemy(buffs),
             attack: E::attack(buffs),
-            side: S::default(),
             enemy_type: E::default(),
             marker: EnemyMarker,
         }
     }
 }
 
-pub trait EnemyType: Component + Default {
+pub trait EnemyType<S: Side>: Component + Default {
     const HEALTH: i32;
     const SPEED: f32;
     const EXP: u32;
@@ -132,35 +161,27 @@ pub trait EnemyType: Component + Default {
     const RANGE: f32;
     const ATTACK_SPEED: f32;
 
-    fn enemy(buffs: &EnemySpawnBuffs) -> Enemy {
-        Enemy {
-            health: (Self::HEALTH as f32 * buffs.health) as i32,
-            speed: Self::SPEED * buffs.speed,
-            exp: (Self::EXP as f32 * buffs.exp) as u32,
-        }
+    fn enemy(buffs: &EnemySpawnBuffs<S>) -> Enemy<S> {
+        Enemy::new(
+            (Self::HEALTH as f32 * buffs.health) as i32,
+            Self::SPEED * buffs.speed,
+            (Self::EXP as f32 * buffs.exp) as u32,
+        )
     }
 
-    fn attack(buffs: &EnemySpawnBuffs) -> EnemyAttack {
-        // initially timer is paused
-        // unpause when in attack range
-        let mut timer = Timer::from_seconds(
+    fn attack(buffs: &EnemySpawnBuffs<S>) -> EnemyAttack<S> {
+        EnemyAttack::new(
+            (Self::DAMAGE as f32 * buffs.damage) as i32,
+            Self::RANGE,
             Self::ATTACK_SPEED * buffs.attack_speed,
-            TimerMode::Repeating,
-        );
-        timer.pause();
-
-        EnemyAttack {
-            damage: (Self::DAMAGE as f32 * buffs.damage) as i32,
-            range: Self::RANGE,
-            attack_timer: timer,
-        }
+        )
     }
 }
 
 #[derive(Debug, Default, Component)]
 pub struct Goblin;
 
-impl EnemyType for Goblin {
+impl<S: Side> EnemyType<S> for Goblin {
     const HEALTH: i32 = 80;
     const SPEED: f32 = 20.0;
     const EXP: u32 = 50;
@@ -172,7 +193,7 @@ impl EnemyType for Goblin {
 #[derive(Debug, Default, Component)]
 pub struct SpearGoblin;
 
-impl EnemyType for SpearGoblin {
+impl<S: Side> EnemyType<S> for SpearGoblin {
     const HEALTH: i32 = 100;
     const SPEED: f32 = 15.0;
     const EXP: u32 = 80;
@@ -184,7 +205,7 @@ impl EnemyType for SpearGoblin {
 #[derive(Debug, Default, Component)]
 pub struct Bat;
 
-impl EnemyType for Bat {
+impl<S: Side> EnemyType<S> for Bat {
     const HEALTH: i32 = 30;
     const SPEED: f32 = 20.0;
     const EXP: u32 = 50;
@@ -196,7 +217,7 @@ impl EnemyType for Bat {
 #[derive(Debug, Default, Component)]
 pub struct Skull;
 
-impl EnemyType for Skull {
+impl<S: Side> EnemyType<S> for Skull {
     const HEALTH: i32 = 80;
     const SPEED: f32 = 10.0;
     const EXP: u32 = 50;
@@ -208,7 +229,7 @@ impl EnemyType for Skull {
 #[derive(Debug, Default, Component)]
 pub struct PoisonIvy;
 
-impl EnemyType for PoisonIvy {
+impl<S: Side> EnemyType<S> for PoisonIvy {
     const HEALTH: i32 = 60;
     const SPEED: f32 = 15.0;
     const EXP: u32 = 80;
@@ -221,8 +242,8 @@ impl EnemyType for PoisonIvy {
 /// Keeps them pointed at the wall
 fn enemy_movement<S: Side>(
     time: Res<Time>,
-    wall: Query<&Transform, (With<CastleWall>, With<S>)>,
-    mut enemies: Query<(&Transform, &Enemy, &mut Velocity), With<S>>,
+    wall: Query<&Transform, With<CastleWall<S>>>,
+    mut enemies: Query<(&Transform, &Enemy<S>, &mut Velocity)>,
 ) {
     let wall_transform = wall.single();
 
@@ -237,8 +258,8 @@ fn enemy_movement<S: Side>(
 
 fn enemy_attack<S: Side>(
     time: Res<Time>,
-    wall: Query<&Transform, (With<CastleWall>, With<S>)>,
-    mut enemies: Query<(&Transform, &mut EnemyAttack), With<S>>,
+    wall: Query<&Transform, With<CastleWall<S>>>,
+    mut enemies: Query<(&Transform, &mut EnemyAttack<S>)>,
     mut damage_events: EventWriter<WallDamageEvent<S>>,
 ) {
     let wall = wall.single();
@@ -263,7 +284,7 @@ fn enemy_attack<S: Side>(
 }
 
 fn enemy_death<S: Side>(
-    enemies: Query<(Entity, &Enemy), With<S>>,
+    enemies: Query<(Entity, &Enemy<S>)>,
     mut commands: Commands,
     mut castle: Query<&mut Castle>,
 ) {

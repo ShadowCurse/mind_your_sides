@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use rand::prelude::*;
 
@@ -39,15 +41,16 @@ impl Plugin for SpawnPlugin {
 pub struct EnemySpawnMarker;
 
 #[derive(Debug, Component)]
-pub struct EnemySpawnBuffs {
+pub struct EnemySpawnBuffs<S: Side> {
     pub health: f32,
     pub speed: f32,
     pub exp: f32,
     pub damage: f32,
     pub attack_speed: f32,
+    _phantom: PhantomData<S>,
 }
 
-impl Default for EnemySpawnBuffs {
+impl<S: Side> Default for EnemySpawnBuffs<S> {
     fn default() -> Self {
         Self {
             health: 1.0,
@@ -55,6 +58,7 @@ impl Default for EnemySpawnBuffs {
             exp: 1.0,
             damage: 1.0,
             attack_speed: 1.0,
+            _phantom: PhantomData,
         }
     }
 }
@@ -64,7 +68,7 @@ pub struct EnemySpawn<S: Side> {
     pub number: u32,
     pub radius: f32,
     pub timer: Timer,
-    pub side: S,
+    _phantom: PhantomData<S>,
 }
 
 impl<S: Side> Default for EnemySpawn<S> {
@@ -73,7 +77,7 @@ impl<S: Side> Default for EnemySpawn<S> {
             number: DEFAULT_ENEMY_SPAWN_NUMBER,
             radius: DEFAULT_ENEMY_SPAWN_RADIUS,
             timer: Timer::from_seconds(DEFAULT_ENEMY_SPAWN_RATE, TimerMode::Repeating),
-            side: S::default(),
+            _phantom: PhantomData,
         }
     }
 }
@@ -81,7 +85,7 @@ impl<S: Side> Default for EnemySpawn<S> {
 #[derive(Default, Bundle)]
 pub struct EnemySpawnBundle<S: Side> {
     spawn: EnemySpawn<S>,
-    buffs: EnemySpawnBuffs,
+    buffs: EnemySpawnBuffs<S>,
     marker: EnemySpawnMarker,
 }
 
@@ -139,7 +143,7 @@ fn enemy_spawn<S: Side>(
     time: Res<Time>,
     enemy_sprites: Res<EnemySprites>,
     mut commands: Commands,
-    mut spawns: Query<(&Transform, &EnemySpawnBuffs, &mut EnemySpawn<S>)>,
+    mut spawns: Query<(&Transform, &EnemySpawnBuffs<S>, &mut EnemySpawn<S>)>,
 ) {
     for (transform, buffs, mut spawn) in spawns.iter_mut() {
         if !spawn.timer.tick(time.delta()).finished() {

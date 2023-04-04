@@ -115,7 +115,7 @@ fn button_system(
 fn wall_destroyed<S: Side>(
     mut event: EventWriter<GameOverEvent>,
     game_state: Res<State<GameState>>,
-    wall: Query<&CastleWall, With<S>>,
+    wall: Query<&CastleWall<S>>,
 ) {
     // this is a hack because I don't know how to implement it otherwise
     //

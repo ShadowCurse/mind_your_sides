@@ -222,9 +222,9 @@ fn apply_upgrades(
 }
 
 fn apply_weapon_upgrades_to_side<S: Side>(
-    mut _wall: Query<&mut CastleWall, With<S>>,
-    mut _archer: Query<&mut Archer, With<S>>,
-    mut _catapulte: Query<&mut Catapulte, With<S>>,
+    mut _wall: Query<&mut CastleWall<S>>,
+    mut _archer: Query<&mut Archer<S>>,
+    mut _catapulte: Query<&mut Catapulte<S>>,
     mut weapon_upgrade_events: EventReader<ApplyWeaponUpgradeToSide<S>>,
 ) {
     for event in weapon_upgrade_events.iter() {
@@ -233,7 +233,7 @@ fn apply_weapon_upgrades_to_side<S: Side>(
 }
 
 fn apply_enemy_upgrades_to_side<S: Side>(
-    mut _enemy_spawn_buffs: Query<&mut EnemySpawnBuffs, With<S>>,
+    mut _enemy_spawn_buffs: Query<&mut EnemySpawnBuffs<S>>,
     mut enemy_upgrade_events: EventReader<ApplyEnemyUpgradeToSide<S>>,
 ) {
     for event in enemy_upgrade_events.iter() {

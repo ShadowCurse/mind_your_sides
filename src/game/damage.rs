@@ -67,7 +67,7 @@ impl<S: Side> WallDamageEvent<S> {
 /// Damage enemies based on the side
 fn damage_enemy<S: Side>(
     mut events: EventReader<EnemyDamageEvent<S>>,
-    mut enemies: Query<&mut Enemy, With<S>>,
+    mut enemies: Query<&mut Enemy<S>>,
 ) {
     for event in events.iter() {
         if let Ok(mut enemy) = enemies.get_mut(event.target) {
@@ -79,7 +79,7 @@ fn damage_enemy<S: Side>(
 /// Damage wall based on the side
 fn damage_wall<S: Side>(
     mut events: EventReader<WallDamageEvent<S>>,
-    mut wall: Query<&mut CastleWall, With<S>>,
+    mut wall: Query<&mut CastleWall<S>>,
 ) {
     let mut wall = wall.single_mut();
     for event in events.iter() {

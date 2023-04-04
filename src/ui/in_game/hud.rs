@@ -174,7 +174,7 @@ fn update_castle_exp(castle: Query<&Castle>, mut exp_text: Query<&mut Text, With
 }
 
 fn update_castle_wall_hp<S: Side>(
-    wall: Query<&CastleWall, With<S>>,
+    wall: Query<&CastleWall<S>>,
     mut hp_text: Query<&mut Text, With<CastleWallHpText<S>>>,
 ) {
     let wall = wall.single();

@@ -9,8 +9,8 @@ pub mod animation;
 pub mod castle;
 pub mod damage;
 pub mod enemies;
-pub mod weapons;
 pub mod upgrades;
+pub mod weapons;
 
 pub struct GamePlugin;
 
@@ -57,19 +57,19 @@ pub enum GameState {
 }
 impl_into_state!(GameState);
 
-#[derive(Debug, Default, Clone, Copy, Component)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct North;
 
-#[derive(Debug, Default, Clone, Copy, Component)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct South;
 
-#[derive(Debug, Default, Clone, Copy, Component)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct West;
 
-#[derive(Debug, Default, Clone, Copy, Component)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct East;
 
-pub trait Side: Debug + Default + Clone + Copy + Component {
+pub trait Side: Debug + Default + Clone + Copy + Send + Sync + 'static {
     const DIRECTION: Vec2;
 }
 

@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
@@ -38,28 +40,41 @@ impl Plugin for ProjectilePlugin {
 }
 
 #[derive(Component)]
-pub struct Archer {
+pub struct Archer<S: Side> {
     damage: i32,
     range: f32,
     arrow_speed: f32,
     attack_timer: Timer,
+    _phantom: PhantomData<S>,
 }
 
-impl Default for Archer {
+impl<S: Side> Default for Archer<S> {
     fn default() -> Self {
         Self {
             damage: DEFAULT_ARROW_DAMAGE,
             range: DEFAULT_ARCHER_RANGE,
             arrow_speed: DEFAULT_ARROW_SPEED,
             attack_timer: Timer::from_seconds(DEFAULT_ARCHER_ATTACK_SPEED, TimerMode::Repeating),
+            _phantom: PhantomData,
         }
     }
 }
 
 #[derive(Component)]
-pub struct Projectile {
+pub struct Projectile<S: Side> {
     damage: i32,
     lifespan: Timer,
+    _phantom: PhantomData<S>,
+}
+
+impl<S: Side> Projectile<S> {
+    pub fn new(damage: i32, lifespan: f32) -> Self {
+        Self {
+            damage,
+            lifespan: Timer::from_seconds(lifespan, TimerMode::Once),
+            _phantom: PhantomData,
+        }
+    }
 }
 
 #[derive(Bundle)]
@@ -69,8 +84,7 @@ pub struct ProjectileBundle<S: Side> {
     rigid_body: RigidBody,
     collider: Collider,
     velocity: Velocity,
-    projectile: Projectile,
-    side: S,
+    projectile: Projectile<S>,
     marker: DamageMarker,
 }
 
@@ -95,11 +109,7 @@ impl<S: Side> ProjectileBundle<S> {
                 linvel: speed * direction,
                 ..default()
             },
-            projectile: Projectile {
-                damage,
-                lifespan: Timer::from_seconds(DEFAULT_ARROW_LIFESPAN, TimerMode::Once),
-            },
-            side: S::default(),
+            projectile: Projectile::new(damage, DEFAULT_ARROW_LIFESPAN),
             marker: DamageMarker,
         }
     }
@@ -108,9 +118,9 @@ impl<S: Side> ProjectileBundle<S> {
 fn archer_attack<S: Side>(
     time: Res<Time>,
     weapon_assets: Res<WeaponsAssets>,
-    enemies: Query<&Transform, (With<Enemy>, With<S>)>,
+    enemies: Query<&Transform, With<Enemy<S>>>,
     mut commands: Commands,
-    mut archers: Query<(&Transform, &mut Archer), With<S>>,
+    mut archers: Query<(&Transform, &mut Archer<S>)>,
 ) {
     for (transform, mut archer) in archers.iter_mut() {
         if !archer.attack_timer.tick(time.delta()).finished() {
@@ -155,10 +165,10 @@ fn archer_attack<S: Side>(
 
 fn projectile_update<S: Side>(
     time: Res<Time>,
-    enemies: Query<Entity, (With<Enemy>, With<S>)>,
+    enemies: Query<Entity, With<Enemy<S>>>,
     rapier_context: Res<RapierContext>,
     mut commands: Commands,
-    mut projectiles: Query<(Entity, &mut Projectile), With<S>>,
+    mut projectiles: Query<(Entity, &mut Projectile<S>)>,
     mut damage_event: EventWriter<EnemyDamageEvent<S>>,
 ) {
     for (projectile_entity, mut projectile) in projectiles.iter_mut() {
