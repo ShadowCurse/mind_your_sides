@@ -24,6 +24,8 @@ pub struct UiConfig {
     pub menu_style: Style,
     pub menu_color: Color,
     pub text_style: TextStyle,
+    pub title_style: Style,
+    pub title_text_style: TextStyle,
 }
 
 fn setup_ui_config(game_assets: Res<GameAssets>, mut commands: Commands) {
@@ -39,6 +41,7 @@ fn setup_ui_config(game_assets: Res<GameAssets>, mut commands: Commands) {
         button_color_hover: Color::ORANGE,
         button_color_pressed: Color::GREEN,
         menu_style: Style {
+            flex_direction: FlexDirection::Column,
             margin: UiRect::all(Val::Auto),
             justify_content: JustifyContent::Center,
             align_items: AlignItems::Center,
@@ -48,6 +51,15 @@ fn setup_ui_config(game_assets: Res<GameAssets>, mut commands: Commands) {
         text_style: TextStyle {
             font: game_assets.font.clone(),
             font_size: 20.0,
+            color: Color::BLACK,
+        },
+        title_style: Style {
+            margin: UiRect::bottom(Val::Percent(30.0)),
+            ..default()
+        },
+        title_text_style: TextStyle {
+            font: game_assets.font.clone(),
+            font_size: 60.0,
             color: Color::BLACK,
         },
     });

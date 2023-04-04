@@ -1,30 +1,33 @@
-use bevy::{app::AppExit, prelude::*};
+use bevy::prelude::*;
 
-use crate::{utils::remove_all_with, GlobalState};
+use crate::{
+    game::GameState,
+    ui::{spawn_button, UiConfig},
+    utils::remove_all_with,
+    GlobalState,
+};
 
-use super::{spawn_button, UiConfig, UiMainMenuState};
+use super::UiInGameState;
+pub struct GameOverPlugin;
 
-pub struct TitleScreenPlugin;
-
-impl Plugin for TitleScreenPlugin {
+impl Plugin for GameOverPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(setup.in_schedule(OnEnter(UiMainMenuState::TitleScreen)))
-            .add_system(button_system.in_set(OnUpdate(UiMainMenuState::TitleScreen)))
+        app.add_system(setup.in_schedule(OnEnter(UiInGameState::GameOver)))
+            .add_system(button_system.in_set(OnUpdate(UiInGameState::GameOver)))
             .add_system(
-                remove_all_with::<TitleScreenMarker>
-                    .in_schedule(OnExit(UiMainMenuState::TitleScreen)),
+                remove_all_with::<GameOverMarker>.in_schedule(OnExit(UiInGameState::GameOver)),
             );
     }
 }
 
 #[derive(Debug, Clone, Copy, Component)]
-struct TitleScreenMarker;
+struct GameOverMarker;
 
 #[derive(Debug, Clone, Copy, Component)]
-enum TitleScreenButton {
-    Start,
+enum GameOverButton {
+    Restart,
     Settings,
-    Exit,
+    MainMenu,
 }
 
 fn setup(mut commands: Commands, config: Res<UiConfig>) {
@@ -35,46 +38,45 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
                 background_color: config.menu_color.into(),
                 ..default()
             },
-            TitleScreenMarker,
+            GameOverMarker,
         ))
         .with_children(|builder| {
             builder.spawn(
                 (TextBundle {
-                    text: Text::from_section("Mad Crabs", config.title_text_style.clone()),
+                    text: Text::from_section("Game Over", config.title_text_style.clone()),
                     ..default()
                 })
                 .with_style(config.title_style.clone()),
             );
         })
         .with_children(|builder| {
-            spawn_button(builder, &config, TitleScreenButton::Start);
-            spawn_button(builder, &config, TitleScreenButton::Settings);
-            spawn_button(builder, &config, TitleScreenButton::Exit);
+            spawn_button(builder, &config, GameOverButton::Restart);
+            spawn_button(builder, &config, GameOverButton::Settings);
+            spawn_button(builder, &config, GameOverButton::MainMenu);
         });
 }
 
 fn button_system(
     style: Res<UiConfig>,
-    mut main_menu_state: ResMut<NextState<UiMainMenuState>>,
     mut global_state: ResMut<NextState<GlobalState>>,
+    mut game_state: ResMut<NextState<GameState>>,
     mut interaction_query: Query<
-        (&TitleScreenButton, &Interaction, &mut BackgroundColor),
+        (&GameOverButton, &Interaction, &mut BackgroundColor),
         (Changed<Interaction>, With<Button>),
     >,
-    mut exit: EventWriter<AppExit>,
 ) {
     for (button, interaction, mut color) in interaction_query.iter_mut() {
         match *interaction {
             Interaction::Clicked => {
                 *color = style.button_color_pressed.into();
                 match button {
-                    TitleScreenButton::Start => {
-                        global_state.set(GlobalState::InGame);
+                    GameOverButton::Restart => {
+                        game_state.set(GameState::InGame);
                     }
-                    TitleScreenButton::Settings => {
-                        main_menu_state.set(UiMainMenuState::Settings);
+                    GameOverButton::MainMenu => {
+                        global_state.set(GlobalState::MainMenu);
                     }
-                    TitleScreenButton::Exit => exit.send(AppExit),
+                    GameOverButton::Settings => {}
                 }
             }
             Interaction::Hovered => {
