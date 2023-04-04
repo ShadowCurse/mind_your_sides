@@ -51,7 +51,7 @@ enum UiInGameState {
     InGame,
     Pause,
     GameOver,
-    LevelUp
+    LevelUp,
 }
 impl_into_state!(UiInGameState);
 

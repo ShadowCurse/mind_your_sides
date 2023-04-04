@@ -1,13 +1,13 @@
 use bevy::prelude::*;
 
 use crate::{
-    game::GameState,
     ui::{spawn_button, UiConfig},
     utils::remove_all_with,
     GlobalState,
 };
 
 use super::UiInGameState;
+
 pub struct GameOverPlugin;
 
 impl Plugin for GameOverPlugin {
@@ -59,7 +59,6 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
 fn button_system(
     style: Res<UiConfig>,
     mut global_state: ResMut<NextState<GlobalState>>,
-    mut game_state: ResMut<NextState<GameState>>,
     mut interaction_query: Query<
         (&GameOverButton, &Interaction, &mut BackgroundColor),
         (Changed<Interaction>, With<Button>),
@@ -71,7 +70,7 @@ fn button_system(
                 *color = style.button_color_pressed.into();
                 match button {
                     GameOverButton::Restart => {
-                        game_state.set(GameState::InGame);
+                        global_state.set(GlobalState::InGame);
                     }
                     GameOverButton::MainMenu => {
                         global_state.set(GlobalState::MainMenu);

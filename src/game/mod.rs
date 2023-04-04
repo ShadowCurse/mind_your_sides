@@ -5,11 +5,12 @@ use bevy_rapier2d::prelude::RapierConfiguration;
 
 use crate::{impl_into_state, utils::set_state, GlobalState, IntoState};
 
-mod animation;
+pub mod animation;
 pub mod castle;
-mod damage;
-mod enemies;
-mod weapons;
+pub mod damage;
+pub mod enemies;
+pub mod upgrades;
+pub mod weapons;
 
 pub struct GamePlugin;
 
@@ -26,13 +27,16 @@ impl Plugin for GamePlugin {
             )
             .add_system(stop_physics.in_schedule(OnEnter(GameState::Paused)))
             .add_system(resume_physics.in_schedule(OnExit(GameState::Paused)))
+            .add_system(stop_physics.in_schedule(OnEnter(GameState::GameOver)))
+            .add_system(resume_physics.in_schedule(OnExit(GameState::GameOver)))
             .add_system(stop_physics.in_schedule(OnEnter(GameState::LevelUp)))
             .add_system(resume_physics.in_schedule(OnExit(GameState::LevelUp)))
             .add_plugin(animation::AnimationPlugin)
             .add_plugin(castle::CastlePlugin)
             .add_plugin(damage::DamagePlugin)
             .add_plugin(enemies::EnemyPlugin)
-            .add_plugin(weapons::WeaponsPlugin);
+            .add_plugin(weapons::WeaponsPlugin)
+            .add_plugin(upgrades::UpgradesPlugin);
     }
 }
 
@@ -51,23 +55,23 @@ pub enum GameState {
     InGame,
     Paused,
     GameOver,
-    LevelUp
+    LevelUp,
 }
 impl_into_state!(GameState);
 
-#[derive(Debug, Default, Clone, Copy, Component)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct North;
 
-#[derive(Debug, Default, Clone, Copy, Component)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct South;
 
-#[derive(Debug, Default, Clone, Copy, Component)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct West;
 
-#[derive(Debug, Default, Clone, Copy, Component)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct East;
 
-pub trait Side: Debug + Default + Clone + Copy + Component {
+pub trait Side: Debug + Default + Clone + Copy + Send + Sync + 'static {
     const DIRECTION: Vec2;
 }
 

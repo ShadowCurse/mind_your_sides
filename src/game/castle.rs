@@ -1,21 +1,37 @@
+use std::marker::PhantomData;
+
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_rapier2d::prelude::*;
 
 use crate::{utils::remove_all_with, GlobalState};
 
 use super::{
-    weapons::{area::Catapulte, projectile::Archer},
-    East, North, Side, South, West,
+    weapons::{crossbow::CrossbowBundle, molotov::MolotovBundle},
+    East, GameState, North, Side, South, West,
 };
 
 const WALL_LENGTH: f32 = 100.0;
 const WALL_THICKNESS: f32 = 10.0;
+const WALL_HEALTH: i32 = 100;
+
+const CASTLE_FIRST_LEVEL_EXP: u32 = 100;
+const CASTLE_NEXT_LEVEL_EXP_GROWTH: f32 = 1.1;
 
 pub struct CastlePlugin;
 
 impl Plugin for CastlePlugin {
     fn build(&self, app: &mut App) {
         app.add_system(setup.in_schedule(OnEnter(GlobalState::InGame)))
+            .add_systems(
+                (
+                    castle_level_up,
+                    check_wall_destroyed::<North>,
+                    check_wall_destroyed::<South>,
+                    check_wall_destroyed::<West>,
+                    check_wall_destroyed::<East>,
+                )
+                    .in_set(OnUpdate(GameState::InGame)),
+            )
             .add_system(remove_all_with::<CastleMarker>.in_schedule(OnExit(GlobalState::InGame)))
             .add_system(
                 remove_all_with::<CastleWallMarker>.in_schedule(OnExit(GlobalState::InGame)),
@@ -25,7 +41,10 @@ impl Plugin for CastlePlugin {
 
 #[derive(Component)]
 pub struct Castle {
+    pub level: u32,
     pub exp: u32,
+    pub next_level_exp: u32,
+    pub next_level_exp_growth: f32,
 }
 
 #[derive(Component)]
@@ -40,15 +59,30 @@ pub struct CastleBundle {
 impl Default for CastleBundle {
     fn default() -> Self {
         Self {
-            castle: Castle { exp: 0 },
+            castle: Castle {
+                level: 0,
+                exp: 0,
+                next_level_exp: CASTLE_FIRST_LEVEL_EXP,
+                next_level_exp_growth: CASTLE_NEXT_LEVEL_EXP_GROWTH,
+            },
             marker: CastleMarker,
         }
     }
 }
 
 #[derive(Component)]
-pub struct CastleWall {
+pub struct CastleWall<S: Side> {
     pub health: i32,
+    _phantom: PhantomData<S>,
+}
+
+impl<S: Side> CastleWall<S> {
+    pub fn new(health: i32) -> Self {
+        Self {
+            health,
+            _phantom: PhantomData,
+        }
+    }
 }
 
 #[derive(Component)]
@@ -58,8 +92,11 @@ pub struct CastleWallMarker;
 pub struct CastleWallBundle<S: Side> {
     rigid_body: RigidBody,
     collider: Collider,
-    wall: CastleWall,
-    side: S,
+    wall: CastleWall<S>,
+    #[bundle]
+    crossbow: CrossbowBundle<S>,
+    #[bundle]
+    molotov: MolotovBundle<S>,
     marker: CastleWallMarker,
 }
 
@@ -68,8 +105,9 @@ impl<S: Side> CastleWallBundle<S> {
         Self {
             rigid_body: RigidBody::Fixed,
             collider: Collider::cuboid(length, thickness),
-            wall: CastleWall { health },
-            side: S::default(),
+            wall: CastleWall::new(health),
+            crossbow: Default::default(),
+            molotov: Default::default(),
             marker: CastleWallMarker,
         }
     }
@@ -108,12 +146,10 @@ fn setup(
             ..default()
         })
         .insert(CastleWallBundle::<North>::new(
-            100,
+            WALL_HEALTH,
             WALL_LENGTH / 2.0,
             WALL_THICKNESS / 2.0,
-        ))
-        .insert(Archer::default())
-        .insert(Catapulte::default());
+        ));
     // South
     commands
         .spawn(MaterialMesh2dBundle {
@@ -123,12 +159,10 @@ fn setup(
             ..default()
         })
         .insert(CastleWallBundle::<South>::new(
-            100,
+            WALL_HEALTH,
             WALL_LENGTH / 2.0,
             WALL_THICKNESS / 2.0,
-        ))
-        .insert(Archer::default())
-        .insert(Catapulte::default());
+        ));
     // West
     commands
         .spawn(MaterialMesh2dBundle {
@@ -138,12 +172,10 @@ fn setup(
             ..default()
         })
         .insert(CastleWallBundle::<West>::new(
-            100,
+            WALL_HEALTH,
             WALL_THICKNESS / 2.0,
             WALL_LENGTH / 2.0,
-        ))
-        .insert(Archer::default())
-        .insert(Catapulte::default());
+        ));
     // East
     commands
         .spawn(MaterialMesh2dBundle {
@@ -153,10 +185,31 @@ fn setup(
             ..default()
         })
         .insert(CastleWallBundle::<East>::new(
-            100,
+            WALL_HEALTH,
             WALL_THICKNESS / 2.0,
             WALL_LENGTH / 2.0,
-        ))
-        .insert(Archer::default())
-        .insert(Catapulte::default());
+        ));
+}
+
+fn castle_level_up(mut castle: Query<&mut Castle>, mut game_state: ResMut<NextState<GameState>>) {
+    let mut castle = castle.single_mut();
+
+    if castle.exp >= castle.next_level_exp {
+        castle.level += 1;
+        castle.exp -= castle.next_level_exp;
+        castle.next_level_exp =
+            (castle.next_level_exp as f32 * castle.next_level_exp_growth) as u32;
+
+        game_state.set(GameState::LevelUp);
+    }
+}
+
+fn check_wall_destroyed<S: Side>(
+    wall: Query<&CastleWall<S>>,
+    mut game_state: ResMut<NextState<GameState>>,
+) {
+    let wall = wall.single();
+    if wall.health <= 0 {
+        game_state.set(GameState::GameOver);
+    }
 }

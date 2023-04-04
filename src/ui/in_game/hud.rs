@@ -1,24 +1,32 @@
+use std::marker::PhantomData;
+
 use bevy::prelude::*;
 
 use crate::{
-    game::GameState,
-    game::castle::Castle,
+    game::{castle::Castle, Side},
+    game::{castle::CastleWall, East, GameState, North, South, West},
     ui::{spawn_button, UiConfig},
     utils::remove_all_with,
 };
 
 use super::UiInGameState;
-use crate::game::GamePlugin;
+
 pub struct HUDPlugin;
-
-
-const MAX_EXP: u32 = 600;
 
 impl Plugin for HUDPlugin {
     fn build(&self, app: &mut App) {
-        app .add_event::<LevelUpEvent>()
-            .add_system(setup.in_schedule(OnEnter(UiInGameState::InGame)))
-            .add_system(update_text_level.in_set(OnUpdate(UiInGameState::InGame)))
+        app.add_system(setup.in_schedule(OnEnter(UiInGameState::InGame)))
+            .add_systems(
+                (
+                    update_castle_level,
+                    update_castle_exp,
+                    update_castle_wall_hp::<North>,
+                    update_castle_wall_hp::<South>,
+                    update_castle_wall_hp::<West>,
+                    update_castle_wall_hp::<East>,
+                )
+                    .in_set(OnUpdate(UiInGameState::InGame)),
+            )
             .add_system(button_system.in_set(OnUpdate(UiInGameState::InGame)))
             .add_system(remove_all_with::<HUDMarker>.in_schedule(OnExit(UiInGameState::InGame)));
     }
@@ -26,11 +34,17 @@ impl Plugin for HUDPlugin {
 
 #[derive(Debug, Clone, Copy, Component)]
 struct HUDMarker;
+
 #[derive(Debug, Clone, Copy, Component)]
-struct LevelText;
+struct CastleLevelText;
 
-pub struct LevelUpEvent();
+#[derive(Debug, Clone, Copy, Component)]
+struct CastleExpText;
 
+#[derive(Debug, Default, Clone, Copy, Component)]
+struct CastleWallHpText<S: Side> {
+    _phantom: PhantomData<S>,
+}
 
 #[derive(Debug, Clone, Copy, Component)]
 enum HUDButton {
@@ -68,19 +82,30 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
                 })
                 .with_children(|parent| {
                     spawn_button(parent, &config, HUDButton::Pause);
-                    // text
-                    parent.spawn(TextBundle::from_section(
-                        "Text on the left",
-                        config.text_style.clone(),
+                    parent.spawn((
+                        TextBundle::from_section("Level: ", config.text_style.clone()),
+                        CastleLevelText,
                     ));
-                    parent.spawn(TextBundle::from_section(
-                        "Exp : ",
-                        config.text_style.clone()
+                    parent.spawn((
+                        TextBundle::from_section("Exp: ", config.text_style.clone()),
+                        CastleExpText,
                     ));
-                    parent.spawn((TextBundle::from_section(
-                        "0",
-                        config.text_style.clone()
-                    ),LevelText));
+                    parent.spawn((
+                        TextBundle::from_section("North wall hp: ", config.text_style.clone()),
+                        CastleWallHpText::<North>::default(),
+                    ));
+                    parent.spawn((
+                        TextBundle::from_section("South wall hp: ", config.text_style.clone()),
+                        CastleWallHpText::<South>::default(),
+                    ));
+                    parent.spawn((
+                        TextBundle::from_section("West wall hp: ", config.text_style.clone()),
+                        CastleWallHpText::<West>::default(),
+                    ));
+                    parent.spawn((
+                        TextBundle::from_section("East wall hp: ", config.text_style.clone()),
+                        CastleWallHpText::<East>::default(),
+                    ));
                 });
             // right vertical fill
             parent
@@ -133,17 +158,26 @@ fn button_system(
     }
 }
 
-fn update_text_level(
-    mut event: EventWriter<LevelUpEvent>,
-    mut level_text : Query<&mut Text, With<LevelText>>,
-    mut castle: Query<&mut Castle>,
-){
-    for mut text  in  &mut level_text  {
-        let mut castle = castle.single_mut();
-        if castle.exp > MAX_EXP{
-            castle.exp  = 0;
-            event.send(LevelUpEvent())
-        }
-        text.sections[0].value = format!("{}",castle.exp);
-    }
+fn update_castle_level(
+    castle: Query<&Castle>,
+    mut level_text: Query<&mut Text, With<CastleLevelText>>,
+) {
+    let castle = castle.single();
+    let mut level_text = level_text.single_mut();
+    level_text.sections[0].value = format!("Level: {}", castle.level);
+}
+
+fn update_castle_exp(castle: Query<&Castle>, mut exp_text: Query<&mut Text, With<CastleExpText>>) {
+    let castle = castle.single();
+    let mut exp_text = exp_text.single_mut();
+    exp_text.sections[0].value = format!("Exp: {}", castle.exp);
+}
+
+fn update_castle_wall_hp<S: Side>(
+    wall: Query<&CastleWall<S>>,
+    mut hp_text: Query<&mut Text, With<CastleWallHpText<S>>>,
+) {
+    let wall = wall.single();
+    let mut hp_text = hp_text.single_mut();
+    hp_text.sections[0].value = format!("{:?} wall: {}", S::default(), wall.health);
 }

@@ -1,19 +1,21 @@
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 
-use crate::{utils::remove_all_with, GlobalState};
+use crate::GlobalState;
+
+use super::GameState;
 
 pub struct WeaponsPlugin;
 
-pub mod area;
-pub mod projectile;
+pub mod crossbow;
+pub mod molotov;
 
 impl Plugin for WeaponsPlugin {
     fn build(&self, app: &mut App) {
         app.add_collection_to_loading_state::<_, WeaponsAssets>(GlobalState::AssetLoading)
-            .add_plugin(area::AreaPlugin)
-            .add_plugin(projectile::ProjectilePlugin)
-            .add_system(remove_all_with::<DamageMarker>.in_schedule(OnExit(GlobalState::InGame)));
+            .add_system(setup.in_schedule(OnEnter(GameState::InGame)))
+            .add_plugin(crossbow::CrossbowPlugin)
+            .add_plugin(molotov::MolotovPlugin);
     }
 }
 
@@ -26,5 +28,25 @@ struct WeaponsAssets {
     pub fire: Handle<TextureAtlas>,
 }
 
-#[derive(Component)]
-pub struct DamageMarker;
+#[derive(Resource)]
+pub struct GlobalWeaponBuffs {
+    pub damage: f32,
+    pub damage_flat: i32,
+    pub crit_damage: f32,
+    pub crit_chance: f32,
+}
+
+impl Default for GlobalWeaponBuffs {
+    fn default() -> Self {
+        Self {
+            damage: 1.0,
+            damage_flat: 0,
+            crit_chance: 0.0,
+            crit_damage: 0.0,
+        }
+    }
+}
+
+fn setup(mut commands: Commands) {
+    commands.insert_resource(GlobalWeaponBuffs::default());
+}

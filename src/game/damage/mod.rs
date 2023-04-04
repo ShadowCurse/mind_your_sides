@@ -4,6 +4,9 @@ use bevy::prelude::*;
 
 use super::{castle::CastleWall, enemies::Enemy, East, GameState, North, Side, South, West};
 
+pub mod area;
+pub mod projectile;
+
 pub struct DamagePlugin;
 
 impl Plugin for DamagePlugin {
@@ -16,6 +19,8 @@ impl Plugin for DamagePlugin {
             .add_event::<WallDamageEvent<South>>()
             .add_event::<WallDamageEvent<West>>()
             .add_event::<WallDamageEvent<East>>()
+            .add_plugin(area::AreaPlugin)
+            .add_plugin(projectile::ProjectilePlugin)
             .add_systems(
                 (
                     damage_enemy::<North>,
@@ -33,7 +38,6 @@ impl Plugin for DamagePlugin {
 }
 
 /// Event to damage enemy
-#[derive(Component)]
 pub struct EnemyDamageEvent<S: Side> {
     pub target: Entity,
     pub damage: i32,
@@ -51,7 +55,6 @@ impl<S: Side> EnemyDamageEvent<S> {
 }
 
 /// Event to damage castle wall
-#[derive(Component)]
 pub struct WallDamageEvent<S: Side> {
     pub damage: i32,
     _phantom: PhantomData<S>,
@@ -69,7 +72,7 @@ impl<S: Side> WallDamageEvent<S> {
 /// Damage enemies based on the side
 fn damage_enemy<S: Side>(
     mut events: EventReader<EnemyDamageEvent<S>>,
-    mut enemies: Query<&mut Enemy, With<S>>,
+    mut enemies: Query<&mut Enemy<S>>,
 ) {
     for event in events.iter() {
         if let Ok(mut enemy) = enemies.get_mut(event.target) {
@@ -81,7 +84,7 @@ fn damage_enemy<S: Side>(
 /// Damage wall based on the side
 fn damage_wall<S: Side>(
     mut events: EventReader<WallDamageEvent<S>>,
-    mut wall: Query<&mut CastleWall, With<S>>,
+    mut wall: Query<&mut CastleWall<S>>,
 ) {
     let mut wall = wall.single_mut();
     for event in events.iter() {
