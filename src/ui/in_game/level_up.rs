@@ -1,5 +1,4 @@
-use crate::game::GameState;
-use crate::ui::in_game::hud::LevelUpEvent;
+use crate::game::upgrades::{ApplyUpgrade, Upgrades};
 use crate::ui::in_game::UiInGameState;
 use crate::ui::UiConfig;
 use crate::utils::remove_all_with;
@@ -10,8 +9,7 @@ pub struct LevelUpPlugin;
 
 impl Plugin for LevelUpPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(level_up_event_reader)
-            .add_system(setup.in_schedule(OnEnter(UiInGameState::LevelUp)))
+        app.add_system(setup.in_schedule(OnEnter(UiInGameState::LevelUp)))
             .add_system(button_system.in_set(OnUpdate(UiInGameState::LevelUp)))
             .add_system(
                 remove_all_with::<LevelUpMarker>.in_schedule(OnExit(UiInGameState::LevelUp)),
@@ -21,22 +19,23 @@ impl Plugin for LevelUpPlugin {
 
 #[allow(clippy::enum_variant_names)]
 #[derive(Debug, Clone, Copy, Component)]
-enum GameCards {
-    WallNorth,
-    WallSouth,
-    WallWest,
-    WallEast,
+enum UpgradeButton {
+    First,
+    Second,
+    Third,
+    Fourth,
 }
 
 #[derive(Debug, Clone, Copy, Component)]
 struct LevelUpMarker;
 
-fn setup(mut commands: Commands, config: Res<UiConfig>) {
+fn setup(ui_config: Res<UiConfig>, upgrades: Query<&Upgrades>, mut commands: Commands) {
+    let upgrades = upgrades.single();
     commands
         .spawn((
             NodeBundle {
-                style: config.menu_style.clone(),
-                background_color: config.menu_color.into(),
+                style: ui_config.menu_style.clone(),
+                background_color: ui_config.menu_color.into(),
                 ..default()
             },
             LevelUpMarker,
@@ -44,7 +43,7 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
         .with_children(|parent| {
             parent.spawn(TextBundle::from_section(
                 "Buffs",
-                config.title_text_style.clone(),
+                ui_config.title_text_style.clone(),
             ));
             parent
                 .spawn(NodeBundle {
@@ -55,33 +54,43 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
                         align_items: AlignItems::Center,
                         ..default()
                     },
-                    background_color: config.menu_color.into(),
+                    background_color: ui_config.menu_color.into(),
                     ..default()
                 })
                 .with_children(|builder| {
-                    spawn_card(builder, &config, GameCards::WallNorth);
-                    spawn_card(builder, &config, GameCards::WallSouth);
-                    spawn_card(builder, &config, GameCards::WallWest);
-                    spawn_card(builder, &config, GameCards::WallEast);
+                    spawn_upgrade_button(
+                        builder,
+                        &ui_config,
+                        UpgradeButton::First,
+                        format!("{}", upgrades.upgrades[0]),
+                    );
+                    spawn_upgrade_button(
+                        builder,
+                        &ui_config,
+                        UpgradeButton::Second,
+                        format!("{}", upgrades.upgrades[0]),
+                    );
+                    spawn_upgrade_button(
+                        builder,
+                        &ui_config,
+                        UpgradeButton::Third,
+                        format!("{}", upgrades.upgrades[0]),
+                    );
+                    spawn_upgrade_button(
+                        builder,
+                        &ui_config,
+                        UpgradeButton::Fourth,
+                        format!("{}", upgrades.upgrades[0]),
+                    );
                 });
         });
 }
 
-fn level_up_event_reader(
-    mut game_state: ResMut<NextState<GameState>>,
-    mut event: EventReader<LevelUpEvent>,
-) {
-    for _ev in event.iter() {
-        println!("Level UP");
-        game_state.set(GameState::LevelUp);
-    }
-}
-
 fn button_system(
     style: Res<UiConfig>,
-    mut game_state: ResMut<NextState<GameState>>,
+    mut apply_upgrade_event: EventWriter<ApplyUpgrade>,
     mut interaction_query: Query<
-        (&GameCards, &Interaction, &mut BackgroundColor),
+        (&UpgradeButton, &Interaction, &mut BackgroundColor),
         (Changed<Interaction>, With<Button>),
     >,
 ) {
@@ -89,20 +98,13 @@ fn button_system(
         match *interaction {
             Interaction::Clicked => {
                 *color = style.button_color_pressed.into();
-                match button {
-                    GameCards::WallNorth => {
-                        game_state.set(GameState::InGame);
-                    }
-                    GameCards::WallSouth => {
-                        game_state.set(GameState::InGame);
-                    }
-                    GameCards::WallWest => {
-                        game_state.set(GameState::InGame);
-                    }
-                    GameCards::WallEast => {
-                        game_state.set(GameState::InGame);
-                    }
-                }
+                let event = match button {
+                    UpgradeButton::First => ApplyUpgrade::First,
+                    UpgradeButton::Second => ApplyUpgrade::First,
+                    UpgradeButton::Third => ApplyUpgrade::First,
+                    UpgradeButton::Fourth => ApplyUpgrade::First,
+                };
+                apply_upgrade_event.send(event);
             }
             Interaction::Hovered => {
                 *color = style.button_color_hover.into();
@@ -114,8 +116,12 @@ fn button_system(
     }
 }
 
-fn spawn_card<B>(child_builder: &mut ChildBuilder, style: &UiConfig, button: B)
-where
+fn spawn_upgrade_button<B>(
+    child_builder: &mut ChildBuilder,
+    style: &UiConfig,
+    button: B,
+    text: String,
+) where
     B: Component + std::fmt::Debug + Copy,
 {
     child_builder
@@ -135,7 +141,7 @@ where
         ))
         .with_children(|parent| {
             parent.spawn(TextBundle {
-                text: Text::from_section(format!("{button:?}"), style.text_style.clone()),
+                text: Text::from_section(text, style.text_style.clone()),
                 ..default()
             });
         });

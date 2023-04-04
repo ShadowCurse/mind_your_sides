@@ -33,7 +33,6 @@ impl Plugin for DamagePlugin {
 }
 
 /// Event to damage enemy
-#[derive(Component)]
 pub struct EnemyDamageEvent<S: Side> {
     pub target: Entity,
     pub damage: i32,
@@ -51,7 +50,6 @@ impl<S: Side> EnemyDamageEvent<S> {
 }
 
 /// Event to damage castle wall
-#[derive(Component)]
 pub struct WallDamageEvent<S: Side> {
     pub damage: i32,
     _phantom: PhantomData<S>,
