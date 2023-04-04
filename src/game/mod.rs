@@ -5,11 +5,12 @@ use bevy_rapier2d::prelude::RapierConfiguration;
 
 use crate::{impl_into_state, utils::set_state, GlobalState, IntoState};
 
-mod animation;
+pub mod animation;
 pub mod castle;
-mod damage;
-mod enemies;
-mod weapons;
+pub mod damage;
+pub mod enemies;
+pub mod weapons;
+pub mod upgrades;
 
 pub struct GamePlugin;
 
@@ -32,7 +33,8 @@ impl Plugin for GamePlugin {
             .add_plugin(castle::CastlePlugin)
             .add_plugin(damage::DamagePlugin)
             .add_plugin(enemies::EnemyPlugin)
-            .add_plugin(weapons::WeaponsPlugin);
+            .add_plugin(weapons::WeaponsPlugin)
+            .add_plugin(upgrades::UpgradesPlugin);
     }
 }
 
