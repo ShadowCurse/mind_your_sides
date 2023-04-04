@@ -13,7 +13,7 @@ use super::{
     East, GameState, North, Side, South, West,
 };
 
-mod spawn;
+pub mod spawn;
 
 /// Needed to make enemies move.
 /// Otherwise we would need set enormous speeds.
