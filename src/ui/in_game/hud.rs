@@ -11,14 +11,16 @@ use super::UiInGameState;
 use crate::game::GamePlugin;
 pub struct HUDPlugin;
 
+
+const MAX_EXP: u32 = 300;
+
 impl Plugin for HUDPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(setup.in_schedule(OnEnter(UiInGameState::InGame)))
-            .add_system(button_system.in_set(OnUpdate(UiInGameState::InGame)))
+        app .add_event::<LevelUpEvent>()
+            .add_system(setup.in_schedule(OnEnter(UiInGameState::InGame)))
             .add_system(update_text_level.in_set(OnUpdate(UiInGameState::InGame)))
-
+            .add_system(button_system.in_set(OnUpdate(UiInGameState::InGame)))
             .add_system(remove_all_with::<HUDMarker>.in_schedule(OnExit(UiInGameState::InGame)));
-
     }
 }
 
@@ -26,6 +28,10 @@ impl Plugin for HUDPlugin {
 struct HUDMarker;
 #[derive(Debug, Clone, Copy, Component)]
 struct LevelText;
+
+pub struct LevelUpEvent();
+
+
 #[derive(Debug, Clone, Copy, Component)]
 enum HUDButton {
     Pause,
@@ -68,7 +74,7 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
                         config.text_style.clone(),
                     ));
                     parent.spawn(TextBundle::from_section(
-                        "Level : ",
+                        "Exp : ",
                         config.text_style.clone()
                     ));
                     parent.spawn((TextBundle::from_section(
@@ -128,11 +134,16 @@ fn button_system(
 }
 
 fn update_text_level(
+    mut event: EventWriter<LevelUpEvent>,
     mut level_text : Query<&mut Text, With<LevelText>>,
     mut castle: Query<&mut Castle>,
 ){
     for mut text  in  &mut level_text  {
         let mut castle = castle.single_mut();
+        if castle.exp > MAX_EXP{
+            castle.exp  = 0;
+            event.send(LevelUpEvent())
+        }
         text.sections[0].value = format!("{}",castle.exp);
     }
 }
