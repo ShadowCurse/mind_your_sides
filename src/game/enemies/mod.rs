@@ -60,6 +60,9 @@ struct EnemySprites {
     #[asset(texture_atlas(tile_size_x = 32.0, tile_size_y = 32.0, columns = 4, rows = 1,))]
     #[asset(path = "sprites/skull.png")]
     pub skull: Handle<TextureAtlas>,
+    #[asset(texture_atlas(tile_size_x = 32.0, tile_size_y = 32.0, columns = 4, rows = 1,))]
+    #[asset(path = "sprites/poison_ivy.png")]
+    pub poison_ivy: Handle<TextureAtlas>,
 }
 
 #[derive(Debug, Default, Component)]
@@ -199,6 +202,18 @@ impl EnemyType for Skull {
     const EXP: u32 = 50;
     const DAMAGE: i32 = 15;
     const RANGE: f32 = 10.0;
+    const ATTACK_SPEED: f32 = 1.0;
+}
+
+#[derive(Debug, Default, Component)]
+pub struct PoisonIvy;
+
+impl EnemyType for PoisonIvy {
+    const HEALTH: i32 = 60;
+    const SPEED: f32 = 15.0;
+    const EXP: u32 = 80;
+    const DAMAGE: i32 = 20;
+    const RANGE: f32 = 40.0;
     const ATTACK_SPEED: f32 = 1.0;
 }
 
