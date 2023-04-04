@@ -64,7 +64,7 @@ fn setup(
 
     let mut camera_bundle = Camera2dBundle::default();
     // make everything smaller
-    camera_bundle.projection.scale = 1.5;
+    camera_bundle.projection.scale = 1.25;
     commands.spawn(camera_bundle);
 
     for mut window in windows.iter_mut() {

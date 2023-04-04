@@ -4,8 +4,8 @@ use rand::prelude::*;
 use crate::{game::GameState, utils::remove_all_with, GlobalState};
 
 use super::{
-    Bat, East, EnemyBundle, EnemyMarker, EnemySprites, Goblin, North, Side, South, SpearGoblin,
-    West,
+    Bat, East, EnemyBundle, EnemyMarker, EnemySprites, Goblin, North, Side, Skull, South,
+    SpearGoblin, West,
 };
 
 const DEFAULT_ENEMY_SIZE: f32 = 16.0;
@@ -156,7 +156,7 @@ fn enemy_spawn<S: Side>(
                 .mul_vec3(Vec3::Y * spawn.radius);
 
             // Choose enemy at random for now
-            match rng.gen_range(0..3) {
+            match rng.gen_range(0..4) {
                 0 => commands.spawn(EnemyBundle::<S, Goblin>::new(
                     DEFAULT_ENEMY_SIZE,
                     enemy_sprites.goblin.clone(),
@@ -169,9 +169,15 @@ fn enemy_spawn<S: Side>(
                     position,
                     buffs,
                 )),
-                _ => commands.spawn(EnemyBundle::<S, Bat>::new(
+                2 => commands.spawn(EnemyBundle::<S, Bat>::new(
                     DEFAULT_ENEMY_SIZE,
                     enemy_sprites.bat.clone(),
+                    position,
+                    buffs,
+                )),
+                _ => commands.spawn(EnemyBundle::<S, Skull>::new(
+                    DEFAULT_ENEMY_SIZE,
+                    enemy_sprites.skull.clone(),
                     position,
                     buffs,
                 )),

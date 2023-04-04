@@ -57,6 +57,9 @@ struct EnemySprites {
     #[asset(texture_atlas(tile_size_x = 32.0, tile_size_y = 32.0, columns = 4, rows = 1,))]
     #[asset(path = "sprites/bat.png")]
     pub bat: Handle<TextureAtlas>,
+    #[asset(texture_atlas(tile_size_x = 32.0, tile_size_y = 32.0, columns = 4, rows = 1,))]
+    #[asset(path = "sprites/skull.png")]
+    pub skull: Handle<TextureAtlas>,
 }
 
 #[derive(Debug, Default, Component)]
@@ -185,6 +188,18 @@ impl EnemyType for Bat {
     const DAMAGE: i32 = 5;
     const RANGE: f32 = 30.0;
     const ATTACK_SPEED: f32 = 1.5;
+}
+
+#[derive(Debug, Default, Component)]
+pub struct Skull;
+
+impl EnemyType for Skull {
+    const HEALTH: i32 = 80;
+    const SPEED: f32 = 10.0;
+    const EXP: u32 = 50;
+    const DAMAGE: i32 = 15;
+    const RANGE: f32 = 10.0;
+    const ATTACK_SPEED: f32 = 1.0;
 }
 
 /// Moved enemies in direction of the wall
