@@ -5,6 +5,8 @@ use crate::{GameAssets, GlobalState};
 mod in_game;
 mod main_menu;
 
+const BASE_FONT_SIZE: f32 = 21.0;
+
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
@@ -31,7 +33,7 @@ pub struct UiConfig {
 fn setup_ui_config(game_assets: Res<GameAssets>, mut commands: Commands) {
     commands.insert_resource(UiConfig {
         button_style: Style {
-            size: Size::new(Val::Px(100.0), Val::Px(50.0)),
+            size: Size::new(Val::Px(140.0), Val::Px(60.0)),
             margin: UiRect::all(Val::Percent(1.0)),
             justify_content: JustifyContent::Center,
             align_items: AlignItems::Center,
@@ -50,7 +52,7 @@ fn setup_ui_config(game_assets: Res<GameAssets>, mut commands: Commands) {
         menu_color: Color::NONE,
         text_style: TextStyle {
             font: game_assets.font.clone(),
-            font_size: 20.0,
+            font_size: BASE_FONT_SIZE * 2.0,
             color: Color::BLACK,
         },
         title_style: Style {
@@ -59,7 +61,7 @@ fn setup_ui_config(game_assets: Res<GameAssets>, mut commands: Commands) {
         },
         title_text_style: TextStyle {
             font: game_assets.font.clone(),
-            font_size: 60.0,
+            font_size: BASE_FONT_SIZE * 4.0,
             color: Color::BLACK,
         },
     });
