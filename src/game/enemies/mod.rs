@@ -184,7 +184,7 @@ pub trait EnemyType<S: Side>: Component + Default {
 #[derive(Debug, Default, Component)]
 pub struct MadCrab;
 
-impl EnemyType for MadCrab {
+impl<S: Side> EnemyType<S> for MadCrab {
     const HEALTH: i32 = 30;
     const SPEED: f32 = 15.0;
     const EXP: u32 = 30;
