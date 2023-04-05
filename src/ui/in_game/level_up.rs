@@ -1,4 +1,5 @@
-use crate::game::upgrades::{ApplyUpgrade, Upgrades};
+use crate::game::upgrades::apply::ApplyUpgradeEvent;
+use crate::game::upgrades::Upgrades;
 use crate::ui::in_game::UiInGameState;
 use crate::ui::UiConfig;
 use crate::utils::remove_all_with;
@@ -29,8 +30,7 @@ enum UpgradeButton {
 #[derive(Debug, Clone, Copy, Component)]
 struct LevelUpMarker;
 
-fn setup(ui_config: Res<UiConfig>, upgrades: Query<&Upgrades>, mut commands: Commands) {
-    let upgrades = upgrades.single();
+fn setup(ui_config: Res<UiConfig>, upgrades: Res<Upgrades>, mut commands: Commands) {
     commands
         .spawn((
             NodeBundle {
@@ -68,19 +68,19 @@ fn setup(ui_config: Res<UiConfig>, upgrades: Query<&Upgrades>, mut commands: Com
                         builder,
                         &ui_config,
                         UpgradeButton::Second,
-                        format!("{}", upgrades.upgrades[0]),
+                        format!("{}", upgrades.upgrades[1]),
                     );
                     spawn_upgrade_button(
                         builder,
                         &ui_config,
                         UpgradeButton::Third,
-                        format!("{}", upgrades.upgrades[0]),
+                        format!("{}", upgrades.upgrades[2]),
                     );
                     spawn_upgrade_button(
                         builder,
                         &ui_config,
                         UpgradeButton::Fourth,
-                        format!("{}", upgrades.upgrades[0]),
+                        format!("{}", upgrades.upgrades[3]),
                     );
                 });
         });
@@ -88,7 +88,7 @@ fn setup(ui_config: Res<UiConfig>, upgrades: Query<&Upgrades>, mut commands: Com
 
 fn button_system(
     style: Res<UiConfig>,
-    mut apply_upgrade_event: EventWriter<ApplyUpgrade>,
+    mut apply_upgrade_event: EventWriter<ApplyUpgradeEvent>,
     mut interaction_query: Query<
         (&UpgradeButton, &Interaction, &mut BackgroundColor),
         (Changed<Interaction>, With<Button>),
@@ -99,10 +99,10 @@ fn button_system(
             Interaction::Clicked => {
                 *color = style.button_color_pressed.into();
                 let event = match button {
-                    UpgradeButton::First => ApplyUpgrade::First,
-                    UpgradeButton::Second => ApplyUpgrade::First,
-                    UpgradeButton::Third => ApplyUpgrade::First,
-                    UpgradeButton::Fourth => ApplyUpgrade::First,
+                    UpgradeButton::First => ApplyUpgradeEvent::First,
+                    UpgradeButton::Second => ApplyUpgradeEvent::Second,
+                    UpgradeButton::Third => ApplyUpgradeEvent::Third,
+                    UpgradeButton::Fourth => ApplyUpgradeEvent::Fourth,
                 };
                 apply_upgrade_event.send(event);
             }

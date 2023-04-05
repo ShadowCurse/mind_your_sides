@@ -42,7 +42,7 @@ impl Plugin for MolotovPlugin {
 pub struct MolotovMarker;
 
 #[derive(Resource)]
-pub struct MolotovBuffs {
+pub struct MolotovBuffs<S: Side> {
     pub damage: f32,
     pub damage_flat: i32,
     pub crit_damage: f32,
@@ -51,9 +51,10 @@ pub struct MolotovBuffs {
     pub attack_speed: f32,
     pub area_attack_speed: f32,
     pub area_lifespan: f32,
+    _phatom: PhantomData<S>,
 }
 
-impl Default for MolotovBuffs {
+impl<S: Side> Default for MolotovBuffs<S> {
     fn default() -> Self {
         Self {
             damage: 1.0,
@@ -64,6 +65,7 @@ impl Default for MolotovBuffs {
             attack_speed: 1.0,
             area_attack_speed: 1.0,
             area_lifespan: 1.0,
+            _phatom: PhantomData,
         }
     }
 }
@@ -107,13 +109,16 @@ impl<S: Side> Default for MolotovBundle<S> {
 }
 
 fn setup(mut commands: Commands) {
-    commands.insert_resource(MolotovBuffs::default());
+    commands.insert_resource(MolotovBuffs::<North>::default());
+    commands.insert_resource(MolotovBuffs::<South>::default());
+    commands.insert_resource(MolotovBuffs::<West>::default());
+    commands.insert_resource(MolotovBuffs::<East>::default());
 }
 
 fn molotov_attack<S: Side>(
     time: Res<Time>,
     weapon_assets: Res<WeaponsAssets>,
-    molotov_buffs: Res<MolotovBuffs>,
+    molotov_buffs: Res<MolotovBuffs<S>>,
     global_weapons_buffs: Res<GlobalWeaponBuffs>,
     mut commands: Commands,
     mut molotovs: Query<(&Transform, &mut Molotov<S>)>,

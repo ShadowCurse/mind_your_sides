@@ -179,5 +179,10 @@ fn update_castle_wall_hp<S: Side>(
 ) {
     let wall = wall.single();
     let mut hp_text = hp_text.single_mut();
-    hp_text.sections[0].value = format!("{:?} wall: {}", S::default(), wall.health);
+    hp_text.sections[0].value = format!(
+        "{:?} wall: {}/{}",
+        S::default(),
+        wall.health,
+        wall.max_health
+    );
 }

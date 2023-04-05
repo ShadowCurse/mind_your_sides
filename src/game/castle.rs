@@ -14,8 +14,8 @@ const WALL_LENGTH: f32 = 100.0;
 const WALL_THICKNESS: f32 = 10.0;
 const WALL_HEALTH: i32 = 100;
 
-const CASTLE_FIRST_LEVEL_EXP: u32 = 100;
-const CASTLE_NEXT_LEVEL_EXP_GROWTH: f32 = 1.1;
+const CASTLE_FIRST_LEVEL_EXP: u32 = 500;
+const CASTLE_NEXT_LEVEL_EXP_GROWTH: f32 = 1.2;
 
 pub struct CastlePlugin;
 
@@ -73,6 +73,7 @@ impl Default for CastleBundle {
 #[derive(Component)]
 pub struct CastleWall<S: Side> {
     pub health: i32,
+    pub max_health: i32,
     _phantom: PhantomData<S>,
 }
 
@@ -80,7 +81,20 @@ impl<S: Side> CastleWall<S> {
     pub fn new(health: i32) -> Self {
         Self {
             health,
+            max_health: health,
             _phantom: PhantomData,
+        }
+    }
+
+    pub fn add_max_hp(&mut self, hp: i32) {
+        self.health += hp;
+        self.max_health += hp;
+    }
+
+    pub fn heal(&mut self, hp: i32) {
+        self.health += hp;
+        if self.max_health < self.health {
+            self.health = self.max_health;
         }
     }
 }

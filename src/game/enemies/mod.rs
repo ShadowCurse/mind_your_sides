@@ -6,7 +6,7 @@ use bevy_rapier2d::prelude::*;
 
 use crate::{utils::remove_all_with, GlobalState};
 
-use self::spawn::EnemySpawnBuffs;
+use self::spawn::EnemyBuffs;
 
 use super::{
     animation::AnimationBundle,
@@ -26,7 +26,7 @@ pub struct EnemyPlugin;
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app.add_collection_to_loading_state::<_, EnemySprites>(GlobalState::AssetLoading)
-            .add_plugin(spawn::SpawnPlugin)
+            .add_system(setup.in_schedule(OnEnter(GlobalState::InGame)))
             .add_systems(
                 (
                     enemy_movement::<North>,
@@ -44,7 +44,8 @@ impl Plugin for EnemyPlugin {
                 )
                     .in_set(OnUpdate(GameState::InGame)),
             )
-            .add_system(remove_all_with::<EnemyMarker>.in_schedule(OnExit(GlobalState::InGame)));
+            .add_system(remove_all_with::<EnemyMarker>.in_schedule(OnExit(GlobalState::InGame)))
+            .add_plugin(spawn::SpawnPlugin);
     }
 }
 
@@ -68,6 +69,27 @@ struct EnemySprites {
     #[asset(texture_atlas(tile_size_x = 32.0, tile_size_y = 32.0, columns = 4, rows = 1,))]
     #[asset(path = "sprites/poison_ivy.png")]
     pub poison_ivy: Handle<TextureAtlas>,
+}
+
+#[derive(Debug, Resource)]
+pub struct GlobalEnemyBuffs {
+    pub health: f32,
+    pub speed: f32,
+    pub exp: f32,
+    pub damage: f32,
+    pub attack_speed: f32,
+}
+
+impl Default for GlobalEnemyBuffs {
+    fn default() -> Self {
+        Self {
+            health: 1.0,
+            speed: 1.0,
+            exp: 1.0,
+            damage: 1.0,
+            attack_speed: 1.0,
+        }
+    }
 }
 
 #[derive(Debug, Default, Component)]
@@ -136,7 +158,8 @@ impl<S: Side, E: EnemyType<S>> EnemyBundle<S, E> {
         size: f32,
         texture_atlas: Handle<TextureAtlas>,
         position: Vec3,
-        buffs: &EnemySpawnBuffs<S>,
+        global_buffs: &GlobalEnemyBuffs,
+        buffs: &EnemyBuffs<S>,
     ) -> Self {
         Self {
             animation_bundle: AnimationBundle::new(texture_atlas, 3, 12.0, position),
@@ -148,8 +171,8 @@ impl<S: Side, E: EnemyType<S>> EnemyBundle<S, E> {
                 linear_damping: 5.0,
                 angular_damping: 10.0,
             },
-            enemy: E::enemy(buffs),
-            attack: E::attack(buffs),
+            enemy: E::enemy(global_buffs, buffs),
+            attack: E::attack(global_buffs, buffs),
             enemy_type: E::default(),
             marker: EnemyMarker,
         }
@@ -164,19 +187,19 @@ pub trait EnemyType<S: Side>: Component + Default {
     const RANGE: f32;
     const ATTACK_SPEED: f32;
 
-    fn enemy(buffs: &EnemySpawnBuffs<S>) -> Enemy<S> {
+    fn enemy(global_buffs: &GlobalEnemyBuffs, buffs: &EnemyBuffs<S>) -> Enemy<S> {
         Enemy::new(
-            (Self::HEALTH as f32 * buffs.health) as i32,
-            Self::SPEED * buffs.speed,
-            (Self::EXP as f32 * buffs.exp) as u32,
+            (Self::HEALTH as f32 * (global_buffs.health + buffs.health)) as i32,
+            Self::SPEED * (global_buffs.speed + buffs.speed),
+            (Self::EXP as f32 * (global_buffs.exp + buffs.exp)) as u32,
         )
     }
 
-    fn attack(buffs: &EnemySpawnBuffs<S>) -> EnemyAttack<S> {
+    fn attack(global_buffs: &GlobalEnemyBuffs, buffs: &EnemyBuffs<S>) -> EnemyAttack<S> {
         EnemyAttack::new(
-            (Self::DAMAGE as f32 * buffs.damage) as i32,
+            (Self::DAMAGE as f32 * (global_buffs.damage + buffs.damage)) as i32,
             Self::RANGE,
-            Self::ATTACK_SPEED * buffs.attack_speed,
+            Self::ATTACK_SPEED * (global_buffs.attack_speed + buffs.attack_speed),
         )
     }
 }
@@ -251,6 +274,10 @@ impl<S: Side> EnemyType<S> for PoisonIvy {
     const DAMAGE: i32 = 20;
     const RANGE: f32 = 40.0;
     const ATTACK_SPEED: f32 = 1.0;
+}
+
+fn setup(mut commands: Commands) {
+    commands.insert_resource(GlobalEnemyBuffs::default());
 }
 
 /// Moved enemies in direction of the wall
