@@ -170,7 +170,7 @@ fn update_castle_level(
 fn update_castle_exp(castle: Query<&Castle>, mut exp_text: Query<&mut Text, With<CastleExpText>>) {
     let castle = castle.single();
     let mut exp_text = exp_text.single_mut();
-    exp_text.sections[0].value = format!("Exp: {}", castle.exp);
+    exp_text.sections[0].value = format!("Exp: {}/{}", castle.exp, castle.next_level_exp);
 }
 
 fn update_castle_wall_hp<S: Side>(

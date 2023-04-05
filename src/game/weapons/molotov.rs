@@ -11,13 +11,13 @@ use crate::{
 
 use super::{GlobalWeaponBuffs, WeaponsAssets};
 
-const DEFAULT_AREA_SIZE: f32 = 64.0;
+const DEFAULT_AREA_SIZE: f32 = 40.0;
 const DEFAULT_AREA_DAMAGE: i32 = 10;
 const DEFAULT_AREA_ATTACK_SPEED: f32 = 0.5;
-const DEFAULT_AREA_LIFESPAN: f32 = 5.0;
+const DEFAULT_AREA_LIFESPAN: f32 = 3.0;
 
-const DEFAULT_MOLOTOV_MIN_RANGE: f32 = 100.0;
-const DEFAULT_MOLOTOV_RANGE: f32 = 400.0;
+const DEFAULT_MOLOTOV_MIN_RANGE: f32 = 150.0;
+const DEFAULT_MOLOTOV_RANGE: f32 = 300.0;
 const DEFAULT_MOLOTOV_ATTACK_SPEED: f32 = 3.0;
 
 pub struct MolotovPlugin;

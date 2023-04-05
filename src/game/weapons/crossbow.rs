@@ -18,7 +18,7 @@ const DEFAULT_BOLT_SIZE: f32 = 3.0;
 const DEFAULT_BOLT_DAMAGE: i32 = 20;
 const DEFAULT_BOLT_SPEED: f32 = 200.0;
 
-const DEFAULT_CROSSBOW_RANGE: f32 = 200.0;
+const DEFAULT_CROSSBOW_RANGE: f32 = 500.0;
 const DEFAULT_CROSSBOW_ATTACK_SPEED: f32 = 1.0;
 /// Offsets arrow spawn point in the enemy direction
 const DEFAULT_BOLT_SPAWN_OFFSET: f32 = 30.0;

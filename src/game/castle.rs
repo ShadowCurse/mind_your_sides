@@ -13,7 +13,7 @@ use super::{
 
 const WALL_HEALTH: i32 = 100;
 
-const CASTLE_FIRST_LEVEL_EXP: u32 = 500;
+const CASTLE_FIRST_LEVEL_EXP: u32 = 200;
 const CASTLE_NEXT_LEVEL_EXP_GROWTH: f32 = 1.2;
 
 pub struct CastlePlugin;
@@ -88,14 +88,16 @@ impl Default for CastleBundle {
 pub struct CastleWall<S: Side> {
     pub health: i32,
     pub max_health: i32,
+    pub thickness: f32,
     _phantom: PhantomData<S>,
 }
 
 impl<S: Side> CastleWall<S> {
-    pub fn new(health: i32) -> Self {
+    pub fn new(health: i32, thickness: f32) -> Self {
         Self {
             health,
             max_health: health,
+            thickness,
             _phantom: PhantomData,
         }
     }
@@ -133,7 +135,7 @@ impl<S: Side> CastleWallBundle<S> {
         Self {
             rigid_body: RigidBody::Fixed,
             collider: Collider::cuboid(length, thickness),
-            wall: CastleWall::new(health),
+            wall: CastleWall::new(health, thickness),
             crossbow: Default::default(),
             molotov: Default::default(),
             marker: CastleWallMarker,
@@ -168,7 +170,9 @@ fn setup(castle_sprites: Res<CastleSprites>, mut commands: Commands) {
         .insert(CastleWallBundle::<North>::new(
             WALL_HEALTH,
             386.0 / 2.0,
-            24.0 / 2.0,
+            // we need custom value for north wall, so that
+            // enemies don't go behind it
+            80.0,
         ));
     // South
     commands

@@ -51,8 +51,8 @@ pub enum WallUpgrade {
 }
 
 impl WallUpgrade {
-    random_upgrade!(additional_max_hp, AdditionalMaxHp, i32, 10, 30);
-    random_upgrade!(heal, Heal, i32, 20, 70);
+    random_upgrade!(additional_max_hp, AdditionalMaxHp, i32, 20, 50);
+    random_upgrade!(heal, Heal, i32, 40, 90);
 }
 
 impl std::fmt::Display for WallUpgrade {
@@ -74,19 +74,19 @@ pub enum GlobalWeaponUpgrade {
 }
 
 impl GlobalWeaponUpgrade {
-    random_upgrade!(damage, Damage, f32, 20.0, 70.0);
-    random_upgrade!(damage_flat, DamageFlat, i32, 20, 70);
-    random_upgrade!(crit_dmamge, CritDamage, f32, 20.0, 70.0);
-    random_upgrade!(crit_chance, CritChance, f32, 20.0, 70.0);
+    random_upgrade!(damage, Damage, f32, 2.0, 15.0);
+    random_upgrade!(damage_flat, DamageFlat, i32, 20, 50);
+    random_upgrade!(crit_dmamge, CritDamage, f32, 5.0, 20.0);
+    random_upgrade!(crit_chance, CritChance, f32, 1.0, 10.0);
 }
 
 impl std::fmt::Display for GlobalWeaponUpgrade {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Damage(value) => f.write_fmt(format_args!("damage: +{value:.0}%"))?,
+            Self::Damage(value) => f.write_fmt(format_args!("damage: +{value:.1}%"))?,
             Self::DamageFlat(value) => f.write_fmt(format_args!("damage: +{value}"))?,
-            Self::CritDamage(value) => f.write_fmt(format_args!("crit damage: +{value:.0}%"))?,
-            Self::CritChance(value) => f.write_fmt(format_args!("crit chance: +{value:.0}%"))?,
+            Self::CritDamage(value) => f.write_fmt(format_args!("crit damage: +{value:.1}%"))?,
+            Self::CritChance(value) => f.write_fmt(format_args!("crit chance: +{value:.1}%"))?,
         }
         Ok(())
     }
@@ -113,49 +113,49 @@ pub enum WeaponUpgrade {
 }
 
 impl WeaponUpgrade {
-    random_upgrade!(crossbow_damage, CrossbowDamage, f32, 20.0, 70.0);
-    random_upgrade!(crossbow_damage_flat, CrossbowDamageFlat, i32, 20, 70);
-    random_upgrade!(crossbow_crit_damage, CrossbowCritDamage, f32, 20.0, 70.0);
-    random_upgrade!(crossbow_crit_chance, CrossbowCritChance, f32, 20.0, 70.0);
-    random_upgrade!(crossbow_range, CrossbowRange, f32, 20.0, 70.0);
-    random_upgrade!(crossbow_attack_speed, CrossbowAttackSpeed, f32, 20.0, 70.0);
-    random_upgrade!(crossbow_arrow_speed, CrossbowArrowSpeed, f32, 20.0, 70.0);
+    random_upgrade!(crossbow_damage, CrossbowDamage, f32, 1.0, 10.0);
+    random_upgrade!(crossbow_damage_flat, CrossbowDamageFlat, i32, 5, 70);
+    random_upgrade!(crossbow_crit_damage, CrossbowCritDamage, f32, 1.0, 15.0);
+    random_upgrade!(crossbow_crit_chance, CrossbowCritChance, f32, 1.0, 10.0);
+    random_upgrade!(crossbow_range, CrossbowRange, f32, 10.0, 100.0);
+    random_upgrade!(crossbow_attack_speed, CrossbowAttackSpeed, f32, 1.0, 5.0);
+    random_upgrade!(crossbow_arrow_speed, CrossbowArrowSpeed, f32, 5.0, 20.0);
 
-    random_upgrade!(molotov_damage, MolotovDamage, f32, 20.0, 70.0);
-    random_upgrade!(molotov_damage_flat, MolotovDamageFlat, i32, 20, 70);
-    random_upgrade!(molotov_crit_damage, MolotovCritDamage, f32, 20.0, 70.0);
-    random_upgrade!(molotov_crit_chance, MolotovCritChance, f32, 20.0, 70.0);
-    random_upgrade!(molotov_area_size, MolotovAreaSize, f32, 20.0, 70.0);
-    random_upgrade!(molotov_attack_speed, MolotovAttackSpeed, f32, 20.0, 70.0);
+    random_upgrade!(molotov_damage, MolotovDamage, f32, 1.0, 8.0);
+    random_upgrade!(molotov_damage_flat, MolotovDamageFlat, i32, 3, 40);
+    random_upgrade!(molotov_crit_damage, MolotovCritDamage, f32, 1.0, 5.0);
+    random_upgrade!(molotov_crit_chance, MolotovCritChance, f32, 10.0, 10.0);
+    random_upgrade!(molotov_area_size, MolotovAreaSize, f32, 5.0, 20.0);
+    random_upgrade!(molotov_attack_speed, MolotovAttackSpeed, f32, 1.0, 5.0);
     random_upgrade!(
         molotov_area_attack_speed,
         MolotovAreaAttackSpeed,
         f32,
-        20.0,
-        70.0
+        1.0,
+        5.0
     );
-    random_upgrade!(molotov_area_lifespan, MolotovAreaLifespan, f32, 20.0, 70.0);
+    random_upgrade!(molotov_area_lifespan, MolotovAreaLifespan, f32, 1.0, 3.0);
 }
 
 #[rustfmt::skip]
 impl std::fmt::Display for WeaponUpgrade {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::CrossbowDamage(value) => f.write_fmt(format_args!("crossbow damage: +{value:.0}%"))?,
+            Self::CrossbowDamage(value) => f.write_fmt(format_args!("crossbow damage: +{value:.1}%"))?,
             Self::CrossbowDamageFlat(value) => f.write_fmt(format_args!("crossbow damage: +{value}"))?,
-            Self::CrossbowCritDamage(value) => f.write_fmt(format_args!("crossbow crit damage: +{value:.0}%"))?,
-            Self::CrossbowCritChance(value) => f.write_fmt(format_args!("crossbow crit chance: +{value:.0}%"))?,
-            Self::CrossbowRange(value) => f.write_fmt(format_args!("crossbow range: +{value:.0}%"))?,
-            Self::CrossbowAttackSpeed(value) => f.write_fmt(format_args!("crossbow attack speed: +{value:.0}%"))?,
-            Self::CrossbowArrowSpeed(value) => f.write_fmt(format_args!("crossbow arrow spped: +{value:.0}%"))?,
-            Self::MolotovDamage(value) => f.write_fmt(format_args!("molotov damage: +{value:.0}%"))?,
+            Self::CrossbowCritDamage(value) => f.write_fmt(format_args!("crossbow crit damage: +{value:.1}%"))?,
+            Self::CrossbowCritChance(value) => f.write_fmt(format_args!("crossbow crit chance: +{value:.1}%"))?,
+            Self::CrossbowRange(value) => f.write_fmt(format_args!("crossbow range: +{value:.1}%"))?,
+            Self::CrossbowAttackSpeed(value) => f.write_fmt(format_args!("crossbow attack speed: +{value:.1}%"))?,
+            Self::CrossbowArrowSpeed(value) => f.write_fmt(format_args!("crossbow arrow spped: +{value:.1}%"))?,
+            Self::MolotovDamage(value) => f.write_fmt(format_args!("molotov damage: +{value:.1}%"))?,
             Self::MolotovDamageFlat(value) => f.write_fmt(format_args!("molotov damage: +{value}"))?,
-            Self::MolotovCritDamage(value) => f.write_fmt(format_args!("molotov crit damage: +{value:.0}%"))?,
-            Self::MolotovCritChance(value) => f.write_fmt(format_args!("molotov crit chance: +{value:.0}%"))?,
-            Self::MolotovAreaSize(value) => f.write_fmt(format_args!("molotov area size: +{value:.0}%"))?,
-            Self::MolotovAttackSpeed(value) => f.write_fmt(format_args!("molotov attack speed: +{value:.0}%"))?,
-            Self::MolotovAreaAttackSpeed(value) => f.write_fmt(format_args!("molotov area attack speed: +{value:.0}%"))?,
-            Self::MolotovAreaLifespan(value) => f.write_fmt(format_args!("molotov area lifespan: +{value:.0}%"))?,
+            Self::MolotovCritDamage(value) => f.write_fmt(format_args!("molotov crit damage: +{value:.1}%"))?,
+            Self::MolotovCritChance(value) => f.write_fmt(format_args!("molotov crit chance: +{value:.1}%"))?,
+            Self::MolotovAreaSize(value) => f.write_fmt(format_args!("molotov area size: +{value:.1}%"))?,
+            Self::MolotovAttackSpeed(value) => f.write_fmt(format_args!("molotov attack speed: +{value:.1}%"))?,
+            Self::MolotovAreaAttackSpeed(value) => f.write_fmt(format_args!("molotov area attack speed: +{value:.1}%"))?,
+            Self::MolotovAreaLifespan(value) => f.write_fmt(format_args!("molotov area lifespan: +{value:.1}%"))?,
         }
         Ok(())
     }
@@ -171,21 +171,21 @@ pub enum GlobalEnemyUpgrade {
 }
 
 impl GlobalEnemyUpgrade {
-    random_upgrade!(health, Health, f32, 20.0, 70.0);
-    random_upgrade!(speed, Speed, f32, 20.0, 70.0);
-    random_upgrade!(exp, Exp, f32, 20.0, 70.0);
-    random_upgrade!(damage, Damage, f32, 20.0, 70.0);
-    random_upgrade!(attack_speed, AttackSpeed, f32, 20.0, 70.0);
+    random_upgrade!(health, Health, f32, 1.0, 10.0);
+    random_upgrade!(speed, Speed, f32, 0.1, 1.0);
+    random_upgrade!(exp, Exp, f32, 1.0, 8.0);
+    random_upgrade!(damage, Damage, f32, 2.0, 10.0);
+    random_upgrade!(attack_speed, AttackSpeed, f32, 1.0, 5.0);
 }
 
 impl std::fmt::Display for GlobalEnemyUpgrade {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Health(value) => f.write_fmt(format_args!("health: +{value:.0}%"))?,
-            Self::Speed(value) => f.write_fmt(format_args!("movement speed: +{value:.0}%"))?,
-            Self::Exp(value) => f.write_fmt(format_args!("exp drop: +{value:.0}%"))?,
-            Self::Damage(value) => f.write_fmt(format_args!("damage: +{value:.0}%"))?,
-            Self::AttackSpeed(value) => f.write_fmt(format_args!("attack speed: +{value:.0}%"))?,
+            Self::Health(value) => f.write_fmt(format_args!("health: +{value:.1}%"))?,
+            Self::Speed(value) => f.write_fmt(format_args!("movement speed: +{value:.1}%"))?,
+            Self::Exp(value) => f.write_fmt(format_args!("exp drop: +{value:.1}%"))?,
+            Self::Damage(value) => f.write_fmt(format_args!("damage: +{value:.1}%"))?,
+            Self::AttackSpeed(value) => f.write_fmt(format_args!("attack speed: +{value:.1}%"))?,
         }
         Ok(())
     }
@@ -203,22 +203,22 @@ pub enum EnemyUpgrade {
 impl std::fmt::Display for EnemyUpgrade {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Health(value) => f.write_fmt(format_args!("health: +{value:.0}%"))?,
-            Self::Speed(value) => f.write_fmt(format_args!("movement speed: +{value:.0}%"))?,
-            Self::Exp(value) => f.write_fmt(format_args!("exp drop: +{value:.0}%"))?,
-            Self::Damage(value) => f.write_fmt(format_args!("damage: +{value:.0}%"))?,
-            Self::AttackSpeed(value) => f.write_fmt(format_args!("attack speed: +{value:.0}%"))?,
+            Self::Health(value) => f.write_fmt(format_args!("health: +{value:.1}%"))?,
+            Self::Speed(value) => f.write_fmt(format_args!("movement speed: +{value:.1}%"))?,
+            Self::Exp(value) => f.write_fmt(format_args!("exp drop: +{value:.1}%"))?,
+            Self::Damage(value) => f.write_fmt(format_args!("damage: +{value:.1}%"))?,
+            Self::AttackSpeed(value) => f.write_fmt(format_args!("attack speed: +{value:.1}%"))?,
         }
         Ok(())
     }
 }
 
 impl EnemyUpgrade {
-    random_upgrade!(health, Health, f32, 20.0, 70.0);
-    random_upgrade!(speed, Speed, f32, 20.0, 70.0);
-    random_upgrade!(exp, Exp, f32, 20.0, 70.0);
-    random_upgrade!(damage, Damage, f32, 20.0, 70.0);
-    random_upgrade!(attack_speed, AttackSpeed, f32, 20.0, 70.0);
+    random_upgrade!(health, Health, f32, 1.0, 20.0);
+    random_upgrade!(speed, Speed, f32, 0.1, 5.0);
+    random_upgrade!(exp, Exp, f32, 1.0, 15.0);
+    random_upgrade!(damage, Damage, f32, 2.0, 25.0);
+    random_upgrade!(attack_speed, AttackSpeed, f32, 1.0, 10.0);
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -324,14 +324,14 @@ pub fn genereate_upgrades() -> Upgrades {
 
 pub fn genereate_upgrade(mut rng: &mut impl rand::Rng) -> Upgrade {
     // wall
-    let (global_wall_upgrade, wall_upgrade) = if rng.gen_ratio(8, 10) {
+    let (global_wall_upgrade, wall_upgrade, must_have_weapon) = if rng.gen_ratio(2, 10) {
         if rng.gen_ratio(3, 10) {
             let upgrade = match rng.gen_range(0..1) {
                 0 => GlobalWallUpgrade::additional_max_hp(&mut rng),
                 1 => GlobalWallUpgrade::heal(&mut rng),
                 _ => unreachable!(),
             };
-            (Some(upgrade), None)
+            (Some(upgrade), None, false)
         } else {
             // one side wall
             let upgrade = match rng.gen_range(0..2) {
@@ -347,14 +347,14 @@ pub fn genereate_upgrade(mut rng: &mut impl rand::Rng) -> Upgrade {
                 3 => UpgradeSide::East(upgrade),
                 _ => unreachable!(),
             };
-            (None, Some(upgrade))
+            (None, Some(upgrade), false)
         }
     } else {
-        (None, None)
+        (None, None, true)
     };
 
     // weapon
-    let (global_weapon_upgrade, weapon_upgrade) = if rng.gen_ratio(2, 10) {
+    let (global_weapon_upgrade, weapon_upgrade) = if rng.gen_ratio(9, 10) || must_have_weapon {
         if rng.gen_ratio(3, 10) {
             let upgrade = match rng.gen_range(0..4) {
                 0 => GlobalWeaponUpgrade::damage(&mut rng),
@@ -400,7 +400,7 @@ pub fn genereate_upgrade(mut rng: &mut impl rand::Rng) -> Upgrade {
     };
 
     // enemy
-    let (global_enemy_upgrade, enemy_upgrade) = if rng.gen_ratio(9, 10) {
+    let (global_enemy_upgrade, enemy_upgrade) = if rng.gen_ratio(99, 100) {
         if rng.gen_ratio(3, 10) {
             let upgrade = match rng.gen_range(0..5) {
                 0 => GlobalEnemyUpgrade::health(&mut rng),

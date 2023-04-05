@@ -12,6 +12,8 @@ use super::{
 
 const DEFAULT_ENEMY_SIZE: f32 = 16.0;
 
+const DEFAULT_ENEMY_SPAWN_POSITON: f32 = 1000.0;
+
 const DEFAULT_ENEMY_SPAWN_NUMBER: u32 = 2;
 const DEFAULT_ENEMY_SPAWN_RADIUS: f32 = 150.0;
 const DEFAULT_ENEMY_SPAWN_RATE: f32 = 5.0;
@@ -108,7 +110,11 @@ fn setup(
         .spawn(MaterialMesh2dBundle {
             mesh: spawn_mesh.clone().into(),
             material: spawn_material.clone(),
-            transform: Transform::from_translation(Vec3::new(0.0, 500.0, 0.0)),
+            transform: Transform::from_translation(Vec3::new(
+                0.0,
+                DEFAULT_ENEMY_SPAWN_POSITON,
+                0.0,
+            )),
             ..default()
         })
         .insert(EnemySpawnBundle::<North>::default());
@@ -117,7 +123,11 @@ fn setup(
         .spawn(MaterialMesh2dBundle {
             mesh: spawn_mesh.clone().into(),
             material: spawn_material.clone(),
-            transform: Transform::from_translation(Vec3::new(0.0, -500.0, 0.0)),
+            transform: Transform::from_translation(Vec3::new(
+                0.0,
+                -DEFAULT_ENEMY_SPAWN_POSITON,
+                0.0,
+            )),
             ..default()
         })
         .insert(EnemySpawnBundle::<South>::default());
@@ -126,7 +136,11 @@ fn setup(
         .spawn(MaterialMesh2dBundle {
             mesh: spawn_mesh.clone().into(),
             material: spawn_material.clone(),
-            transform: Transform::from_translation(Vec3::new(-500.0, 0.0, 0.0)),
+            transform: Transform::from_translation(Vec3::new(
+                -DEFAULT_ENEMY_SPAWN_POSITON,
+                0.0,
+                0.0,
+            )),
             ..default()
         })
         .insert(EnemySpawnBundle::<West>::default());
@@ -135,7 +149,11 @@ fn setup(
         .spawn(MaterialMesh2dBundle {
             mesh: spawn_mesh.into(),
             material: spawn_material,
-            transform: Transform::from_translation(Vec3::new(500.0, 0.0, 0.0)),
+            transform: Transform::from_translation(Vec3::new(
+                DEFAULT_ENEMY_SPAWN_POSITON,
+                0.0,
+                0.0,
+            )),
             ..default()
         })
         .insert(EnemySpawnBundle::<East>::default());
@@ -161,7 +179,8 @@ fn enemy_spawn<S: Side>(
         for n in 0..spawn.number {
             let position = transform.translation
                 + Quat::from_rotation_z(
-                    (2.0 * std::f32::consts::PI / spawn.number as f32) * n as f32,
+                    (2.0 * std::f32::consts::PI / spawn.number as f32) * n as f32
+                        + rand::thread_rng().gen_range(0.0..std::f32::consts::FRAC_PI_6),
                 )
                 .mul_vec3(Vec3::Y * spawn.radius);
 

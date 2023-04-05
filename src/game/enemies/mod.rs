@@ -208,11 +208,11 @@ pub trait EnemyType<S: Side>: Component + Default {
 pub struct MadCrab;
 
 impl<S: Side> EnemyType<S> for MadCrab {
-    const HEALTH: i32 = 30;
-    const SPEED: f32 = 15.0;
-    const EXP: u32 = 30;
+    const HEALTH: i32 = 100;
+    const SPEED: f32 = 8.0;
+    const EXP: u32 = 3;
     const DAMAGE: i32 = 5;
-    const RANGE: f32 = 10.0;
+    const RANGE: f32 = 20.0;
     const ATTACK_SPEED: f32 = 1.1;
 }
 
@@ -221,10 +221,10 @@ pub struct Goblin;
 
 impl<S: Side> EnemyType<S> for Goblin {
     const HEALTH: i32 = 80;
-    const SPEED: f32 = 20.0;
-    const EXP: u32 = 50;
+    const SPEED: f32 = 15.0;
+    const EXP: u32 = 5;
     const DAMAGE: i32 = 10;
-    const RANGE: f32 = 30.0;
+    const RANGE: f32 = 20.0;
     const ATTACK_SPEED: f32 = 1.0;
 }
 
@@ -233,10 +233,10 @@ pub struct SpearGoblin;
 
 impl<S: Side> EnemyType<S> for SpearGoblin {
     const HEALTH: i32 = 100;
-    const SPEED: f32 = 15.0;
-    const EXP: u32 = 80;
+    const SPEED: f32 = 10.0;
+    const EXP: u32 = 8;
     const DAMAGE: i32 = 15;
-    const RANGE: f32 = 50.0;
+    const RANGE: f32 = 20.0;
     const ATTACK_SPEED: f32 = 1.2;
 }
 
@@ -245,10 +245,10 @@ pub struct Bat;
 
 impl<S: Side> EnemyType<S> for Bat {
     const HEALTH: i32 = 30;
-    const SPEED: f32 = 20.0;
-    const EXP: u32 = 50;
+    const SPEED: f32 = 10.0;
+    const EXP: u32 = 5;
     const DAMAGE: i32 = 5;
-    const RANGE: f32 = 30.0;
+    const RANGE: f32 = 20.0;
     const ATTACK_SPEED: f32 = 1.5;
 }
 
@@ -257,10 +257,10 @@ pub struct Skull;
 
 impl<S: Side> EnemyType<S> for Skull {
     const HEALTH: i32 = 80;
-    const SPEED: f32 = 10.0;
-    const EXP: u32 = 50;
+    const SPEED: f32 = 8.0;
+    const EXP: u32 = 5;
     const DAMAGE: i32 = 15;
-    const RANGE: f32 = 10.0;
+    const RANGE: f32 = 20.0;
     const ATTACK_SPEED: f32 = 1.0;
 }
 
@@ -269,10 +269,10 @@ pub struct PoisonIvy;
 
 impl<S: Side> EnemyType<S> for PoisonIvy {
     const HEALTH: i32 = 60;
-    const SPEED: f32 = 15.0;
-    const EXP: u32 = 80;
+    const SPEED: f32 = 12.0;
+    const EXP: u32 = 8;
     const DAMAGE: i32 = 20;
-    const RANGE: f32 = 40.0;
+    const RANGE: f32 = 20.0;
     const ATTACK_SPEED: f32 = 1.0;
 }
 
@@ -300,16 +300,23 @@ fn enemy_movement<S: Side>(
 
 fn enemy_attack<S: Side>(
     time: Res<Time>,
-    wall: Query<&Transform, With<CastleWall<S>>>,
+    wall: Query<(&Transform, &CastleWall<S>)>,
     mut enemies: Query<(&Transform, &mut EnemyAttack<S>)>,
     mut damage_events: EventWriter<WallDamageEvent<S>>,
 ) {
-    let wall = wall.single();
+    let (wall_transform, wall) = wall.single();
 
     for (enemy_transform, mut enemy_attack) in enemies.iter_mut() {
-        let distance = (wall.translation - enemy_transform.translation)
+        let distance = (wall_transform
+            .translation
             .truncate()
-            .length();
+            .dot(S::DIRECTION.abs())
+            - enemy_transform
+                .translation
+                .truncate()
+                .dot(S::DIRECTION.abs()))
+        .abs()
+            - wall.thickness;
 
         if enemy_attack.range < distance {
             continue;
