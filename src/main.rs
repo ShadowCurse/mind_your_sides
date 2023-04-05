@@ -38,7 +38,7 @@ fn main() {
         )
         .add_collection_to_loading_state::<_, GameAssets>(GlobalState::AssetLoading)
         // debug
-        // .add_plugin(RapierDebugRenderPlugin::default())
+        .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(WorldInspectorPlugin::new())
         //
         .add_plugin(game::GamePlugin)

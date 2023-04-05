@@ -13,8 +13,9 @@ use super::{
 
 const WALL_HEALTH: i32 = 100;
 
-const WALL_LENGTH: f32 = 256.0;
-const WALL_THICKNESS: f32 = 16.0;
+// TODO: Use in the refactor
+// const WALL_LENGTH: f32 = 256.0;
+// const WALL_THICKNESS: f32 = 16.0;
 
 const CASTLE_FIRST_LEVEL_EXP: u32 = 100;
 const CASTLE_NEXT_LEVEL_EXP_GROWTH: f32 = 1.1;
