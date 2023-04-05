@@ -23,8 +23,9 @@ fn main() {
                 .set(ImagePlugin::default_nearest())
                 .set(WindowPlugin {
                     primary_window: Some(Window {
+                        // TODO Rename game
                         title: "Mad Crabs".to_string(),
-                        mode: WindowMode::BorderlessFullscreen,
+                        mode: WindowMode::Windowed,
                         ..default()
                     }),
                     ..default()
