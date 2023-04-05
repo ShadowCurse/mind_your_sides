@@ -1,6 +1,9 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
-use bevy::{prelude::*, window::PresentMode};
+use bevy::{
+    prelude::*,
+    window::{PresentMode, WindowMode},
+};
 use bevy_asset_loader::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::*;
@@ -15,7 +18,18 @@ fn main() {
     let mut app = App::new();
     app.insert_resource(ClearColor(Color::rgb_u8(27, 62, 60)))
         .add_state::<GlobalState>()
-        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+        .add_plugins(
+            DefaultPlugins
+                .set(ImagePlugin::default_nearest())
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: "Mad Crabs".to_string(),
+                        mode: WindowMode::BorderlessFullscreen,
+                        ..default()
+                    }),
+                    ..default()
+                }),
+        )
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         // asests
         .add_loading_state(
@@ -24,7 +38,7 @@ fn main() {
         )
         .add_collection_to_loading_state::<_, GameAssets>(GlobalState::AssetLoading)
         // debug
-        .add_plugin(RapierDebugRenderPlugin::default())
+        // .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(WorldInspectorPlugin::new())
         //
         .add_plugin(game::GamePlugin)
