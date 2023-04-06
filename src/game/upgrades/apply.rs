@@ -342,10 +342,14 @@ fn apply_global_weapon_upgrades(
 ) {
     for event in global_weapon_upgrade_events.iter() {
         match event.upgrade {
-            GlobalWeaponUpgrade::Damage(value) => global_weapons_buffs.damage += value,
+            GlobalWeaponUpgrade::Damage(value) => global_weapons_buffs.damage += value / 100.0,
             GlobalWeaponUpgrade::DamageFlat(value) => global_weapons_buffs.damage_flat += value,
-            GlobalWeaponUpgrade::CritDamage(value) => global_weapons_buffs.crit_damage += value,
-            GlobalWeaponUpgrade::CritChance(value) => global_weapons_buffs.crit_chance += value,
+            GlobalWeaponUpgrade::CritDamage(value) => {
+                global_weapons_buffs.crit_damage += value / 100.0
+            }
+            GlobalWeaponUpgrade::CritChance(value) => {
+                global_weapons_buffs.crit_chance += value / 100.0
+            }
         }
         finish_event.send(FinishUpgradeEvent);
     }
@@ -359,23 +363,27 @@ fn apply_weapon_upgrades_to_side<S: Side>(
 ) {
     for event in weapon_upgrade_events.iter() {
         match event.upgrade {
-            WeaponUpgrade::CrossbowDamage(value) => crossbow_buffs.damage += value,
+            WeaponUpgrade::CrossbowDamage(value) => crossbow_buffs.damage += value / 100.0,
             WeaponUpgrade::CrossbowDamageFlat(value) => crossbow_buffs.damage_flat += value,
-            WeaponUpgrade::CrossbowCritDamage(value) => crossbow_buffs.crit_damage += value,
-            WeaponUpgrade::CrossbowCritChance(value) => crossbow_buffs.crit_chance += value,
-            WeaponUpgrade::CrossbowRange(value) => crossbow_buffs.range += value,
-            WeaponUpgrade::CrossbowAttackSpeed(value) => crossbow_buffs.attack_speed += value,
-            WeaponUpgrade::CrossbowArrowSpeed(value) => crossbow_buffs.arrow_speed += value,
-            WeaponUpgrade::MolotovDamage(value) => molotov_buffs.damage += value,
+            WeaponUpgrade::CrossbowCritDamage(value) => crossbow_buffs.crit_damage += value / 100.0,
+            WeaponUpgrade::CrossbowCritChance(value) => crossbow_buffs.crit_chance += value / 100.0,
+            WeaponUpgrade::CrossbowRange(value) => crossbow_buffs.range += value / 100.0,
+            WeaponUpgrade::CrossbowAttackSpeed(value) => {
+                crossbow_buffs.attack_speed += value / 100.0
+            }
+            WeaponUpgrade::CrossbowArrowSpeed(value) => crossbow_buffs.arrow_speed += value / 100.0,
+            WeaponUpgrade::MolotovDamage(value) => molotov_buffs.damage += value / 100.0,
             WeaponUpgrade::MolotovDamageFlat(value) => molotov_buffs.damage_flat += value,
-            WeaponUpgrade::MolotovCritDamage(value) => molotov_buffs.crit_damage += value,
-            WeaponUpgrade::MolotovCritChance(value) => molotov_buffs.crit_chance += value,
-            WeaponUpgrade::MolotovAreaSize(value) => molotov_buffs.area_size += value,
-            WeaponUpgrade::MolotovAttackSpeed(value) => molotov_buffs.attack_speed += value,
+            WeaponUpgrade::MolotovCritDamage(value) => molotov_buffs.crit_damage += value / 100.0,
+            WeaponUpgrade::MolotovCritChance(value) => molotov_buffs.crit_chance += value / 100.0,
+            WeaponUpgrade::MolotovAreaSize(value) => molotov_buffs.area_size += value / 100.0,
+            WeaponUpgrade::MolotovAttackSpeed(value) => molotov_buffs.attack_speed += value / 100.0,
             WeaponUpgrade::MolotovAreaAttackSpeed(value) => {
                 molotov_buffs.area_attack_speed += value
             }
-            WeaponUpgrade::MolotovAreaLifespan(value) => molotov_buffs.area_lifespan += value,
+            WeaponUpgrade::MolotovAreaLifespan(value) => {
+                molotov_buffs.area_lifespan += value / 100.0
+            }
         }
         finish_event.send(FinishUpgradeEvent);
     }
@@ -388,11 +396,13 @@ fn apply_global_enemy_upgrades(
 ) {
     for event in global_enemy_upgrade_events.iter() {
         match event.upgrade {
-            GlobalEnemyUpgrade::Health(value) => global_enemy_buffs.health += value,
-            GlobalEnemyUpgrade::Speed(value) => global_enemy_buffs.speed += value,
-            GlobalEnemyUpgrade::Exp(value) => global_enemy_buffs.exp -= value,
-            GlobalEnemyUpgrade::Damage(value) => global_enemy_buffs.damage += value,
-            GlobalEnemyUpgrade::AttackSpeed(value) => global_enemy_buffs.attack_speed += value,
+            GlobalEnemyUpgrade::Health(value) => global_enemy_buffs.health += value / 100.0,
+            GlobalEnemyUpgrade::Speed(value) => global_enemy_buffs.speed += value / 100.0,
+            GlobalEnemyUpgrade::Exp(value) => global_enemy_buffs.exp -= value / 100.0,
+            GlobalEnemyUpgrade::Damage(value) => global_enemy_buffs.damage += value / 100.0,
+            GlobalEnemyUpgrade::AttackSpeed(value) => {
+                global_enemy_buffs.attack_speed += value / 100.0
+            }
         }
         finish_event.send(FinishUpgradeEvent);
     }
@@ -405,11 +415,11 @@ fn apply_enemy_upgrades_to_side<S: Side>(
 ) {
     for event in enemy_upgrade_events.iter() {
         match event.upgrade {
-            EnemyUpgrade::Health(value) => enemy_spawn_buffs.health += value,
-            EnemyUpgrade::Speed(value) => enemy_spawn_buffs.speed += value,
-            EnemyUpgrade::Exp(value) => enemy_spawn_buffs.exp -= value,
-            EnemyUpgrade::Damage(value) => enemy_spawn_buffs.damage += value,
-            EnemyUpgrade::AttackSpeed(value) => enemy_spawn_buffs.attack_speed += value,
+            EnemyUpgrade::Health(value) => enemy_spawn_buffs.health += value / 100.0,
+            EnemyUpgrade::Speed(value) => enemy_spawn_buffs.speed += value / 100.0,
+            EnemyUpgrade::Exp(value) => enemy_spawn_buffs.exp -= value / 100.0,
+            EnemyUpgrade::Damage(value) => enemy_spawn_buffs.damage += value / 100.0,
+            EnemyUpgrade::AttackSpeed(value) => enemy_spawn_buffs.attack_speed += value / 100.0,
         }
         finish_event.send(FinishUpgradeEvent);
     }

@@ -41,7 +41,7 @@ impl Plugin for MolotovPlugin {
 #[derive(Component)]
 pub struct MolotovMarker;
 
-#[derive(Resource)]
+#[derive(Default, Resource)]
 pub struct MolotovBuffs<S: Side> {
     pub damage: f32,
     pub damage_flat: i32,
@@ -52,22 +52,6 @@ pub struct MolotovBuffs<S: Side> {
     pub area_attack_speed: f32,
     pub area_lifespan: f32,
     _phatom: PhantomData<S>,
-}
-
-impl<S: Side> Default for MolotovBuffs<S> {
-    fn default() -> Self {
-        Self {
-            damage: 1.0,
-            damage_flat: 0,
-            crit_damage: 1.1,
-            crit_chance: 5.0,
-            area_size: 1.0,
-            attack_speed: 1.0,
-            area_attack_speed: 1.0,
-            area_lifespan: 1.0,
-            _phatom: PhantomData,
-        }
-    }
 }
 
 #[derive(Component)]
@@ -129,7 +113,7 @@ fn molotov_attack<S: Side>(
         }
 
         molotov.attack_timer = Timer::from_seconds(
-            DEFAULT_MOLOTOV_ATTACK_SPEED * molotov_buffs.attack_speed,
+            DEFAULT_MOLOTOV_ATTACK_SPEED * (1.0 + molotov_buffs.attack_speed),
             TimerMode::Repeating,
         );
 
@@ -147,12 +131,12 @@ fn molotov_attack<S: Side>(
 
         let mut damage =
             ((molotov.damage + molotov_buffs.damage_flat + global_weapons_buffs.damage_flat) as f32
-                * (molotov_buffs.damage + global_weapons_buffs.damage)) as i32;
-        let area_size = molotov.area_size * molotov_buffs.area_size;
-        let area_attack_speed = molotov.area_attack_speed * molotov_buffs.area_attack_speed;
-        let area_lifespan = DEFAULT_AREA_LIFESPAN * molotov_buffs.area_lifespan;
+                * (1.0 + molotov_buffs.damage + global_weapons_buffs.damage)) as i32;
+        let area_size = 1.0 + molotov.area_size * molotov_buffs.area_size;
+        let area_attack_speed = molotov.area_attack_speed * (1.0 + molotov_buffs.area_attack_speed);
+        let area_lifespan = DEFAULT_AREA_LIFESPAN * (1.0 + molotov_buffs.area_lifespan);
         let crit_chance = molotov_buffs.crit_chance + global_weapons_buffs.crit_chance;
-        let crit_damage = molotov_buffs.crit_damage + global_weapons_buffs.crit_damage;
+        let crit_damage = 1.0 + molotov_buffs.crit_damage + global_weapons_buffs.crit_damage;
 
         if rand::thread_rng().gen_range(0.0..100.0) < crit_chance {
             damage = (damage as f32 * crit_damage) as i32;

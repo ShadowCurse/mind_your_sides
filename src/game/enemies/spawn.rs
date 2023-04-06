@@ -42,7 +42,7 @@ impl Plugin for SpawnPlugin {
 #[derive(Debug, Default, Component)]
 pub struct EnemySpawnMarker;
 
-#[derive(Debug, Resource)]
+#[derive(Debug, Default, Resource)]
 pub struct EnemyBuffs<S: Side> {
     pub health: f32,
     pub speed: f32,
@@ -50,19 +50,6 @@ pub struct EnemyBuffs<S: Side> {
     pub damage: f32,
     pub attack_speed: f32,
     _phantom: PhantomData<S>,
-}
-
-impl<S: Side> Default for EnemyBuffs<S> {
-    fn default() -> Self {
-        Self {
-            health: 1.0,
-            speed: 1.0,
-            exp: 1.0,
-            damage: 1.0,
-            attack_speed: 1.0,
-            _phantom: PhantomData,
-        }
-    }
 }
 
 #[derive(Debug, Component)]
