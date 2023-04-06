@@ -17,9 +17,8 @@ use super::{GlobalWeaponBuffs, WeaponsAssets};
 const DEFAULT_BOLT_SIZE: f32 = 3.0;
 const DEFAULT_BOLT_DAMAGE: i32 = 20;
 const DEFAULT_BOLT_SPEED: f32 = 200.0;
-const DEFAULT_BOLT_LIFESPAN: f32 = 10.0;
 
-const DEFAULT_CROSSBOW_RANGE: f32 = 200.0;
+const DEFAULT_CROSSBOW_RANGE: f32 = 500.0;
 const DEFAULT_CROSSBOW_ATTACK_SPEED: f32 = 1.0;
 /// Offsets arrow spawn point in the enemy direction
 const DEFAULT_BOLT_SPAWN_OFFSET: f32 = 30.0;
@@ -46,7 +45,7 @@ impl Plugin for CrossbowPlugin {
 pub struct CrossbowMarker;
 
 #[derive(Resource)]
-pub struct CrossbowBuffs {
+pub struct CrossbowBuffs<S: Side> {
     pub damage: f32,
     pub damage_flat: i32,
     pub crit_damage: f32,
@@ -54,9 +53,10 @@ pub struct CrossbowBuffs {
     pub range: f32,
     pub attack_speed: f32,
     pub arrow_speed: f32,
+    _phantom: PhantomData<S>,
 }
 
-impl Default for CrossbowBuffs {
+impl<S: Side> Default for CrossbowBuffs<S> {
     fn default() -> Self {
         Self {
             damage: 1.0,
@@ -66,6 +66,7 @@ impl Default for CrossbowBuffs {
             range: 1.0,
             attack_speed: 1.0,
             arrow_speed: 1.0,
+            _phantom: PhantomData,
         }
     }
 }
@@ -107,13 +108,16 @@ impl<S: Side> Default for CrossbowBundle<S> {
 }
 
 fn setup(mut commands: Commands) {
-    commands.insert_resource(CrossbowBuffs::default());
+    commands.insert_resource(CrossbowBuffs::<North>::default());
+    commands.insert_resource(CrossbowBuffs::<South>::default());
+    commands.insert_resource(CrossbowBuffs::<West>::default());
+    commands.insert_resource(CrossbowBuffs::<East>::default());
 }
 
 fn crossbow_attack<S: Side>(
     time: Res<Time>,
     weapon_assets: Res<WeaponsAssets>,
-    crossbow_buffs: Res<CrossbowBuffs>,
+    crossbow_buffs: Res<CrossbowBuffs<S>>,
     global_weapons_buffs: Res<GlobalWeaponBuffs>,
     enemies: Query<&Transform, With<Enemy<S>>>,
     mut commands: Commands,

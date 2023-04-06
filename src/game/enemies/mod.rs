@@ -6,7 +6,7 @@ use bevy_rapier2d::prelude::*;
 
 use crate::{utils::remove_all_with, GlobalState};
 
-use self::spawn::EnemySpawnBuffs;
+use self::spawn::EnemyBuffs;
 
 use super::{
     animation::AnimationBundle,
@@ -26,7 +26,7 @@ pub struct EnemyPlugin;
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app.add_collection_to_loading_state::<_, EnemySprites>(GlobalState::AssetLoading)
-            .add_plugin(spawn::SpawnPlugin)
+            .add_system(setup.in_schedule(OnEnter(GlobalState::InGame)))
             .add_systems(
                 (
                     enemy_movement::<North>,
@@ -44,7 +44,8 @@ impl Plugin for EnemyPlugin {
                 )
                     .in_set(OnUpdate(GameState::InGame)),
             )
-            .add_system(remove_all_with::<EnemyMarker>.in_schedule(OnExit(GlobalState::InGame)));
+            .add_system(remove_all_with::<EnemyMarker>.in_schedule(OnExit(GlobalState::InGame)))
+            .add_plugin(spawn::SpawnPlugin);
     }
 }
 
@@ -68,6 +69,27 @@ struct EnemySprites {
     #[asset(texture_atlas(tile_size_x = 32.0, tile_size_y = 32.0, columns = 4, rows = 1,))]
     #[asset(path = "sprites/poison_ivy.png")]
     pub poison_ivy: Handle<TextureAtlas>,
+}
+
+#[derive(Debug, Resource)]
+pub struct GlobalEnemyBuffs {
+    pub health: f32,
+    pub speed: f32,
+    pub exp: f32,
+    pub damage: f32,
+    pub attack_speed: f32,
+}
+
+impl Default for GlobalEnemyBuffs {
+    fn default() -> Self {
+        Self {
+            health: 1.0,
+            speed: 1.0,
+            exp: 1.0,
+            damage: 1.0,
+            attack_speed: 1.0,
+        }
+    }
 }
 
 #[derive(Debug, Default, Component)]
@@ -136,7 +158,8 @@ impl<S: Side, E: EnemyType<S>> EnemyBundle<S, E> {
         size: f32,
         texture_atlas: Handle<TextureAtlas>,
         position: Vec3,
-        buffs: &EnemySpawnBuffs<S>,
+        global_buffs: &GlobalEnemyBuffs,
+        buffs: &EnemyBuffs<S>,
     ) -> Self {
         Self {
             animation_bundle: AnimationBundle::new(texture_atlas, 3, 12.0, position),
@@ -148,8 +171,8 @@ impl<S: Side, E: EnemyType<S>> EnemyBundle<S, E> {
                 linear_damping: 5.0,
                 angular_damping: 10.0,
             },
-            enemy: E::enemy(buffs),
-            attack: E::attack(buffs),
+            enemy: E::enemy(global_buffs, buffs),
+            attack: E::attack(global_buffs, buffs),
             enemy_type: E::default(),
             marker: EnemyMarker,
         }
@@ -161,22 +184,23 @@ pub trait EnemyType<S: Side>: Component + Default {
     const SPEED: f32;
     const EXP: u32;
     const DAMAGE: i32;
+    // Range should be bigger then enemy size / 2
     const RANGE: f32;
     const ATTACK_SPEED: f32;
 
-    fn enemy(buffs: &EnemySpawnBuffs<S>) -> Enemy<S> {
+    fn enemy(global_buffs: &GlobalEnemyBuffs, buffs: &EnemyBuffs<S>) -> Enemy<S> {
         Enemy::new(
-            (Self::HEALTH as f32 * buffs.health) as i32,
-            Self::SPEED * buffs.speed,
-            (Self::EXP as f32 * buffs.exp) as u32,
+            (Self::HEALTH as f32 * (global_buffs.health + buffs.health)) as i32,
+            Self::SPEED * (global_buffs.speed + buffs.speed),
+            (Self::EXP as f32 * (global_buffs.exp + buffs.exp)) as u32,
         )
     }
 
-    fn attack(buffs: &EnemySpawnBuffs<S>) -> EnemyAttack<S> {
+    fn attack(global_buffs: &GlobalEnemyBuffs, buffs: &EnemyBuffs<S>) -> EnemyAttack<S> {
         EnemyAttack::new(
-            (Self::DAMAGE as f32 * buffs.damage) as i32,
+            (Self::DAMAGE as f32 * (global_buffs.damage + buffs.damage)) as i32,
             Self::RANGE,
-            Self::ATTACK_SPEED * buffs.attack_speed,
+            Self::ATTACK_SPEED * (global_buffs.attack_speed + buffs.attack_speed),
         )
     }
 }
@@ -185,11 +209,11 @@ pub trait EnemyType<S: Side>: Component + Default {
 pub struct MadCrab;
 
 impl<S: Side> EnemyType<S> for MadCrab {
-    const HEALTH: i32 = 30;
-    const SPEED: f32 = 15.0;
-    const EXP: u32 = 30;
+    const HEALTH: i32 = 100;
+    const SPEED: f32 = 8.0;
+    const EXP: u32 = 3;
     const DAMAGE: i32 = 5;
-    const RANGE: f32 = 10.0;
+    const RANGE: f32 = 20.0;
     const ATTACK_SPEED: f32 = 1.1;
 }
 
@@ -198,10 +222,10 @@ pub struct Goblin;
 
 impl<S: Side> EnemyType<S> for Goblin {
     const HEALTH: i32 = 80;
-    const SPEED: f32 = 20.0;
-    const EXP: u32 = 50;
+    const SPEED: f32 = 15.0;
+    const EXP: u32 = 5;
     const DAMAGE: i32 = 10;
-    const RANGE: f32 = 30.0;
+    const RANGE: f32 = 20.0;
     const ATTACK_SPEED: f32 = 1.0;
 }
 
@@ -210,10 +234,10 @@ pub struct SpearGoblin;
 
 impl<S: Side> EnemyType<S> for SpearGoblin {
     const HEALTH: i32 = 100;
-    const SPEED: f32 = 15.0;
-    const EXP: u32 = 80;
+    const SPEED: f32 = 10.0;
+    const EXP: u32 = 8;
     const DAMAGE: i32 = 15;
-    const RANGE: f32 = 50.0;
+    const RANGE: f32 = 20.0;
     const ATTACK_SPEED: f32 = 1.2;
 }
 
@@ -222,10 +246,10 @@ pub struct Bat;
 
 impl<S: Side> EnemyType<S> for Bat {
     const HEALTH: i32 = 30;
-    const SPEED: f32 = 20.0;
-    const EXP: u32 = 50;
+    const SPEED: f32 = 10.0;
+    const EXP: u32 = 5;
     const DAMAGE: i32 = 5;
-    const RANGE: f32 = 30.0;
+    const RANGE: f32 = 20.0;
     const ATTACK_SPEED: f32 = 1.5;
 }
 
@@ -234,10 +258,10 @@ pub struct Skull;
 
 impl<S: Side> EnemyType<S> for Skull {
     const HEALTH: i32 = 80;
-    const SPEED: f32 = 10.0;
-    const EXP: u32 = 50;
+    const SPEED: f32 = 8.0;
+    const EXP: u32 = 5;
     const DAMAGE: i32 = 15;
-    const RANGE: f32 = 10.0;
+    const RANGE: f32 = 20.0;
     const ATTACK_SPEED: f32 = 1.0;
 }
 
@@ -246,11 +270,15 @@ pub struct PoisonIvy;
 
 impl<S: Side> EnemyType<S> for PoisonIvy {
     const HEALTH: i32 = 60;
-    const SPEED: f32 = 15.0;
-    const EXP: u32 = 80;
+    const SPEED: f32 = 12.0;
+    const EXP: u32 = 8;
     const DAMAGE: i32 = 20;
-    const RANGE: f32 = 40.0;
+    const RANGE: f32 = 20.0;
     const ATTACK_SPEED: f32 = 1.0;
+}
+
+fn setup(mut commands: Commands) {
+    commands.insert_resource(GlobalEnemyBuffs::default());
 }
 
 /// Moved enemies in direction of the wall
@@ -273,16 +301,23 @@ fn enemy_movement<S: Side>(
 
 fn enemy_attack<S: Side>(
     time: Res<Time>,
-    wall: Query<&Transform, With<CastleWall<S>>>,
+    wall: Query<(&Transform, &CastleWall<S>)>,
     mut enemies: Query<(&Transform, &mut EnemyAttack<S>)>,
     mut damage_events: EventWriter<WallDamageEvent<S>>,
 ) {
-    let wall = wall.single();
+    let (wall_transform, wall) = wall.single();
 
     for (enemy_transform, mut enemy_attack) in enemies.iter_mut() {
-        let distance = (wall.translation - enemy_transform.translation)
+        let distance = (wall_transform
+            .translation
             .truncate()
-            .length();
+            .dot(S::DIRECTION.abs())
+            - enemy_transform
+                .translation
+                .truncate()
+                .dot(S::DIRECTION.abs()))
+        .abs()
+            - wall.half_thickness;
 
         if enemy_attack.range < distance {
             continue;

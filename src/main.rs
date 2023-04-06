@@ -1,8 +1,11 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
-use bevy::{prelude::*, window::PresentMode};
+use bevy::{
+    prelude::*,
+    window::{PresentMode, WindowMode},
+};
 use bevy_asset_loader::prelude::*;
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
+// use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::*;
 
 mod game;
@@ -15,7 +18,19 @@ fn main() {
     let mut app = App::new();
     app.insert_resource(ClearColor(Color::rgb_u8(27, 62, 60)))
         .add_state::<GlobalState>()
-        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+        .add_plugins(
+            DefaultPlugins
+                .set(ImagePlugin::default_nearest())
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        // TODO Rename game
+                        title: "Mad Crabs".to_string(),
+                        mode: WindowMode::Windowed,
+                        ..default()
+                    }),
+                    ..default()
+                }),
+        )
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         // asests
         .add_loading_state(
@@ -25,7 +40,7 @@ fn main() {
         .add_collection_to_loading_state::<_, GameAssets>(GlobalState::AssetLoading)
         // debug
         .add_plugin(RapierDebugRenderPlugin::default())
-        .add_plugin(WorldInspectorPlugin::new())
+        // .add_plugin(WorldInspectorPlugin::new())
         //
         .add_plugin(game::GamePlugin)
         .add_plugin(ui::UiPlugin)
@@ -64,7 +79,7 @@ fn setup(
 
     let mut camera_bundle = Camera2dBundle::default();
     // make everything smaller
-    camera_bundle.projection.scale = 1.0;
+    camera_bundle.projection.scale = 1.5;
     commands.spawn(camera_bundle);
 
     for mut window in windows.iter_mut() {

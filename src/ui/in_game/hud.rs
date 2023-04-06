@@ -51,7 +51,8 @@ enum HUDButton {
     Pause,
 }
 
-fn setup(mut commands: Commands, config: Res<UiConfig>) {
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>, config: Res<UiConfig>) {
+    let panel : Handle<Image> = asset_server.load("menu/panel-250w-800h.png");
     // root node
     commands
         .spawn((
@@ -111,21 +112,28 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
             parent
                 .spawn(NodeBundle {
                     style: Style {
-                        size: Size::width(Val::Px(200.0)),
+                        size: Size::width(Val::Px(250.0)),
                         flex_direction: FlexDirection::Column,
                         justify_content: JustifyContent::Center,
                         align_items: AlignItems::Center,
                         ..default()
                     },
-                    background_color: Color::rgb(0.65, 0.65, 0.65).into(),
+                    background_color: Color::rgb(0.0, 0.0, 0.0).into(),
                     ..default()
                 })
                 .with_children(|parent| {
-                    // Title
-                    parent.spawn(TextBundle::from_section(
-                        "Text on the right",
-                        config.text_style.clone(),
-                    ));
+                    parent
+                        .spawn(ImageBundle {
+                            style: Style {
+                                size: Size{
+                                    width : Val::Px(250.),
+                                    height : Val::Px(700.)
+                                },
+                                ..default()
+                            },
+                            image : UiImage::new(panel),
+                            ..default()
+                        });
                 });
         });
 }
@@ -170,7 +178,7 @@ fn update_castle_level(
 fn update_castle_exp(castle: Query<&Castle>, mut exp_text: Query<&mut Text, With<CastleExpText>>) {
     let castle = castle.single();
     let mut exp_text = exp_text.single_mut();
-    exp_text.sections[0].value = format!("Exp: {}", castle.exp);
+    exp_text.sections[0].value = format!("Exp: {}/{}", castle.exp, castle.next_level_exp);
 }
 
 fn update_castle_wall_hp<S: Side>(
@@ -179,5 +187,10 @@ fn update_castle_wall_hp<S: Side>(
 ) {
     let wall = wall.single();
     let mut hp_text = hp_text.single_mut();
-    hp_text.sections[0].value = format!("{:?} wall: {}", S::default(), wall.health);
+    hp_text.sections[0].value = format!(
+        "{:?} wall: {}/{}",
+        S::default(),
+        wall.health,
+        wall.max_health
+    );
 }

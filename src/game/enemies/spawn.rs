@@ -6,11 +6,13 @@ use rand::prelude::*;
 use crate::{game::GameState, utils::remove_all_with, GlobalState};
 
 use super::{
-    Bat, East, EnemyBundle, EnemyMarker, EnemySprites, Goblin, MadCrab, North, PoisonIvy, Side,
-    Skull, South, SpearGoblin, West,
+    Bat, East, EnemyBundle, EnemyMarker, EnemySprites, GlobalEnemyBuffs, Goblin, MadCrab, North,
+    PoisonIvy, Side, Skull, South, SpearGoblin, West,
 };
 
 const DEFAULT_ENEMY_SIZE: f32 = 16.0;
+
+const DEFAULT_ENEMY_SPAWN_POSITON: f32 = 1000.0;
 
 const DEFAULT_ENEMY_SPAWN_NUMBER: u32 = 2;
 const DEFAULT_ENEMY_SPAWN_RADIUS: f32 = 150.0;
@@ -40,8 +42,8 @@ impl Plugin for SpawnPlugin {
 #[derive(Debug, Default, Component)]
 pub struct EnemySpawnMarker;
 
-#[derive(Debug, Component)]
-pub struct EnemySpawnBuffs<S: Side> {
+#[derive(Debug, Resource)]
+pub struct EnemyBuffs<S: Side> {
     pub health: f32,
     pub speed: f32,
     pub exp: f32,
@@ -50,7 +52,7 @@ pub struct EnemySpawnBuffs<S: Side> {
     _phantom: PhantomData<S>,
 }
 
-impl<S: Side> Default for EnemySpawnBuffs<S> {
+impl<S: Side> Default for EnemyBuffs<S> {
     fn default() -> Self {
         Self {
             health: 1.0,
@@ -85,7 +87,6 @@ impl<S: Side> Default for EnemySpawn<S> {
 #[derive(Default, Bundle)]
 pub struct EnemySpawnBundle<S: Side> {
     spawn: EnemySpawn<S>,
-    buffs: EnemySpawnBuffs<S>,
     marker: EnemySpawnMarker,
 }
 
@@ -99,12 +100,21 @@ fn setup(
     let spawn_mesh = meshes.add(shape::Circle::new(15.0).into());
     let spawn_material = materials.add(ColorMaterial::from(Color::ORANGE));
 
+    commands.insert_resource(EnemyBuffs::<North>::default());
+    commands.insert_resource(EnemyBuffs::<South>::default());
+    commands.insert_resource(EnemyBuffs::<West>::default());
+    commands.insert_resource(EnemyBuffs::<East>::default());
+
     // North
     commands
         .spawn(MaterialMesh2dBundle {
             mesh: spawn_mesh.clone().into(),
             material: spawn_material.clone(),
-            transform: Transform::from_translation(Vec3::new(0.0, 500.0, 0.0)),
+            transform: Transform::from_translation(Vec3::new(
+                0.0,
+                DEFAULT_ENEMY_SPAWN_POSITON,
+                0.0,
+            )),
             ..default()
         })
         .insert(EnemySpawnBundle::<North>::default());
@@ -113,7 +123,11 @@ fn setup(
         .spawn(MaterialMesh2dBundle {
             mesh: spawn_mesh.clone().into(),
             material: spawn_material.clone(),
-            transform: Transform::from_translation(Vec3::new(0.0, -500.0, 0.0)),
+            transform: Transform::from_translation(Vec3::new(
+                0.0,
+                -DEFAULT_ENEMY_SPAWN_POSITON,
+                0.0,
+            )),
             ..default()
         })
         .insert(EnemySpawnBundle::<South>::default());
@@ -122,7 +136,11 @@ fn setup(
         .spawn(MaterialMesh2dBundle {
             mesh: spawn_mesh.clone().into(),
             material: spawn_material.clone(),
-            transform: Transform::from_translation(Vec3::new(-500.0, 0.0, 0.0)),
+            transform: Transform::from_translation(Vec3::new(
+                -DEFAULT_ENEMY_SPAWN_POSITON,
+                0.0,
+                0.0,
+            )),
             ..default()
         })
         .insert(EnemySpawnBundle::<West>::default());
@@ -131,7 +149,11 @@ fn setup(
         .spawn(MaterialMesh2dBundle {
             mesh: spawn_mesh.into(),
             material: spawn_material,
-            transform: Transform::from_translation(Vec3::new(500.0, 0.0, 0.0)),
+            transform: Transform::from_translation(Vec3::new(
+                DEFAULT_ENEMY_SPAWN_POSITON,
+                0.0,
+                0.0,
+            )),
             ..default()
         })
         .insert(EnemySpawnBundle::<East>::default());
@@ -142,10 +164,12 @@ fn setup(
 fn enemy_spawn<S: Side>(
     time: Res<Time>,
     enemy_sprites: Res<EnemySprites>,
+    global_buffs: Res<GlobalEnemyBuffs>,
+    buffs: Res<EnemyBuffs<S>>,
     mut commands: Commands,
-    mut spawns: Query<(&Transform, &EnemySpawnBuffs<S>, &mut EnemySpawn<S>)>,
+    mut spawns: Query<(&Transform, &mut EnemySpawn<S>)>,
 ) {
-    for (transform, buffs, mut spawn) in spawns.iter_mut() {
+    for (transform, mut spawn) in spawns.iter_mut() {
         if !spawn.timer.tick(time.delta()).finished() {
             continue;
         }
@@ -155,7 +179,8 @@ fn enemy_spawn<S: Side>(
         for n in 0..spawn.number {
             let position = transform.translation
                 + Quat::from_rotation_z(
-                    (2.0 * std::f32::consts::PI / spawn.number as f32) * n as f32,
+                    (2.0 * std::f32::consts::PI / spawn.number as f32) * n as f32
+                        + rand::thread_rng().gen_range(0.0..std::f32::consts::FRAC_PI_6),
                 )
                 .mul_vec3(Vec3::Y * spawn.radius);
 
@@ -165,37 +190,43 @@ fn enemy_spawn<S: Side>(
                     DEFAULT_ENEMY_SIZE,
                     enemy_sprites.mad_crab.clone(),
                     position,
-                    buffs,
+                    &global_buffs,
+                    &buffs,
                 )),
                 1 => commands.spawn(EnemyBundle::<S, Goblin>::new(
                     DEFAULT_ENEMY_SIZE,
                     enemy_sprites.goblin.clone(),
                     position,
-                    buffs,
+                    &global_buffs,
+                    &buffs,
                 )),
                 2 => commands.spawn(EnemyBundle::<S, SpearGoblin>::new(
                     DEFAULT_ENEMY_SIZE,
                     enemy_sprites.spear_goblin.clone(),
                     position,
-                    buffs,
+                    &global_buffs,
+                    &buffs,
                 )),
                 3 => commands.spawn(EnemyBundle::<S, Bat>::new(
                     DEFAULT_ENEMY_SIZE,
                     enemy_sprites.bat.clone(),
                     position,
-                    buffs,
+                    &global_buffs,
+                    &buffs,
                 )),
                 4 => commands.spawn(EnemyBundle::<S, Skull>::new(
                     DEFAULT_ENEMY_SIZE,
                     enemy_sprites.skull.clone(),
                     position,
-                    buffs,
+                    &global_buffs,
+                    &buffs,
                 )),
                 _ => commands.spawn(EnemyBundle::<S, PoisonIvy>::new(
                     DEFAULT_ENEMY_SIZE,
                     enemy_sprites.poison_ivy.clone(),
                     position,
-                    buffs,
+                    &global_buffs,
+                    &buffs,
                 )),
             };
         }

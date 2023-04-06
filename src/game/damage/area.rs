@@ -5,8 +5,8 @@ use bevy_rapier2d::prelude::*;
 
 use crate::{
     game::{
-        animation::AnimationBundle, damage::EnemyDamageEvent, East,
-        GameState, North, Side, South, West,
+        animation::AnimationBundle, damage::EnemyDamageEvent, East, GameState, North, Side, South,
+        West,
     },
     utils::remove_all_with,
     GlobalState,
