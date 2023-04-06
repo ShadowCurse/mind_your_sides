@@ -327,7 +327,6 @@ fn apply_wall_upgrades_to_side<S: Side>(
 ) {
     let mut wall = wall.single_mut();
     for event in wall_upgrade_events.iter() {
-        println!("wall upgrade: {}", event.upgrade);
         match event.upgrade {
             WallUpgrade::AdditionalMaxHp(value) => wall.add_max_hp(value),
             WallUpgrade::Heal(value) => wall.heal(value),

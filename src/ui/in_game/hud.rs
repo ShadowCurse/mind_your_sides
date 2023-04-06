@@ -51,8 +51,7 @@ enum HUDButton {
     Pause,
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>, config: Res<UiConfig>) {
-    let panel : Handle<Image> = asset_server.load("menu/panel-250w-800h.png");
+fn setup(mut commands: Commands, config: Res<UiConfig>) {
     // root node
     commands
         .spawn((
@@ -71,18 +70,17 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, config: Res<UiC
             parent
                 .spawn(NodeBundle {
                     style: Style {
-                        size: Size::width(Val::Px(200.0)),
+                        size: Size::width(Val::Px(300.0)),
                         border: UiRect::all(Val::Px(2.0)),
                         flex_direction: FlexDirection::Column,
                         justify_content: JustifyContent::Center,
                         align_items: AlignItems::Center,
                         ..default()
                     },
-                    background_color: Color::rgb(0.65, 0.65, 0.65).into(),
+                    background_color: config.panels_background.into(),
                     ..default()
                 })
                 .with_children(|parent| {
-                    spawn_button(parent, &config, HUDButton::Pause);
                     parent.spawn((
                         TextBundle::from_section("Level: ", config.text_style.clone()),
                         CastleLevelText,
@@ -112,28 +110,17 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, config: Res<UiC
             parent
                 .spawn(NodeBundle {
                     style: Style {
-                        size: Size::width(Val::Px(250.0)),
+                        size: Size::width(Val::Px(300.0)),
                         flex_direction: FlexDirection::Column,
                         justify_content: JustifyContent::Center,
                         align_items: AlignItems::Center,
                         ..default()
                     },
-                    background_color: Color::rgb(0.0, 0.0, 0.0).into(),
+                    background_color: config.panels_background.into(),
                     ..default()
                 })
                 .with_children(|parent| {
-                    parent
-                        .spawn(ImageBundle {
-                            style: Style {
-                                size: Size{
-                                    width : Val::Px(250.),
-                                    height : Val::Px(700.)
-                                },
-                                ..default()
-                            },
-                            image : UiImage::new(panel),
-                            ..default()
-                        });
+                    spawn_button(parent, &config, HUDButton::Pause);
                 });
         });
 }

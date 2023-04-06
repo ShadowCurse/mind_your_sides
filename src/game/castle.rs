@@ -20,7 +20,7 @@ pub struct CastlePlugin;
 
 impl Plugin for CastlePlugin {
     fn build(&self, app: &mut App) {
-        app.add_collection_to_loading_state::<_, CastleSprites>(GlobalState::AssetLoading)
+        app.add_collection_to_loading_state::<_, CastleAssets>(GlobalState::AssetLoading)
             .add_system(setup.in_schedule(OnEnter(GlobalState::InGame)))
             .add_systems(
                 (
@@ -40,7 +40,7 @@ impl Plugin for CastlePlugin {
 }
 
 #[derive(AssetCollection, Resource)]
-pub struct CastleSprites {
+pub struct CastleAssets {
     #[asset(path = "sprites/castle.png")]
     pub castle: Handle<Image>,
     #[asset(path = "sprites/wall_north.png")]
@@ -156,11 +156,11 @@ impl<S: Side> CastleWallBundle<S> {
 
 /// Sets up castle in the center of the map
 /// with 4 walls
-fn setup(castle_sprites: Res<CastleSprites>, mut commands: Commands) {
+fn setup(castle_assets: Res<CastleAssets>, mut commands: Commands) {
     commands
         .spawn(SpriteBundle {
             transform: Transform::from_translation(Vec3::new(0.0, 0.0, 3.0)),
-            texture: castle_sprites.castle.clone(),
+            texture: castle_assets.castle.clone(),
             ..default()
         })
         .insert(CastleBundle::default());
@@ -175,7 +175,7 @@ fn setup(castle_sprites: Res<CastleSprites>, mut commands: Commands) {
                 ..default()
             },
             transform: Transform::from_translation(Vec3::new(0.0, 100.0, 2.0)),
-            texture: castle_sprites.wall_north.clone(),
+            texture: castle_assets.wall_north.clone(),
             ..default()
         })
         .insert(CastleWallBundle::<North>::new_horizontal(
@@ -194,7 +194,7 @@ fn setup(castle_sprites: Res<CastleSprites>, mut commands: Commands) {
                 ..default()
             },
             transform: Transform::from_translation(Vec3::new(0.0, -193.0, 4.0)),
-            texture: castle_sprites.wall_south.clone(),
+            texture: castle_assets.wall_south.clone(),
             ..default()
         })
         .insert(CastleWallBundle::<South>::new_horizontal(
@@ -210,7 +210,7 @@ fn setup(castle_sprites: Res<CastleSprites>, mut commands: Commands) {
                 ..default()
             },
             transform: Transform::from_translation(Vec3::new(-204.0, 0.0, 3.0)),
-            texture: castle_sprites.wall_west.clone(),
+            texture: castle_assets.wall_west.clone(),
             ..default()
         })
         .insert(CastleWallBundle::<West>::new_vertical(
@@ -226,7 +226,7 @@ fn setup(castle_sprites: Res<CastleSprites>, mut commands: Commands) {
                 ..default()
             },
             transform: Transform::from_translation(Vec3::new(204.0, 0.0, 3.0)),
-            texture: castle_sprites.wall_east.clone(),
+            texture: castle_assets.wall_east.clone(),
             ..default()
         })
         .insert(CastleWallBundle::<East>::new_vertical(
