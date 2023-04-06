@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use bevy::prelude::*;
 
-use crate::GameAssets;
+use crate::{utils::remove_all_with, GameAssets, GlobalState};
 
 use super::{castle::CastleWall, enemies::Enemy, East, GameState, North, Side, South, West};
 
@@ -38,6 +38,9 @@ impl Plugin for DamagePlugin {
                     damage_text_update,
                 )
                     .in_set(OnUpdate(GameState::InGame)),
+            )
+            .add_system(
+                remove_all_with::<DamageTextMarker>.in_schedule(OnExit(GlobalState::InGame)),
             );
     }
 }
