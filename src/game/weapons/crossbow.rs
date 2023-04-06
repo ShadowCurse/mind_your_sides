@@ -156,8 +156,10 @@ fn crossbow_attack<S: Side>(
                 as f32
                 * (1.0 + crossbow_buffs.damage + global_weapons_buffs.damage)) as i32;
         let arrow_speed = crossbow.arrow_speed * (1.0 + crossbow_buffs.arrow_speed);
-        let crit_chance = crossbow.crit_chance + crossbow_buffs.crit_chance + global_weapons_buffs.crit_chance;
-        let crit_damage = crossbow.crit_damage + crossbow_buffs.crit_damage + global_weapons_buffs.crit_damage;
+        let crit_chance =
+            crossbow.crit_chance + crossbow_buffs.crit_chance + global_weapons_buffs.crit_chance;
+        let crit_damage =
+            crossbow.crit_damage + crossbow_buffs.crit_damage + global_weapons_buffs.crit_damage;
 
         if rand::thread_rng().gen_range(0.0..100.0) < crit_chance {
             damage = (damage as f32 * crit_damage) as i32;

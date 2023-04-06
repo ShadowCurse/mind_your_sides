@@ -42,7 +42,7 @@ fn setup_ui_config(game_assets: Res<GameAssets>, mut commands: Commands) {
     commands.insert_resource(UiConfig {
         panels_background: dark_blue,
         button_style: Style {
-            size: Size::new(Val::Px(140.0), Val::Px(60.0)),
+            size: Size::new(Val::Px(180.0), Val::Px(80.0)),
             margin: UiRect::all(Val::Percent(1.0)),
             justify_content: JustifyContent::Center,
             align_items: AlignItems::Center,
