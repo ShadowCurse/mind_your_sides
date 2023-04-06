@@ -52,6 +52,30 @@ pub struct EnemyBuffs<S: Side> {
     _phantom: PhantomData<S>,
 }
 
+impl<S: Side> std::fmt::Display for EnemyBuffs<S> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!(" @ health +{:.1}%\n", self.health))?;
+        f.write_fmt(format_args!(" @ speed +{:.1}%\n", self.speed))?;
+        f.write_fmt(format_args!(" @ exp -{:.1}%\n", self.exp))?;
+        f.write_fmt(format_args!(" @ damage +{:.1}%\n", self.damage))?;
+        f.write_fmt(format_args!(" @ attack speed +{:.1}%\n", self.attack_speed))?;
+        Ok(())
+    }
+}
+
+impl<S: Side> EnemyBuffs<S> {
+    pub fn with_global_buffs(&self, global_buffs: &GlobalEnemyBuffs) -> Self {
+        Self {
+            health: self.health + global_buffs.health,
+            speed: self.speed + global_buffs.speed,
+            exp: self.exp + global_buffs.exp,
+            damage: self.damage + global_buffs.damage,
+            attack_speed: self.attack_speed + global_buffs.attack_speed,
+            _phantom: PhantomData,
+        }
+    }
+}
+
 #[derive(Debug, Component)]
 pub struct EnemySpawn<S: Side> {
     pub number: u32,

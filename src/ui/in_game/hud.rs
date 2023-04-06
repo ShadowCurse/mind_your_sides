@@ -236,10 +236,11 @@ fn button_system(
             Interaction::Clicked => {
                 *color = style.button_color_pressed.into();
                 match button {
-                    HUDButton::Pause => {
-                        game_state.set(GameState::Paused);
-                    }
-                    _ => {}
+                    HUDButton::Pause => game_state.set(GameState::Paused),
+                    HUDButton::StatsNorth => game_state.set(GameState::StatsNorth),
+                    HUDButton::StatsSouth => game_state.set(GameState::StatsSouth),
+                    HUDButton::StatsWest => game_state.set(GameState::StatsWest),
+                    HUDButton::StatsEast => game_state.set(GameState::StatsEast),
                 }
             }
             Interaction::Hovered => {

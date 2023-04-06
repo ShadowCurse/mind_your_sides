@@ -69,6 +69,21 @@ pub struct Crossbow<S: Side> {
     _phantom: PhantomData<S>,
 }
 
+impl<S: Side> std::fmt::Display for Crossbow<S> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!(" @ damage {}\n", self.damage))?;
+        f.write_fmt(format_args!(" @ range {:.1}\n", self.range))?;
+        f.write_fmt(format_args!(" @ crit damage {:.1}\n", self.crit_damage))?;
+        f.write_fmt(format_args!(" @ crit chance {:.1}\n", self.crit_chance))?;
+        f.write_fmt(format_args!(" @ arrow speed {:.1}\n", self.arrow_speed))?;
+        f.write_fmt(format_args!(
+            " @ attack speed {:.1}\n",
+            self.attack_timer.duration().as_secs_f32()
+        ))?;
+        Ok(())
+    }
+}
+
 impl<S: Side> Default for Crossbow<S> {
     fn default() -> Self {
         Self {
@@ -78,6 +93,34 @@ impl<S: Side> Default for Crossbow<S> {
             crit_chance: DEFAULT_CROSSBOW_CRIT_CHANCE,
             arrow_speed: DEFAULT_BOLT_SPEED,
             attack_timer: Timer::from_seconds(DEFAULT_CROSSBOW_ATTACK_SPEED, TimerMode::Repeating),
+            _phantom: PhantomData,
+        }
+    }
+}
+
+impl<S: Side> Crossbow<S> {
+    pub fn with_buffs(
+        self,
+        crossbow_buffs: &CrossbowBuffs<S>,
+        global_weapons_buffs: &GlobalWeaponBuffs,
+    ) -> Self {
+        Self {
+            damage: ((self.damage + crossbow_buffs.damage_flat + global_weapons_buffs.damage_flat)
+                as f32
+                * (1.0 + crossbow_buffs.damage + global_weapons_buffs.damage))
+                as i32,
+            range: self.range * (1.0 + crossbow_buffs.range),
+            crit_damage: self.crit_damage
+                + crossbow_buffs.crit_damage
+                + global_weapons_buffs.crit_damage,
+            crit_chance: self.crit_chance
+                + crossbow_buffs.crit_chance
+                + global_weapons_buffs.crit_chance,
+            arrow_speed: self.arrow_speed * (1.0 + crossbow_buffs.arrow_speed),
+            attack_timer: Timer::from_seconds(
+                DEFAULT_CROSSBOW_ATTACK_SPEED * (1.0 + crossbow_buffs.attack_speed),
+                TimerMode::Repeating,
+            ),
             _phantom: PhantomData,
         }
     }

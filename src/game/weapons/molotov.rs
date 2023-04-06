@@ -60,8 +60,27 @@ pub struct Molotov<S: Side> {
     range: f32,
     area_size: f32,
     area_attack_speed: f32,
+    area_lifespan: f32,
     attack_timer: Timer,
-    _phatom: PhantomData<S>,
+    _phantom: PhantomData<S>,
+}
+
+impl<S: Side> std::fmt::Display for Molotov<S> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!(" @ damage {}\n", self.damage))?;
+        f.write_fmt(format_args!(" @ range {:.1}\n", self.range))?;
+        f.write_fmt(format_args!(" @ area size {:.1}\n", self.area_size))?;
+        f.write_fmt(format_args!(
+            " @ area attack speed {:.1}\n",
+            self.area_attack_speed
+        ))?;
+        f.write_fmt(format_args!(" @ area lifespan {:.1}\n", self.area_lifespan))?;
+        f.write_fmt(format_args!(
+            " @ attack speed {:.1}\n",
+            self.attack_timer.duration().as_secs_f32()
+        ))?;
+        Ok(())
+    }
 }
 
 impl<S: Side> Default for Molotov<S> {
@@ -71,8 +90,33 @@ impl<S: Side> Default for Molotov<S> {
             range: DEFAULT_MOLOTOV_RANGE,
             area_size: DEFAULT_AREA_SIZE,
             area_attack_speed: DEFAULT_AREA_ATTACK_SPEED,
+            area_lifespan: DEFAULT_AREA_LIFESPAN,
             attack_timer: Timer::from_seconds(DEFAULT_MOLOTOV_ATTACK_SPEED, TimerMode::Repeating),
-            _phatom: PhantomData,
+            _phantom: PhantomData,
+        }
+    }
+}
+
+impl<S: Side> Molotov<S> {
+    pub fn with_buffs(
+        self,
+        molotov_buffs: &MolotovBuffs<S>,
+        global_weapons_buffs: &GlobalWeaponBuffs,
+    ) -> Self {
+        Self {
+            damage: ((self.damage + molotov_buffs.damage_flat + global_weapons_buffs.damage_flat)
+                as f32
+                * (1.0 + molotov_buffs.damage + global_weapons_buffs.damage))
+                as i32,
+            range: self.range,
+            area_size: self.area_size * (1.0 + molotov_buffs.area_size),
+            area_attack_speed: self.area_attack_speed * (1.0 + molotov_buffs.area_attack_speed),
+            area_lifespan: self.area_lifespan * (1.0 + molotov_buffs.area_lifespan),
+            attack_timer: Timer::from_seconds(
+                DEFAULT_MOLOTOV_ATTACK_SPEED * (1.0 + molotov_buffs.attack_speed),
+                TimerMode::Repeating,
+            ),
+            _phantom: PhantomData,
         }
     }
 }
