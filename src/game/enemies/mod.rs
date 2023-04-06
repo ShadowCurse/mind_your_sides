@@ -184,6 +184,7 @@ pub trait EnemyType<S: Side>: Component + Default {
     const SPEED: f32;
     const EXP: u32;
     const DAMAGE: i32;
+    // Range should be bigger then enemy size / 2
     const RANGE: f32;
     const ATTACK_SPEED: f32;
 
@@ -316,7 +317,7 @@ fn enemy_attack<S: Side>(
                 .truncate()
                 .dot(S::DIRECTION.abs()))
         .abs()
-            - wall.thickness;
+            - wall.half_thickness;
 
         if enemy_attack.range < distance {
             continue;

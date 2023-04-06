@@ -88,16 +88,16 @@ impl Default for CastleBundle {
 pub struct CastleWall<S: Side> {
     pub health: i32,
     pub max_health: i32,
-    pub thickness: f32,
+    pub half_thickness: f32,
     _phantom: PhantomData<S>,
 }
 
 impl<S: Side> CastleWall<S> {
-    pub fn new(health: i32, thickness: f32) -> Self {
+    pub fn new(health: i32, half_thickness: f32) -> Self {
         Self {
             health,
             max_health: health,
-            thickness,
+            half_thickness,
             _phantom: PhantomData,
         }
     }
@@ -131,11 +131,22 @@ pub struct CastleWallBundle<S: Side> {
 }
 
 impl<S: Side> CastleWallBundle<S> {
-    fn new(health: i32, length: f32, thickness: f32) -> Self {
+    fn new_horizontal(health: i32, x_len: f32, y_len: f32) -> Self {
         Self {
             rigid_body: RigidBody::Fixed,
-            collider: Collider::cuboid(length, thickness),
-            wall: CastleWall::new(health, thickness),
+            collider: Collider::cuboid(x_len / 2.0, y_len / 2.0),
+            wall: CastleWall::new(health, y_len / 2.0),
+            crossbow: Default::default(),
+            molotov: Default::default(),
+            marker: CastleWallMarker,
+        }
+    }
+
+    fn new_vertical(health: i32, x_len: f32, y_len: f32) -> Self {
+        Self {
+            rigid_body: RigidBody::Fixed,
+            collider: Collider::cuboid(x_len / 2.0, y_len / 2.0),
+            wall: CastleWall::new(health, x_len / 2.0),
             crossbow: Default::default(),
             molotov: Default::default(),
             marker: CastleWallMarker,
@@ -167,12 +178,12 @@ fn setup(castle_sprites: Res<CastleSprites>, mut commands: Commands) {
             texture: castle_sprites.wall_north.clone(),
             ..default()
         })
-        .insert(CastleWallBundle::<North>::new(
+        .insert(CastleWallBundle::<North>::new_horizontal(
             WALL_HEALTH,
-            386.0 / 2.0,
+            386.0,
             // we need custom value for north wall, so that
             // enemies don't go behind it
-            80.0,
+            150.0,
         ));
     // South
     commands
@@ -186,10 +197,10 @@ fn setup(castle_sprites: Res<CastleSprites>, mut commands: Commands) {
             texture: castle_sprites.wall_south.clone(),
             ..default()
         })
-        .insert(CastleWallBundle::<South>::new(
+        .insert(CastleWallBundle::<South>::new_horizontal(
             WALL_HEALTH,
-            386.0 / 2.0,
-            24.0 / 2.0,
+            386.0,
+            24.0,
         ));
     // West
     commands
@@ -202,10 +213,10 @@ fn setup(castle_sprites: Res<CastleSprites>, mut commands: Commands) {
             texture: castle_sprites.wall_west.clone(),
             ..default()
         })
-        .insert(CastleWallBundle::<West>::new(
+        .insert(CastleWallBundle::<West>::new_vertical(
             WALL_HEALTH,
-            24.0 / 2.0,
-            386.0 / 2.0,
+            24.0,
+            386.0,
         ));
     // East
     commands
@@ -218,10 +229,10 @@ fn setup(castle_sprites: Res<CastleSprites>, mut commands: Commands) {
             texture: castle_sprites.wall_east.clone(),
             ..default()
         })
-        .insert(CastleWallBundle::<East>::new(
+        .insert(CastleWallBundle::<East>::new_vertical(
             WALL_HEALTH,
-            24.0 / 2.0,
-            386.0 / 2.0,
+            24.0,
+            386.0,
         ));
 }
 
@@ -244,6 +255,7 @@ fn check_wall_destroyed<S: Side>(
 ) {
     let wall = wall.single();
     if wall.health <= 0 {
+        info!("Wall {:?} destroyed", S::default());
         game_state.set(GameState::GameOver);
     }
 }
