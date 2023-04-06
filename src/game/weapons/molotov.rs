@@ -132,7 +132,7 @@ fn molotov_attack<S: Side>(
         let mut damage =
             ((molotov.damage + molotov_buffs.damage_flat + global_weapons_buffs.damage_flat) as f32
                 * (1.0 + molotov_buffs.damage + global_weapons_buffs.damage)) as i32;
-        let area_size = 1.0 + molotov.area_size * molotov_buffs.area_size;
+        let area_size = molotov.area_size * (1.0 + molotov_buffs.area_size);
         let area_attack_speed = molotov.area_attack_speed * (1.0 + molotov_buffs.area_attack_speed);
         let area_lifespan = DEFAULT_AREA_LIFESPAN * (1.0 + molotov_buffs.area_lifespan);
         let crit_chance = molotov_buffs.crit_chance + global_weapons_buffs.crit_chance;
