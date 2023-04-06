@@ -24,7 +24,7 @@ pub struct MolotovPlugin;
 
 impl Plugin for MolotovPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(setup.in_schedule(OnEnter(GameState::InGame)))
+        app.add_system(setup.in_schedule(OnEnter(GlobalState::InGame)))
             .add_systems(
                 (
                     molotov_attack::<North>,
@@ -41,7 +41,7 @@ impl Plugin for MolotovPlugin {
 #[derive(Component)]
 pub struct MolotovMarker;
 
-#[derive(Resource)]
+#[derive(Default, Resource)]
 pub struct MolotovBuffs<S: Side> {
     pub damage: f32,
     pub damage_flat: i32,
@@ -54,30 +54,33 @@ pub struct MolotovBuffs<S: Side> {
     _phatom: PhantomData<S>,
 }
 
-impl<S: Side> Default for MolotovBuffs<S> {
-    fn default() -> Self {
-        Self {
-            damage: 1.0,
-            damage_flat: 0,
-            crit_damage: 1.1,
-            crit_chance: 5.0,
-            area_size: 1.0,
-            attack_speed: 1.0,
-            area_attack_speed: 1.0,
-            area_lifespan: 1.0,
-            _phatom: PhantomData,
-        }
-    }
-}
-
 #[derive(Component)]
 pub struct Molotov<S: Side> {
     damage: i32,
     range: f32,
     area_size: f32,
     area_attack_speed: f32,
+    area_lifespan: f32,
     attack_timer: Timer,
-    _phatom: PhantomData<S>,
+    _phantom: PhantomData<S>,
+}
+
+impl<S: Side> std::fmt::Display for Molotov<S> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!(" @ damage {}\n", self.damage))?;
+        f.write_fmt(format_args!(" @ range {:.1}\n", self.range))?;
+        f.write_fmt(format_args!(" @ area size {:.1}\n", self.area_size))?;
+        f.write_fmt(format_args!(
+            " @ area attack speed {:.1}\n",
+            self.area_attack_speed
+        ))?;
+        f.write_fmt(format_args!(" @ area lifespan {:.1}\n", self.area_lifespan))?;
+        f.write_fmt(format_args!(
+            " @ attack speed {:.1}\n",
+            self.attack_timer.duration().as_secs_f32()
+        ))?;
+        Ok(())
+    }
 }
 
 impl<S: Side> Default for Molotov<S> {
@@ -87,8 +90,33 @@ impl<S: Side> Default for Molotov<S> {
             range: DEFAULT_MOLOTOV_RANGE,
             area_size: DEFAULT_AREA_SIZE,
             area_attack_speed: DEFAULT_AREA_ATTACK_SPEED,
+            area_lifespan: DEFAULT_AREA_LIFESPAN,
             attack_timer: Timer::from_seconds(DEFAULT_MOLOTOV_ATTACK_SPEED, TimerMode::Repeating),
-            _phatom: PhantomData,
+            _phantom: PhantomData,
+        }
+    }
+}
+
+impl<S: Side> Molotov<S> {
+    pub fn with_buffs(
+        self,
+        molotov_buffs: &MolotovBuffs<S>,
+        global_weapons_buffs: &GlobalWeaponBuffs,
+    ) -> Self {
+        Self {
+            damage: ((self.damage + molotov_buffs.damage_flat + global_weapons_buffs.damage_flat)
+                as f32
+                * (1.0 + molotov_buffs.damage + global_weapons_buffs.damage))
+                as i32,
+            range: self.range,
+            area_size: self.area_size * (1.0 + molotov_buffs.area_size),
+            area_attack_speed: self.area_attack_speed * (1.0 + molotov_buffs.area_attack_speed),
+            area_lifespan: self.area_lifespan * (1.0 + molotov_buffs.area_lifespan),
+            attack_timer: Timer::from_seconds(
+                DEFAULT_MOLOTOV_ATTACK_SPEED * (1.0 + molotov_buffs.attack_speed),
+                TimerMode::Repeating,
+            ),
+            _phantom: PhantomData,
         }
     }
 }
@@ -129,7 +157,7 @@ fn molotov_attack<S: Side>(
         }
 
         molotov.attack_timer = Timer::from_seconds(
-            DEFAULT_MOLOTOV_ATTACK_SPEED * molotov_buffs.attack_speed,
+            DEFAULT_MOLOTOV_ATTACK_SPEED * (1.0 + molotov_buffs.attack_speed),
             TimerMode::Repeating,
         );
 
@@ -145,23 +173,23 @@ fn molotov_attack<S: Side>(
         let mut area_position = transform.translation;
         area_position += (direction * distance).extend(0.0);
 
-        let mut damage =
+        let damage =
             ((molotov.damage + molotov_buffs.damage_flat + global_weapons_buffs.damage_flat) as f32
-                * (molotov_buffs.damage + global_weapons_buffs.damage)) as i32;
-        let area_size = molotov.area_size * molotov_buffs.area_size;
-        let area_attack_speed = molotov.area_attack_speed * molotov_buffs.area_attack_speed;
-        let area_lifespan = DEFAULT_AREA_LIFESPAN * molotov_buffs.area_lifespan;
+                * (1.0 + molotov_buffs.damage + global_weapons_buffs.damage)) as i32;
+        let area_size = molotov.area_size * (1.0 + molotov_buffs.area_size);
+        let area_attack_speed = molotov.area_attack_speed * (1.0 + molotov_buffs.area_attack_speed);
+        let area_lifespan = DEFAULT_AREA_LIFESPAN * (1.0 + molotov_buffs.area_lifespan);
         let crit_chance = molotov_buffs.crit_chance + global_weapons_buffs.crit_chance;
-        let crit_damage = molotov_buffs.crit_damage + global_weapons_buffs.crit_damage;
-
-        if rand::thread_rng().gen_range(0.0..100.0) < crit_chance {
-            damage = (damage as f32 * crit_damage) as i32;
-        }
+        let crit_damage = (molotov.damage as f32
+            * (1.0 + molotov_buffs.crit_damage + global_weapons_buffs.crit_damage))
+            as i32;
 
         commands.spawn(DamageAreaBundle::<S>::new(
             weapon_assets.fire.clone(),
             area_size,
             damage,
+            crit_damage,
+            crit_chance,
             area_attack_speed,
             area_lifespan,
             area_position,

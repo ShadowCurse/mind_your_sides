@@ -2,6 +2,7 @@ use std::marker::PhantomData;
 
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use rand::Rng;
 
 use crate::{
     game::{damage::EnemyDamageEvent, enemies::Enemy, East, GameState, North, Side, South, West},
@@ -34,14 +35,18 @@ pub struct ProjectileMarker;
 #[derive(Component)]
 pub struct Projectile<S: Side> {
     damage: i32,
+    crit_damage: i32,
+    crit_chance: f32,
     lifespan: Timer,
     _phantom: PhantomData<S>,
 }
 
 impl<S: Side> Projectile<S> {
-    pub fn new(damage: i32, lifespan: f32) -> Self {
+    pub fn new(damage: i32, crit_damage: i32, crit_chance: f32, lifespan: f32) -> Self {
         Self {
             damage,
+            crit_damage,
+            crit_chance,
             lifespan: Timer::from_seconds(lifespan, TimerMode::Once),
             _phantom: PhantomData,
         }
@@ -64,6 +69,8 @@ impl<S: Side> ProjectileBundle<S> {
         texture: Handle<Image>,
         size: f32,
         damage: i32,
+        crit_damage: i32,
+        crit_chance: f32,
         speed: f32,
         direction: Vec2,
         transform: Transform,
@@ -80,7 +87,7 @@ impl<S: Side> ProjectileBundle<S> {
                 linvel: speed * direction,
                 ..default()
             },
-            projectile: Projectile::new(damage, DEFAULT_ARROW_LIFESPAN),
+            projectile: Projectile::new(damage, crit_damage, crit_chance, DEFAULT_ARROW_LIFESPAN),
             marker: ProjectileMarker,
         }
     }
@@ -94,6 +101,7 @@ fn projectile_update<S: Side>(
     mut projectiles: Query<(Entity, &mut Projectile<S>)>,
     mut damage_event: EventWriter<EnemyDamageEvent<S>>,
 ) {
+    let mut rng = rand::thread_rng();
     for (projectile_entity, mut projectile) in projectiles.iter_mut() {
         if projectile.lifespan.tick(time.delta()).finished() {
             commands.entity(projectile_entity).despawn();
@@ -105,7 +113,14 @@ fn projectile_update<S: Side>(
                     .or(enemies.get(contact_pair.collider2()))
                 {
                     hit = true;
-                    damage_event.send(EnemyDamageEvent::new(enemy, projectile.damage));
+
+                    let (damage, was_crit) = if rng.gen_range(0.0..1.0) < projectile.crit_chance {
+                        (projectile.crit_damage, true)
+                    } else {
+                        (projectile.damage, false)
+                    };
+
+                    damage_event.send(EnemyDamageEvent::new(enemy, damage, was_crit));
                 }
             }
             if hit {

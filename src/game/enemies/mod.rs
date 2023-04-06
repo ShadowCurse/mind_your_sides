@@ -71,25 +71,13 @@ struct EnemySprites {
     pub poison_ivy: Handle<TextureAtlas>,
 }
 
-#[derive(Debug, Resource)]
+#[derive(Debug, Default, Resource)]
 pub struct GlobalEnemyBuffs {
     pub health: f32,
     pub speed: f32,
     pub exp: f32,
     pub damage: f32,
     pub attack_speed: f32,
-}
-
-impl Default for GlobalEnemyBuffs {
-    fn default() -> Self {
-        Self {
-            health: 1.0,
-            speed: 1.0,
-            exp: 1.0,
-            damage: 1.0,
-            attack_speed: 1.0,
-        }
-    }
 }
 
 #[derive(Debug, Default, Component)]
@@ -190,17 +178,17 @@ pub trait EnemyType<S: Side>: Component + Default {
 
     fn enemy(global_buffs: &GlobalEnemyBuffs, buffs: &EnemyBuffs<S>) -> Enemy<S> {
         Enemy::new(
-            (Self::HEALTH as f32 * (global_buffs.health + buffs.health)) as i32,
-            Self::SPEED * (global_buffs.speed + buffs.speed),
-            (Self::EXP as f32 * (global_buffs.exp + buffs.exp)) as u32,
+            (Self::HEALTH as f32 * (1.0 + global_buffs.health + buffs.health)) as i32,
+            Self::SPEED * (1.0 + global_buffs.speed + buffs.speed),
+            (Self::EXP as f32 * (1.0 - (global_buffs.exp + buffs.exp))) as u32,
         )
     }
 
     fn attack(global_buffs: &GlobalEnemyBuffs, buffs: &EnemyBuffs<S>) -> EnemyAttack<S> {
         EnemyAttack::new(
-            (Self::DAMAGE as f32 * (global_buffs.damage + buffs.damage)) as i32,
+            (Self::DAMAGE as f32 * (1.0 + global_buffs.damage + buffs.damage)) as i32,
             Self::RANGE,
-            Self::ATTACK_SPEED * (global_buffs.attack_speed + buffs.attack_speed),
+            Self::ATTACK_SPEED * (1.0 + global_buffs.attack_speed + buffs.attack_speed),
         )
     }
 }

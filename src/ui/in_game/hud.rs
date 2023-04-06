@@ -7,6 +7,7 @@ use crate::{
     game::{castle::CastleWall, East, GameState, North, South, West},
     ui::{spawn_button, UiConfig},
     utils::remove_all_with,
+    GlobalState,
 };
 
 use super::UiInGameState;
@@ -15,7 +16,7 @@ pub struct HUDPlugin;
 
 impl Plugin for HUDPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(setup.in_schedule(OnEnter(UiInGameState::InGame)))
+        app.add_system(setup.in_schedule(OnEnter(GlobalState::InGame)))
             .add_systems(
                 (
                     update_castle_level,
@@ -28,12 +29,12 @@ impl Plugin for HUDPlugin {
                     .in_set(OnUpdate(UiInGameState::InGame)),
             )
             .add_system(button_system.in_set(OnUpdate(UiInGameState::InGame)))
-            .add_system(remove_all_with::<HUDMarker>.in_schedule(OnExit(UiInGameState::InGame)));
+            .add_system(remove_all_with::<HUDMarker>.in_schedule(OnExit(GlobalState::InGame)));
     }
 }
 
 #[derive(Debug, Clone, Copy, Component)]
-struct HUDMarker;
+pub struct HUDMarker;
 
 #[derive(Debug, Clone, Copy, Component)]
 struct CastleLevelText;
@@ -48,11 +49,14 @@ struct CastleWallHpText<S: Side> {
 
 #[derive(Debug, Clone, Copy, Component)]
 enum HUDButton {
+    StatsNorth,
+    StatsSouth,
+    StatsWest,
+    StatsEast,
     Pause,
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>, config: Res<UiConfig>) {
-    let panel : Handle<Image> = asset_server.load("menu/panel-250w-800h.png");
+fn setup(mut commands: Commands, config: Res<UiConfig>) {
     // root node
     commands
         .spawn((
@@ -72,67 +76,148 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, config: Res<UiC
                 .spawn(NodeBundle {
                     style: Style {
                         size: Size::width(Val::Px(200.0)),
-                        border: UiRect::all(Val::Px(2.0)),
                         flex_direction: FlexDirection::Column,
-                        justify_content: JustifyContent::Center,
+                        justify_content: JustifyContent::SpaceEvenly,
                         align_items: AlignItems::Center,
                         ..default()
                     },
-                    background_color: Color::rgb(0.65, 0.65, 0.65).into(),
+                    background_color: config.panels_background.into(),
                     ..default()
                 })
                 .with_children(|parent| {
-                    spawn_button(parent, &config, HUDButton::Pause);
-                    parent.spawn((
-                        TextBundle::from_section("Level: ", config.text_style.clone()),
-                        CastleLevelText,
-                    ));
-                    parent.spawn((
-                        TextBundle::from_section("Exp: ", config.text_style.clone()),
-                        CastleExpText,
-                    ));
-                    parent.spawn((
-                        TextBundle::from_section("North wall hp: ", config.text_style.clone()),
-                        CastleWallHpText::<North>::default(),
-                    ));
-                    parent.spawn((
-                        TextBundle::from_section("South wall hp: ", config.text_style.clone()),
-                        CastleWallHpText::<South>::default(),
-                    ));
-                    parent.spawn((
-                        TextBundle::from_section("West wall hp: ", config.text_style.clone()),
-                        CastleWallHpText::<West>::default(),
-                    ));
-                    parent.spawn((
-                        TextBundle::from_section("East wall hp: ", config.text_style.clone()),
-                        CastleWallHpText::<East>::default(),
-                    ));
+                    // Castle info
+                    parent
+                        .spawn(NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::Column,
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            background_color: config.panels_background.into(),
+                            ..default()
+                        })
+                        .with_children(|parent| {
+                            parent.spawn((
+                                TextBundle::from_section("Level: ", config.text_style.clone()),
+                                CastleLevelText,
+                            ));
+                            parent.spawn((
+                                TextBundle::from_section("Exp: ", config.text_style.clone()),
+                                CastleExpText,
+                            ));
+                        });
+
+                    // North info
+                    parent
+                        .spawn(NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::Column,
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            background_color: config.panels_background.into(),
+                            ..default()
+                        })
+                        .with_children(|parent| {
+                            parent.spawn((TextBundle::from_section(
+                                "North",
+                                config.text_style.clone(),
+                            ),));
+                            parent.spawn((
+                                TextBundle::from_section("Hp: ", config.text_style.clone()),
+                                CastleWallHpText::<North>::default(),
+                            ));
+                            spawn_button(parent, &config, HUDButton::StatsNorth);
+                        });
+
+                    // South info
+                    parent
+                        .spawn(NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::Column,
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            background_color: config.panels_background.into(),
+                            ..default()
+                        })
+                        .with_children(|parent| {
+                            parent.spawn((TextBundle::from_section(
+                                "South",
+                                config.text_style.clone(),
+                            ),));
+                            parent.spawn((
+                                TextBundle::from_section("Hp: ", config.text_style.clone()),
+                                CastleWallHpText::<South>::default(),
+                            ));
+                            spawn_button(parent, &config, HUDButton::StatsSouth);
+                        });
                 });
             // right vertical fill
             parent
                 .spawn(NodeBundle {
                     style: Style {
-                        size: Size::width(Val::Px(250.0)),
+                        size: Size::width(Val::Px(200.0)),
                         flex_direction: FlexDirection::Column,
-                        justify_content: JustifyContent::Center,
+                        justify_content: JustifyContent::SpaceEvenly,
                         align_items: AlignItems::Center,
                         ..default()
                     },
-                    background_color: Color::rgb(0.0, 0.0, 0.0).into(),
+                    background_color: config.panels_background.into(),
                     ..default()
                 })
                 .with_children(|parent| {
+                    spawn_button(parent, &config, HUDButton::Pause);
+
+                    // West info
                     parent
-                        .spawn(ImageBundle {
+                        .spawn(NodeBundle {
                             style: Style {
-                                size: Size{
-                                    width : Val::Px(250.),
-                                    height : Val::Px(700.)
-                                },
+                                flex_direction: FlexDirection::Column,
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
                                 ..default()
                             },
-                            image : UiImage::new(panel),
+                            background_color: config.panels_background.into(),
                             ..default()
+                        })
+                        .with_children(|parent| {
+                            parent.spawn((TextBundle::from_section(
+                                "West",
+                                config.text_style.clone(),
+                            ),));
+                            parent.spawn((
+                                TextBundle::from_section("Hp: ", config.text_style.clone()),
+                                CastleWallHpText::<West>::default(),
+                            ));
+                            spawn_button(parent, &config, HUDButton::StatsWest);
+                        });
+
+                    // East info
+                    parent
+                        .spawn(NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::Column,
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            background_color: config.panels_background.into(),
+                            ..default()
+                        })
+                        .with_children(|parent| {
+                            parent.spawn((TextBundle::from_section(
+                                "East",
+                                config.text_style.clone(),
+                            ),));
+                            parent.spawn((
+                                TextBundle::from_section("Hp: ", config.text_style.clone()),
+                                CastleWallHpText::<East>::default(),
+                            ));
+                            spawn_button(parent, &config, HUDButton::StatsEast);
                         });
                 });
         });
@@ -151,9 +236,11 @@ fn button_system(
             Interaction::Clicked => {
                 *color = style.button_color_pressed.into();
                 match button {
-                    HUDButton::Pause => {
-                        game_state.set(GameState::Paused);
-                    }
+                    HUDButton::Pause => game_state.set(GameState::Paused),
+                    HUDButton::StatsNorth => game_state.set(GameState::StatsNorth),
+                    HUDButton::StatsSouth => game_state.set(GameState::StatsSouth),
+                    HUDButton::StatsWest => game_state.set(GameState::StatsWest),
+                    HUDButton::StatsEast => game_state.set(GameState::StatsEast),
                 }
             }
             Interaction::Hovered => {
@@ -187,10 +274,5 @@ fn update_castle_wall_hp<S: Side>(
 ) {
     let wall = wall.single();
     let mut hp_text = hp_text.single_mut();
-    hp_text.sections[0].value = format!(
-        "{:?} wall: {}/{}",
-        S::default(),
-        wall.health,
-        wall.max_health
-    );
+    hp_text.sections[0].value = format!("Hp: {}/{}", wall.health, wall.max_health);
 }

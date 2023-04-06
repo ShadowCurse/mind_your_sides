@@ -31,6 +31,14 @@ impl Plugin for GamePlugin {
             .add_system(resume_physics.in_schedule(OnExit(GameState::GameOver)))
             .add_system(stop_physics.in_schedule(OnEnter(GameState::LevelUp)))
             .add_system(resume_physics.in_schedule(OnExit(GameState::LevelUp)))
+            .add_system(stop_physics.in_schedule(OnEnter(GameState::StatsNorth)))
+            .add_system(resume_physics.in_schedule(OnExit(GameState::StatsNorth)))
+            .add_system(stop_physics.in_schedule(OnEnter(GameState::StatsSouth)))
+            .add_system(resume_physics.in_schedule(OnExit(GameState::StatsSouth)))
+            .add_system(stop_physics.in_schedule(OnEnter(GameState::StatsWest)))
+            .add_system(resume_physics.in_schedule(OnExit(GameState::StatsWest)))
+            .add_system(stop_physics.in_schedule(OnEnter(GameState::StatsEast)))
+            .add_system(resume_physics.in_schedule(OnExit(GameState::StatsEast)))
             .add_plugin(animation::AnimationPlugin)
             .add_plugin(castle::CastlePlugin)
             .add_plugin(damage::DamagePlugin)
@@ -56,6 +64,10 @@ pub enum GameState {
     Paused,
     GameOver,
     LevelUp,
+    StatsNorth,
+    StatsSouth,
+    StatsWest,
+    StatsEast,
 }
 impl_into_state!(GameState);
 

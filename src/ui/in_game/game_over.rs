@@ -6,7 +6,7 @@ use crate::{
     GlobalState,
 };
 
-use super::UiInGameState;
+use super::{hud::HUDMarker, UiInGameState};
 
 pub struct GameOverPlugin;
 
@@ -30,8 +30,8 @@ enum GameOverButton {
     MainMenu,
 }
 
-fn setup(mut commands: Commands, config: Res<UiConfig>) {
-    commands
+fn setup(config: Res<UiConfig>, hud: Query<Entity, With<HUDMarker>>, mut commands: Commands) {
+    let game_over = commands
         .spawn((
             NodeBundle {
                 style: config.menu_style.clone(),
@@ -53,7 +53,11 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
             spawn_button(builder, &config, GameOverButton::Restart);
             spawn_button(builder, &config, GameOverButton::Settings);
             spawn_button(builder, &config, GameOverButton::MainMenu);
-        });
+        })
+        .id();
+
+    let hud = hud.single();
+    commands.entity(hud).insert_children(1, &[game_over]);
 }
 
 fn button_system(

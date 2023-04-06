@@ -17,6 +17,7 @@ impl Plugin for UiPlugin {
 
 #[derive(Debug, Clone, Resource)]
 pub struct UiConfig {
+    pub panels_background: Color,
     pub button_style: Style,
     pub button_color_normal: Color,
     pub button_color_hover: Color,
@@ -36,16 +37,18 @@ fn setup_ui_config(game_assets: Res<GameAssets>, mut commands: Commands) {
     let light_blue = Color::rgb_u8(90, 105, 136);
     let medium_blue = Color::rgb_u8(58, 68, 102);
     let dark_blue = Color::rgb_u8(38, 43, 68);
+    let darker_blue = Color::rgb_u8(30, 37, 60);
 
     commands.insert_resource(UiConfig {
+        panels_background: dark_blue,
         button_style: Style {
-            size: Size::new(Val::Px(140.0), Val::Px(60.0)),
+            size: Size::new(Val::Px(180.0), Val::Px(80.0)),
             margin: UiRect::all(Val::Percent(1.0)),
             justify_content: JustifyContent::Center,
             align_items: AlignItems::Center,
             ..default()
         },
-        button_color_normal: dark_blue,
+        button_color_normal: darker_blue,
         button_color_hover: medium_blue,
         button_color_pressed: light_blue,
         menu_style: Style {
@@ -59,7 +62,7 @@ fn setup_ui_config(game_assets: Res<GameAssets>, mut commands: Commands) {
         text_style: TextStyle {
             font: game_assets.font.clone(),
             font_size: 50.0,
-            color: Color::BLACK,
+            color: Color::WHITE,
         },
         buff_text_style: TextStyle {
             font: game_assets.font.clone(),
@@ -78,7 +81,7 @@ fn setup_ui_config(game_assets: Res<GameAssets>, mut commands: Commands) {
         title_text_style: TextStyle {
             font: game_assets.font.clone(),
             font_size: 82.0,
-            color: Color::BLACK,
+            color: Color::WHITE,
         },
     });
 }

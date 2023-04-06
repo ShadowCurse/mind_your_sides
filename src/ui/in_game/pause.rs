@@ -7,7 +7,7 @@ use crate::{
     GlobalState,
 };
 
-use super::UiInGameState;
+use super::{hud::HUDMarker, UiInGameState};
 
 pub struct PausePlugin;
 
@@ -29,8 +29,8 @@ enum PauseButton {
     Back,
 }
 
-fn setup(mut commands: Commands, config: Res<UiConfig>) {
-    commands
+fn setup(config: Res<UiConfig>, hud: Query<Entity, With<HUDMarker>>, mut commands: Commands) {
+    let pause = commands
         .spawn((
             NodeBundle {
                 style: config.menu_style.clone(),
@@ -43,7 +43,11 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
             spawn_button(builder, &config, PauseButton::MainMenu);
             spawn_button(builder, &config, PauseButton::Settings);
             spawn_button(builder, &config, PauseButton::Back);
-        });
+        })
+        .id();
+
+    let hud = hud.single();
+    commands.entity(hud).insert_children(1, &[pause]);
 }
 
 fn button_system(

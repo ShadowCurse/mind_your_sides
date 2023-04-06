@@ -1,7 +1,6 @@
 use std::marker::PhantomData;
 
 use bevy::prelude::*;
-use rand::Rng;
 
 use crate::{
     game::{
@@ -15,11 +14,14 @@ use crate::{
 use super::{GlobalWeaponBuffs, WeaponsAssets};
 
 const DEFAULT_BOLT_SIZE: f32 = 3.0;
-const DEFAULT_BOLT_DAMAGE: i32 = 20;
 const DEFAULT_BOLT_SPEED: f32 = 200.0;
 
+const DEFAULT_CROSSBOW_DAMAGE: i32 = 20;
+const DEFAULT_CROSSBOW_CRIT_DAMAGE: f32 = 2.0;
+const DEFAULT_CROSSBOW_CRIT_CHANCE: f32 = 0.05;
 const DEFAULT_CROSSBOW_RANGE: f32 = 500.0;
 const DEFAULT_CROSSBOW_ATTACK_SPEED: f32 = 1.0;
+
 /// Offsets arrow spawn point in the enemy direction
 const DEFAULT_BOLT_SPAWN_OFFSET: f32 = 30.0;
 
@@ -27,7 +29,7 @@ pub struct CrossbowPlugin;
 
 impl Plugin for CrossbowPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(setup.in_schedule(OnEnter(GameState::InGame)))
+        app.add_system(setup.in_schedule(OnEnter(GlobalState::InGame)))
             .add_systems(
                 (
                     crossbow_attack::<North>,
@@ -44,7 +46,7 @@ impl Plugin for CrossbowPlugin {
 #[derive(Component)]
 pub struct CrossbowMarker;
 
-#[derive(Resource)]
+#[derive(Debug, Default, Resource)]
 pub struct CrossbowBuffs<S: Side> {
     pub damage: f32,
     pub damage_flat: i32,
@@ -56,37 +58,69 @@ pub struct CrossbowBuffs<S: Side> {
     _phantom: PhantomData<S>,
 }
 
-impl<S: Side> Default for CrossbowBuffs<S> {
-    fn default() -> Self {
-        Self {
-            damage: 1.0,
-            damage_flat: 0,
-            crit_damage: 2.0,
-            crit_chance: 10.0,
-            range: 1.0,
-            attack_speed: 1.0,
-            arrow_speed: 1.0,
-            _phantom: PhantomData,
-        }
-    }
-}
-
 #[derive(Component)]
 pub struct Crossbow<S: Side> {
     damage: i32,
     range: f32,
+    crit_damage: f32,
+    crit_chance: f32,
     arrow_speed: f32,
     attack_timer: Timer,
     _phantom: PhantomData<S>,
 }
 
+impl<S: Side> std::fmt::Display for Crossbow<S> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!(" @ damage {}\n", self.damage))?;
+        f.write_fmt(format_args!(" @ range {:.1}\n", self.range))?;
+        f.write_fmt(format_args!(" @ crit damage {:.1}\n", self.crit_damage))?;
+        f.write_fmt(format_args!(" @ crit chance {:.1}\n", self.crit_chance))?;
+        f.write_fmt(format_args!(" @ arrow speed {:.1}\n", self.arrow_speed))?;
+        f.write_fmt(format_args!(
+            " @ attack speed {:.1}\n",
+            self.attack_timer.duration().as_secs_f32()
+        ))?;
+        Ok(())
+    }
+}
+
 impl<S: Side> Default for Crossbow<S> {
     fn default() -> Self {
         Self {
-            damage: DEFAULT_BOLT_DAMAGE,
+            damage: DEFAULT_CROSSBOW_DAMAGE,
             range: DEFAULT_CROSSBOW_RANGE,
+            crit_damage: DEFAULT_CROSSBOW_CRIT_DAMAGE,
+            crit_chance: DEFAULT_CROSSBOW_CRIT_CHANCE,
             arrow_speed: DEFAULT_BOLT_SPEED,
             attack_timer: Timer::from_seconds(DEFAULT_CROSSBOW_ATTACK_SPEED, TimerMode::Repeating),
+            _phantom: PhantomData,
+        }
+    }
+}
+
+impl<S: Side> Crossbow<S> {
+    pub fn with_buffs(
+        self,
+        crossbow_buffs: &CrossbowBuffs<S>,
+        global_weapons_buffs: &GlobalWeaponBuffs,
+    ) -> Self {
+        Self {
+            damage: ((self.damage + crossbow_buffs.damage_flat + global_weapons_buffs.damage_flat)
+                as f32
+                * (1.0 + crossbow_buffs.damage + global_weapons_buffs.damage))
+                as i32,
+            range: self.range * (1.0 + crossbow_buffs.range),
+            crit_damage: self.crit_damage
+                + crossbow_buffs.crit_damage
+                + global_weapons_buffs.crit_damage,
+            crit_chance: self.crit_chance
+                + crossbow_buffs.crit_chance
+                + global_weapons_buffs.crit_chance,
+            arrow_speed: self.arrow_speed * (1.0 + crossbow_buffs.arrow_speed),
+            attack_timer: Timer::from_seconds(
+                DEFAULT_CROSSBOW_ATTACK_SPEED * (1.0 + crossbow_buffs.attack_speed),
+                TimerMode::Repeating,
+            ),
             _phantom: PhantomData,
         }
     }
@@ -129,7 +163,7 @@ fn crossbow_attack<S: Side>(
         }
 
         crossbow.attack_timer = Timer::from_seconds(
-            DEFAULT_CROSSBOW_ATTACK_SPEED * crossbow_buffs.attack_speed,
+            DEFAULT_CROSSBOW_ATTACK_SPEED * (1.0 + crossbow_buffs.attack_speed),
             TimerMode::Repeating,
         );
 
@@ -145,7 +179,7 @@ fn crossbow_attack<S: Side>(
         }
 
         // no enemies in range
-        let range = crossbow.range * crossbow_buffs.range;
+        let range = crossbow.range * (1.0 + crossbow_buffs.range);
         if range <= min_range {
             continue;
         }
@@ -159,22 +193,24 @@ fn crossbow_attack<S: Side>(
         let arrow_direction = Vec2::NEG_X;
         projectile_transform.rotate_z(-direction.angle_between(arrow_direction));
 
-        let mut damage =
+        let damage =
             ((crossbow.damage + crossbow_buffs.damage_flat + global_weapons_buffs.damage_flat)
                 as f32
-                * (crossbow_buffs.damage + global_weapons_buffs.damage)) as i32;
-        let arrow_speed = crossbow.arrow_speed * crossbow_buffs.arrow_speed;
-        let crit_chance = crossbow_buffs.crit_chance + global_weapons_buffs.crit_chance;
-        let crit_damage = crossbow_buffs.crit_damage + global_weapons_buffs.crit_damage;
-
-        if rand::thread_rng().gen_range(0.0..100.0) < crit_chance {
-            damage = (damage as f32 * crit_damage) as i32;
-        }
+                * (1.0 + crossbow_buffs.damage + global_weapons_buffs.damage)) as i32;
+        let arrow_speed = crossbow.arrow_speed * (1.0 + crossbow_buffs.arrow_speed);
+        let crit_chance =
+            crossbow.crit_chance + crossbow_buffs.crit_chance + global_weapons_buffs.crit_chance;
+        let crit_damage = (crossbow.damage as f32
+            * (crossbow.crit_damage
+                + crossbow_buffs.crit_damage
+                + global_weapons_buffs.crit_damage)) as i32;
 
         commands.spawn(ProjectileBundle::<S>::new(
             weapon_assets.arrow.clone(),
             DEFAULT_BOLT_SIZE,
             damage,
+            crit_damage,
+            crit_chance,
             arrow_speed,
             direction,
             projectile_transform,
