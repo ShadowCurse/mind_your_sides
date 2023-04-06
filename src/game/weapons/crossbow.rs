@@ -1,7 +1,6 @@
 use std::marker::PhantomData;
 
 use bevy::prelude::*;
-use rand::Rng;
 
 use crate::{
     game::{
@@ -30,7 +29,7 @@ pub struct CrossbowPlugin;
 
 impl Plugin for CrossbowPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(setup.in_schedule(OnEnter(GameState::InGame)))
+        app.add_system(setup.in_schedule(OnEnter(GlobalState::InGame)))
             .add_systems(
                 (
                     crossbow_attack::<North>,
@@ -47,7 +46,7 @@ impl Plugin for CrossbowPlugin {
 #[derive(Component)]
 pub struct CrossbowMarker;
 
-#[derive(Default, Resource)]
+#[derive(Debug, Default, Resource)]
 pub struct CrossbowBuffs<S: Side> {
     pub damage: f32,
     pub damage_flat: i32,
@@ -151,24 +150,24 @@ fn crossbow_attack<S: Side>(
         let arrow_direction = Vec2::NEG_X;
         projectile_transform.rotate_z(-direction.angle_between(arrow_direction));
 
-        let mut damage =
+        let damage =
             ((crossbow.damage + crossbow_buffs.damage_flat + global_weapons_buffs.damage_flat)
                 as f32
                 * (1.0 + crossbow_buffs.damage + global_weapons_buffs.damage)) as i32;
         let arrow_speed = crossbow.arrow_speed * (1.0 + crossbow_buffs.arrow_speed);
         let crit_chance =
             crossbow.crit_chance + crossbow_buffs.crit_chance + global_weapons_buffs.crit_chance;
-        let crit_damage =
-            crossbow.crit_damage + crossbow_buffs.crit_damage + global_weapons_buffs.crit_damage;
-
-        if rand::thread_rng().gen_range(0.0..100.0) < crit_chance {
-            damage = (damage as f32 * crit_damage) as i32;
-        }
+        let crit_damage = (crossbow.damage as f32
+            * (crossbow.crit_damage
+                + crossbow_buffs.crit_damage
+                + global_weapons_buffs.crit_damage)) as i32;
 
         commands.spawn(ProjectileBundle::<S>::new(
             weapon_assets.arrow.clone(),
             DEFAULT_BOLT_SIZE,
             damage,
+            crit_damage,
+            crit_chance,
             arrow_speed,
             direction,
             projectile_transform,

@@ -2,6 +2,7 @@ use std::marker::PhantomData;
 
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use rand::Rng;
 
 use crate::{
     game::{
@@ -36,16 +37,27 @@ pub struct DamageAreaMarker;
 pub struct DamageArea<S: Side> {
     size: f32,
     damage: i32,
+    crit_damage: i32,
+    crit_chance: f32,
     attack_timer: Timer,
     lifespan: Timer,
     _phatom: PhantomData<S>,
 }
 
 impl<S: Side> DamageArea<S> {
-    pub fn new(size: f32, damage: i32, attack_speed: f32, lifespan: f32) -> Self {
+    pub fn new(
+        size: f32,
+        damage: i32,
+        crit_damage: i32,
+        crit_chance: f32,
+        attack_speed: f32,
+        lifespan: f32,
+    ) -> Self {
         Self {
             size,
             damage,
+            crit_damage,
+            crit_chance,
             attack_timer: Timer::from_seconds(attack_speed, TimerMode::Repeating),
             lifespan: Timer::from_seconds(lifespan, TimerMode::Once),
             _phatom: PhantomData,
@@ -66,6 +78,8 @@ impl<S: Side> DamageAreaBundle<S> {
         texture_atlas: Handle<TextureAtlas>,
         size: f32,
         damage: i32,
+        crit_damage: i32,
+        crit_chance: f32,
         attack_speed: f32,
         lifespan: f32,
         position: Vec3,
@@ -78,7 +92,14 @@ impl<S: Side> DamageAreaBundle<S> {
                 12.0,
                 position,
             ),
-            area: DamageArea::new(size, damage, attack_speed, lifespan),
+            area: DamageArea::new(
+                size,
+                damage,
+                crit_damage,
+                crit_chance,
+                attack_speed,
+                lifespan,
+            ),
             marker: DamageAreaMarker,
         }
     }
@@ -91,6 +112,7 @@ fn damage_area_update<S: Side>(
     mut areas: Query<(Entity, &Transform, &mut DamageArea<S>)>,
     mut damage_event: EventWriter<EnemyDamageEvent<S>>,
 ) {
+    let mut rng = rand::thread_rng();
     for (area_entity, area_transform, mut area) in areas.iter_mut() {
         if area.lifespan.tick(time.delta()).finished() {
             commands.entity(area_entity).despawn();
@@ -100,7 +122,13 @@ fn damage_area_update<S: Side>(
             }
 
             let callback = |e| {
-                damage_event.send(EnemyDamageEvent::new(e, area.damage));
+                let (damage, was_crit) = if rng.gen_range(0.0..1.0) < area.crit_chance {
+                    (area.crit_damage, true)
+                } else {
+                    (area.damage, false)
+                };
+
+                damage_event.send(EnemyDamageEvent::new(e, damage, was_crit));
                 true
             };
 

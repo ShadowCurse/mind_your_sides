@@ -2,10 +2,14 @@ use std::marker::PhantomData;
 
 use bevy::prelude::*;
 
+use crate::GameAssets;
+
 use super::{castle::CastleWall, enemies::Enemy, East, GameState, North, Side, South, West};
 
 pub mod area;
 pub mod projectile;
+
+const DAMAGE_TEXT_LIFESPAN: f32 = 1.0;
 
 pub struct DamagePlugin;
 
@@ -31,6 +35,7 @@ impl Plugin for DamagePlugin {
                     damage_wall::<South>,
                     damage_wall::<West>,
                     damage_wall::<East>,
+                    damage_text_update,
                 )
                     .in_set(OnUpdate(GameState::InGame)),
             );
@@ -41,14 +46,16 @@ impl Plugin for DamagePlugin {
 pub struct EnemyDamageEvent<S: Side> {
     pub target: Entity,
     pub damage: i32,
+    pub was_crit: bool,
     _phantom: PhantomData<S>,
 }
 
 impl<S: Side> EnemyDamageEvent<S> {
-    pub fn new(target: Entity, damage: i32) -> Self {
+    pub fn new(target: Entity, damage: i32, was_crit: bool) -> Self {
         Self {
             target,
             damage,
+            was_crit,
             _phantom: PhantomData,
         }
     }
@@ -69,25 +76,100 @@ impl<S: Side> WallDamageEvent<S> {
     }
 }
 
+#[derive(Component)]
+pub struct DamageTextMarker {
+    lifespan: Timer,
+}
+
+impl Default for DamageTextMarker {
+    fn default() -> Self {
+        Self {
+            lifespan: Timer::from_seconds(DAMAGE_TEXT_LIFESPAN, TimerMode::Once),
+        }
+    }
+}
+
 /// Damage enemies based on the side
 fn damage_enemy<S: Side>(
+    game_assets: Res<GameAssets>,
+    mut commands: Commands,
     mut events: EventReader<EnemyDamageEvent<S>>,
-    mut enemies: Query<&mut Enemy<S>>,
+    mut enemies: Query<(&Transform, &mut Enemy<S>)>,
 ) {
     for event in events.iter() {
-        if let Ok(mut enemy) = enemies.get_mut(event.target) {
+        if let Ok((transform, mut enemy)) = enemies.get_mut(event.target) {
             enemy.health -= event.damage;
+
+            let mut damage_text_transform = *transform;
+            damage_text_transform.translation.y += 5.0;
+            damage_text_transform.translation.z += 1.0;
+
+            let (color, font_size) = if event.was_crit {
+                (Color::ORANGE_RED, 100.0)
+            } else {
+                (Color::GRAY, 80.0)
+            };
+
+            commands.spawn((
+                Text2dBundle {
+                    text: Text::from_section(
+                        format!("{}", event.damage),
+                        TextStyle {
+                            font: game_assets.font.clone(),
+                            font_size,
+                            color,
+                        },
+                    ),
+                    transform: damage_text_transform,
+                    ..default()
+                },
+                DamageTextMarker::default(),
+            ));
         }
     }
 }
 
 /// Damage wall based on the side
 fn damage_wall<S: Side>(
+    game_assets: Res<GameAssets>,
+    mut commands: Commands,
     mut events: EventReader<WallDamageEvent<S>>,
-    mut wall: Query<&mut CastleWall<S>>,
+    mut wall: Query<(&Transform, &mut CastleWall<S>)>,
 ) {
-    let mut wall = wall.single_mut();
+    let (transform, mut wall) = wall.single_mut();
     for event in events.iter() {
         wall.health -= event.damage;
+
+        let mut damage_text_transform = *transform;
+        damage_text_transform.translation.y += 5.0;
+        damage_text_transform.translation.z += 10.0;
+
+        commands.spawn((
+            Text2dBundle {
+                text: Text::from_section(
+                    format!("{}", event.damage),
+                    TextStyle {
+                        font: game_assets.font.clone(),
+                        font_size: 120.0,
+                        color: Color::MIDNIGHT_BLUE,
+                    },
+                ),
+                transform: damage_text_transform,
+                ..default()
+            },
+            DamageTextMarker::default(),
+        ));
+    }
+}
+
+fn damage_text_update(
+    time: Res<Time>,
+    mut commands: Commands,
+    mut damage_text: Query<(Entity, &mut DamageTextMarker)>,
+) {
+    for (entity, mut marker) in damage_text.iter_mut() {
+        if marker.lifespan.tick(time.delta()).finished() {
+            commands.entity(entity).despawn();
+        }
     }
 }

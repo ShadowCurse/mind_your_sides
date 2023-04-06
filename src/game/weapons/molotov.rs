@@ -24,7 +24,7 @@ pub struct MolotovPlugin;
 
 impl Plugin for MolotovPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(setup.in_schedule(OnEnter(GameState::InGame)))
+        app.add_system(setup.in_schedule(OnEnter(GlobalState::InGame)))
             .add_systems(
                 (
                     molotov_attack::<North>,
@@ -129,23 +129,23 @@ fn molotov_attack<S: Side>(
         let mut area_position = transform.translation;
         area_position += (direction * distance).extend(0.0);
 
-        let mut damage =
+        let damage =
             ((molotov.damage + molotov_buffs.damage_flat + global_weapons_buffs.damage_flat) as f32
                 * (1.0 + molotov_buffs.damage + global_weapons_buffs.damage)) as i32;
         let area_size = molotov.area_size * (1.0 + molotov_buffs.area_size);
         let area_attack_speed = molotov.area_attack_speed * (1.0 + molotov_buffs.area_attack_speed);
         let area_lifespan = DEFAULT_AREA_LIFESPAN * (1.0 + molotov_buffs.area_lifespan);
         let crit_chance = molotov_buffs.crit_chance + global_weapons_buffs.crit_chance;
-        let crit_damage = 1.0 + molotov_buffs.crit_damage + global_weapons_buffs.crit_damage;
-
-        if rand::thread_rng().gen_range(0.0..100.0) < crit_chance {
-            damage = (damage as f32 * crit_damage) as i32;
-        }
+        let crit_damage = (molotov.damage as f32
+            * (1.0 + molotov_buffs.crit_damage + global_weapons_buffs.crit_damage))
+            as i32;
 
         commands.spawn(DamageAreaBundle::<S>::new(
             weapon_assets.fire.clone(),
             area_size,
             damage,
+            crit_damage,
+            crit_chance,
             area_attack_speed,
             area_lifespan,
             area_position,
