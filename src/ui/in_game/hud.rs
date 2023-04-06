@@ -7,6 +7,7 @@ use crate::{
     game::{castle::CastleWall, East, GameState, North, South, West},
     ui::{spawn_button, UiConfig},
     utils::remove_all_with,
+    GlobalState,
 };
 
 use super::UiInGameState;
@@ -15,7 +16,7 @@ pub struct HUDPlugin;
 
 impl Plugin for HUDPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(setup.in_schedule(OnEnter(UiInGameState::InGame)))
+        app.add_system(setup.in_schedule(OnEnter(GlobalState::InGame)))
             .add_systems(
                 (
                     update_castle_level,
@@ -28,12 +29,12 @@ impl Plugin for HUDPlugin {
                     .in_set(OnUpdate(UiInGameState::InGame)),
             )
             .add_system(button_system.in_set(OnUpdate(UiInGameState::InGame)))
-            .add_system(remove_all_with::<HUDMarker>.in_schedule(OnExit(UiInGameState::InGame)));
+            .add_system(remove_all_with::<HUDMarker>.in_schedule(OnExit(GlobalState::InGame)));
     }
 }
 
 #[derive(Debug, Clone, Copy, Component)]
-struct HUDMarker;
+pub struct HUDMarker;
 
 #[derive(Debug, Clone, Copy, Component)]
 struct CastleLevelText;

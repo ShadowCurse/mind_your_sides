@@ -6,6 +6,8 @@ use crate::utils::remove_all_with;
 
 use bevy::prelude::*;
 
+use super::hud::HUDMarker;
+
 pub struct LevelUpPlugin;
 
 impl Plugin for LevelUpPlugin {
@@ -30,8 +32,13 @@ enum UpgradeButton {
 #[derive(Debug, Clone, Copy, Component)]
 struct LevelUpMarker;
 
-fn setup(ui_config: Res<UiConfig>, upgrades: Res<Upgrades>, mut commands: Commands) {
-    commands
+fn setup(
+    ui_config: Res<UiConfig>,
+    upgrades: Res<Upgrades>,
+    hud: Query<Entity, With<HUDMarker>>,
+    mut commands: Commands,
+) {
+    let level_up = commands
         .spawn((
             NodeBundle {
                 style: ui_config.menu_style.clone(),
@@ -83,7 +90,11 @@ fn setup(ui_config: Res<UiConfig>, upgrades: Res<Upgrades>, mut commands: Comman
                         &upgrades.upgrades[3],
                     );
                 });
-        });
+        })
+        .id();
+
+    let hud = hud.single();
+    commands.entity(hud).insert_children(1, &[level_up]);
 }
 
 fn button_system(
