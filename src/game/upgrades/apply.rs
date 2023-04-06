@@ -391,7 +391,7 @@ fn apply_global_enemy_upgrades(
         match event.upgrade {
             GlobalEnemyUpgrade::Health(value) => global_enemy_buffs.health += value,
             GlobalEnemyUpgrade::Speed(value) => global_enemy_buffs.speed += value,
-            GlobalEnemyUpgrade::Exp(value) => global_enemy_buffs.exp += value,
+            GlobalEnemyUpgrade::Exp(value) => global_enemy_buffs.exp -= value,
             GlobalEnemyUpgrade::Damage(value) => global_enemy_buffs.damage += value,
             GlobalEnemyUpgrade::AttackSpeed(value) => global_enemy_buffs.attack_speed += value,
         }
@@ -408,7 +408,7 @@ fn apply_enemy_upgrades_to_side<S: Side>(
         match event.upgrade {
             EnemyUpgrade::Health(value) => enemy_spawn_buffs.health += value,
             EnemyUpgrade::Speed(value) => enemy_spawn_buffs.speed += value,
-            EnemyUpgrade::Exp(value) => enemy_spawn_buffs.exp += value,
+            EnemyUpgrade::Exp(value) => enemy_spawn_buffs.exp -= value,
             EnemyUpgrade::Damage(value) => enemy_spawn_buffs.damage += value,
             EnemyUpgrade::AttackSpeed(value) => enemy_spawn_buffs.attack_speed += value,
         }

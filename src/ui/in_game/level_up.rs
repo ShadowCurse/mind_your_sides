@@ -1,5 +1,5 @@
 use crate::game::upgrades::apply::ApplyUpgradeEvent;
-use crate::game::upgrades::Upgrades;
+use crate::game::upgrades::{Upgrade, Upgrades};
 use crate::ui::in_game::UiInGameState;
 use crate::ui::UiConfig;
 use crate::utils::remove_all_with;
@@ -62,25 +62,25 @@ fn setup(ui_config: Res<UiConfig>, upgrades: Res<Upgrades>, mut commands: Comman
                         builder,
                         &ui_config,
                         UpgradeButton::First,
-                        format!("{}", upgrades.upgrades[0]),
+                        &upgrades.upgrades[0],
                     );
                     spawn_upgrade_button(
                         builder,
                         &ui_config,
                         UpgradeButton::Second,
-                        format!("{}", upgrades.upgrades[1]),
+                        &upgrades.upgrades[1],
                     );
                     spawn_upgrade_button(
                         builder,
                         &ui_config,
                         UpgradeButton::Third,
-                        format!("{}", upgrades.upgrades[2]),
+                        &upgrades.upgrades[2],
                     );
                     spawn_upgrade_button(
                         builder,
                         &ui_config,
                         UpgradeButton::Fourth,
-                        format!("{}", upgrades.upgrades[3]),
+                        &upgrades.upgrades[3],
                     );
                 });
         });
@@ -120,7 +120,7 @@ fn spawn_upgrade_button<B>(
     child_builder: &mut ChildBuilder,
     style: &UiConfig,
     button: B,
-    text: String,
+    upgrade: &Upgrade,
 ) where
     B: Component + std::fmt::Debug + Copy,
 {
@@ -128,8 +128,10 @@ fn spawn_upgrade_button<B>(
         .spawn((
             ButtonBundle {
                 style: Style {
-                    size: Size::new(Val::Px(250.0), Val::Px(300.0)),
+                    size: Size::new(Val::Px(330.0), Val::Px(400.0)),
                     margin: UiRect::all(Val::Percent(1.0)),
+                    padding: UiRect::all(Val::Percent(3.0)),
+                    flex_direction: FlexDirection::Column,
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
                     ..default()
@@ -140,9 +142,90 @@ fn spawn_upgrade_button<B>(
             button,
         ))
         .with_children(|parent| {
-            parent.spawn(TextBundle {
-                text: Text::from_section(text, style.text_style.clone()),
-                ..default()
-            });
+            // Global
+            if upgrade.has_global_upgrades() {
+                let (buffs, debuffs) = upgrade.global_upgrades();
+
+                parent.spawn(TextBundle {
+                    text: Text::from_section("Global:", style.text_style.clone()),
+                    ..default()
+                });
+                parent.spawn(TextBundle {
+                    text: Text::from_section(format!("{buffs}"), style.buff_text_style.clone()),
+                    ..default()
+                });
+                parent.spawn(TextBundle {
+                    text: Text::from_section(format!("{debuffs}"), style.debuff_text_style.clone()),
+                    ..default()
+                });
+            }
+            // North
+            if upgrade.has_north_upgrades() {
+                let (buffs, debuffs) = upgrade.north_upgrades();
+
+                parent.spawn(TextBundle {
+                    text: Text::from_section("North:", style.text_style.clone()),
+                    ..default()
+                });
+                parent.spawn(TextBundle {
+                    text: Text::from_section(format!("{buffs}"), style.buff_text_style.clone()),
+                    ..default()
+                });
+                parent.spawn(TextBundle {
+                    text: Text::from_section(format!("{debuffs}"), style.debuff_text_style.clone()),
+                    ..default()
+                });
+            }
+            // South
+            if upgrade.has_south_upgrades() {
+                let (buffs, debuffs) = upgrade.south_upgrades();
+
+                parent.spawn(TextBundle {
+                    text: Text::from_section("South:", style.text_style.clone()),
+                    ..default()
+                });
+                parent.spawn(TextBundle {
+                    text: Text::from_section(format!("{buffs}"), style.buff_text_style.clone()),
+                    ..default()
+                });
+                parent.spawn(TextBundle {
+                    text: Text::from_section(format!("{debuffs}"), style.debuff_text_style.clone()),
+                    ..default()
+                });
+            }
+            // West
+            if upgrade.has_west_upgrades() {
+                let (buffs, debuffs) = upgrade.west_upgrades();
+
+                parent.spawn(TextBundle {
+                    text: Text::from_section("West:", style.text_style.clone()),
+                    ..default()
+                });
+                parent.spawn(TextBundle {
+                    text: Text::from_section(format!("{buffs}"), style.buff_text_style.clone()),
+                    ..default()
+                });
+                parent.spawn(TextBundle {
+                    text: Text::from_section(format!("{debuffs}"), style.debuff_text_style.clone()),
+                    ..default()
+                });
+            }
+            // East
+            if upgrade.has_east_upgrades() {
+                let (buffs, debuffs) = upgrade.east_upgrades();
+
+                parent.spawn(TextBundle {
+                    text: Text::from_section("East:", style.text_style.clone()),
+                    ..default()
+                });
+                parent.spawn(TextBundle {
+                    text: Text::from_section(format!("{buffs}"), style.buff_text_style.clone()),
+                    ..default()
+                });
+                parent.spawn(TextBundle {
+                    text: Text::from_section(format!("{debuffs}"), style.debuff_text_style.clone()),
+                    ..default()
+                });
+            }
         });
 }

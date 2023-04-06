@@ -5,7 +5,7 @@ use bevy::{
     window::{PresentMode, WindowMode},
 };
 use bevy_asset_loader::prelude::*;
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
+// use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::*;
 
 mod game;
@@ -40,7 +40,7 @@ fn main() {
         .add_collection_to_loading_state::<_, GameAssets>(GlobalState::AssetLoading)
         // debug
         .add_plugin(RapierDebugRenderPlugin::default())
-        .add_plugin(WorldInspectorPlugin::new())
+        // .add_plugin(WorldInspectorPlugin::new())
         //
         .add_plugin(game::GamePlugin)
         .add_plugin(ui::UiPlugin)

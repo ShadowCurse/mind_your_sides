@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use bevy::prelude::*;
 
 use super::{East, GameState, North, Side, South, West};
@@ -183,7 +185,7 @@ impl std::fmt::Display for GlobalEnemyUpgrade {
         match self {
             Self::Health(value) => f.write_fmt(format_args!("health: +{value:.1}%"))?,
             Self::Speed(value) => f.write_fmt(format_args!("movement speed: +{value:.1}%"))?,
-            Self::Exp(value) => f.write_fmt(format_args!("exp drop: +{value:.1}%"))?,
+            Self::Exp(value) => f.write_fmt(format_args!("exp drop: -{value:.1}%"))?,
             Self::Damage(value) => f.write_fmt(format_args!("damage: +{value:.1}%"))?,
             Self::AttackSpeed(value) => f.write_fmt(format_args!("attack speed: +{value:.1}%"))?,
         }
@@ -205,7 +207,7 @@ impl std::fmt::Display for EnemyUpgrade {
         match self {
             Self::Health(value) => f.write_fmt(format_args!("health: +{value:.1}%"))?,
             Self::Speed(value) => f.write_fmt(format_args!("movement speed: +{value:.1}%"))?,
-            Self::Exp(value) => f.write_fmt(format_args!("exp drop: +{value:.1}%"))?,
+            Self::Exp(value) => f.write_fmt(format_args!("exp drop: -{value:.1}%"))?,
             Self::Damage(value) => f.write_fmt(format_args!("damage: +{value:.1}%"))?,
             Self::AttackSpeed(value) => f.write_fmt(format_args!("attack speed: +{value:.1}%"))?,
         }
@@ -237,6 +239,187 @@ pub struct Upgrade {
     pub weapon_upgrade: Option<UpgradeSide<WeaponUpgrade>>,
     pub global_enemy_upgrade: Option<GlobalEnemyUpgrade>,
     pub enemy_upgrade: Option<UpgradeSide<EnemyUpgrade>>,
+}
+
+pub struct GlobalBuffs {
+    pub wall_upgrade: Option<GlobalWallUpgrade>,
+    pub weapon_upgrade: Option<GlobalWeaponUpgrade>,
+}
+
+impl std::fmt::Display for GlobalBuffs {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if let Some(upgrade) = self.wall_upgrade {
+            f.write_fmt(format_args!(" @ {upgrade}\n"))?;
+        }
+        if let Some(upgrade) = self.weapon_upgrade {
+            f.write_fmt(format_args!(" @ {upgrade}\n"))?;
+        }
+        Ok(())
+    }
+}
+
+pub struct GlobalDebuffs {
+    pub enemy_upgrade: Option<GlobalEnemyUpgrade>,
+}
+
+impl std::fmt::Display for GlobalDebuffs {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if let Some(upgrade) = self.enemy_upgrade {
+            f.write_fmt(format_args!(" @ {upgrade}\n"))?;
+        }
+        Ok(())
+    }
+}
+
+pub struct SideBuffs<S: Side> {
+    pub wall_upgrade: Option<WallUpgrade>,
+    pub weapon_upgrade: Option<WeaponUpgrade>,
+    _phantom: PhantomData<S>,
+}
+
+impl<S: Side> SideBuffs<S> {
+    pub fn new(wall_upgrade: Option<WallUpgrade>, weapon_upgrade: Option<WeaponUpgrade>) -> Self {
+        Self {
+            wall_upgrade,
+            weapon_upgrade,
+            _phantom: PhantomData,
+        }
+    }
+}
+
+impl<S: Side> std::fmt::Display for SideBuffs<S> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if let Some(upgrade) = self.wall_upgrade {
+            f.write_fmt(format_args!(" @ {upgrade}\n"))?;
+        }
+        if let Some(upgrade) = self.weapon_upgrade {
+            f.write_fmt(format_args!(" @ {upgrade}\n"))?;
+        }
+        Ok(())
+    }
+}
+
+pub struct SideDebuffs<S: Side> {
+    pub enemy_upgrade: Option<EnemyUpgrade>,
+    _phantom: PhantomData<S>,
+}
+
+impl<S: Side> SideDebuffs<S> {
+    pub fn new(enemy_upgrade: Option<EnemyUpgrade>) -> Self {
+        Self {
+            enemy_upgrade,
+            _phantom: PhantomData,
+        }
+    }
+}
+
+impl<S: Side> std::fmt::Display for SideDebuffs<S> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if let Some(upgrade) = self.enemy_upgrade {
+            f.write_fmt(format_args!(" @ {upgrade}\n"))?;
+        }
+        Ok(())
+    }
+}
+
+macro_rules! get_side {
+    ($self:ident, $field:ident, $side:ident) => {
+        $self
+            .$field
+            .map(|upgrade| match upgrade {
+                UpgradeSide::$side(upgrade) => Some(upgrade),
+                _ => None,
+            })
+            .flatten()
+    };
+}
+
+impl Upgrade {
+    pub fn has_global_upgrades(&self) -> bool {
+        self.global_wall_upgrade.is_some()
+            || self.global_weapon_upgrade.is_some()
+            || self.global_enemy_upgrade.is_some()
+    }
+
+    pub fn global_upgrades(&self) -> (GlobalBuffs, GlobalDebuffs) {
+        (
+            GlobalBuffs {
+                wall_upgrade: self.global_wall_upgrade,
+                weapon_upgrade: self.global_weapon_upgrade,
+            },
+            GlobalDebuffs {
+                enemy_upgrade: self.global_enemy_upgrade,
+            },
+        )
+    }
+
+    pub fn has_north_upgrades(&self) -> bool {
+        let wall_upgrade = get_side!(self, wall_upgrade, North).is_some();
+        let weapon_upgrade = get_side!(self, weapon_upgrade, North).is_some();
+        let enemy_upgrade = get_side!(self, enemy_upgrade, North).is_some();
+        wall_upgrade || weapon_upgrade || enemy_upgrade
+    }
+
+    pub fn north_upgrades(&self) -> (SideBuffs<North>, SideDebuffs<North>) {
+        let wall_upgrade = get_side!(self, wall_upgrade, North);
+        let weapon_upgrade = get_side!(self, weapon_upgrade, North);
+        let enemy_upgrade = get_side!(self, enemy_upgrade, North);
+        (
+            SideBuffs::new(wall_upgrade, weapon_upgrade),
+            SideDebuffs::new(enemy_upgrade),
+        )
+    }
+
+    pub fn has_south_upgrades(&self) -> bool {
+        let wall_upgrade = get_side!(self, wall_upgrade, South).is_some();
+        let weapon_upgrade = get_side!(self, weapon_upgrade, South).is_some();
+        let enemy_upgrade = get_side!(self, enemy_upgrade, South).is_some();
+        wall_upgrade || weapon_upgrade || enemy_upgrade
+    }
+
+    pub fn south_upgrades(&self) -> (SideBuffs<North>, SideDebuffs<North>) {
+        let wall_upgrade = get_side!(self, wall_upgrade, South);
+        let weapon_upgrade = get_side!(self, weapon_upgrade, South);
+        let enemy_upgrade = get_side!(self, enemy_upgrade, South);
+        (
+            SideBuffs::new(wall_upgrade, weapon_upgrade),
+            SideDebuffs::new(enemy_upgrade),
+        )
+    }
+
+    pub fn has_west_upgrades(&self) -> bool {
+        let wall_upgrade = get_side!(self, wall_upgrade, West).is_some();
+        let weapon_upgrade = get_side!(self, weapon_upgrade, West).is_some();
+        let enemy_upgrade = get_side!(self, enemy_upgrade, West).is_some();
+        wall_upgrade || weapon_upgrade || enemy_upgrade
+    }
+
+    pub fn west_upgrades(&self) -> (SideBuffs<West>, SideDebuffs<West>) {
+        let wall_upgrade = get_side!(self, wall_upgrade, West);
+        let weapon_upgrade = get_side!(self, weapon_upgrade, West);
+        let enemy_upgrade = get_side!(self, enemy_upgrade, West);
+        (
+            SideBuffs::new(wall_upgrade, weapon_upgrade),
+            SideDebuffs::new(enemy_upgrade),
+        )
+    }
+
+    pub fn has_east_upgrades(&self) -> bool {
+        let wall_upgrade = get_side!(self, wall_upgrade, East).is_some();
+        let weapon_upgrade = get_side!(self, weapon_upgrade, East).is_some();
+        let enemy_upgrade = get_side!(self, enemy_upgrade, East).is_some();
+        wall_upgrade || weapon_upgrade || enemy_upgrade
+    }
+
+    pub fn east_upgrades(&self) -> (SideBuffs<East>, SideDebuffs<East>) {
+        let wall_upgrade = get_side!(self, wall_upgrade, East);
+        let weapon_upgrade = get_side!(self, weapon_upgrade, East);
+        let enemy_upgrade = get_side!(self, enemy_upgrade, East);
+        (
+            SideBuffs::new(wall_upgrade, weapon_upgrade),
+            SideDebuffs::new(enemy_upgrade),
+        )
+    }
 }
 
 /// Here upgrades should be pretty formatted

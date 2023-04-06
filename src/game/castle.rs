@@ -13,7 +13,7 @@ use super::{
 
 const WALL_HEALTH: i32 = 100;
 
-const CASTLE_FIRST_LEVEL_EXP: u32 = 200;
+const CASTLE_FIRST_LEVEL_EXP: u32 = 10;
 const CASTLE_NEXT_LEVEL_EXP_GROWTH: f32 = 1.2;
 
 pub struct CastlePlugin;

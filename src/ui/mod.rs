@@ -5,8 +5,6 @@ use crate::{GameAssets, GlobalState};
 mod in_game;
 mod main_menu;
 
-const BASE_FONT_SIZE: f32 = 21.0;
-
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
@@ -26,11 +24,19 @@ pub struct UiConfig {
     pub menu_style: Style,
     pub menu_color: Color,
     pub text_style: TextStyle,
+    pub buff_text_style: TextStyle,
+    pub debuff_text_style: TextStyle,
     pub title_style: Style,
     pub title_text_style: TextStyle,
 }
 
 fn setup_ui_config(game_assets: Res<GameAssets>, mut commands: Commands) {
+    let _light_grey = Color::rgb_u8(192, 203, 220);
+    let _medium_grey = Color::rgb_u8(139, 155, 180);
+    let light_blue = Color::rgb_u8(90, 105, 136);
+    let medium_blue = Color::rgb_u8(58, 68, 102);
+    let dark_blue = Color::rgb_u8(38, 43, 68);
+
     commands.insert_resource(UiConfig {
         button_style: Style {
             size: Size::new(Val::Px(140.0), Val::Px(60.0)),
@@ -39,9 +45,9 @@ fn setup_ui_config(game_assets: Res<GameAssets>, mut commands: Commands) {
             align_items: AlignItems::Center,
             ..default()
         },
-        button_color_normal: Color::DARK_GRAY,
-        button_color_hover: Color::ORANGE,
-        button_color_pressed: Color::GREEN,
+        button_color_normal: dark_blue,
+        button_color_hover: medium_blue,
+        button_color_pressed: light_blue,
         menu_style: Style {
             flex_direction: FlexDirection::Column,
             margin: UiRect::all(Val::Auto),
@@ -52,8 +58,18 @@ fn setup_ui_config(game_assets: Res<GameAssets>, mut commands: Commands) {
         menu_color: Color::NONE,
         text_style: TextStyle {
             font: game_assets.font.clone(),
-            font_size: BASE_FONT_SIZE * 2.0,
+            font_size: 50.0,
             color: Color::BLACK,
+        },
+        buff_text_style: TextStyle {
+            font: game_assets.font.clone(),
+            font_size: 36.0,
+            color: Color::GREEN,
+        },
+        debuff_text_style: TextStyle {
+            font: game_assets.font.clone(),
+            font_size: 36.0,
+            color: Color::RED,
         },
         title_style: Style {
             margin: UiRect::bottom(Val::Percent(30.0)),
@@ -61,7 +77,7 @@ fn setup_ui_config(game_assets: Res<GameAssets>, mut commands: Commands) {
         },
         title_text_style: TextStyle {
             font: game_assets.font.clone(),
-            font_size: BASE_FONT_SIZE * 4.0,
+            font_size: 82.0,
             color: Color::BLACK,
         },
     });
