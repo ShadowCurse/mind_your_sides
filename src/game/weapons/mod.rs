@@ -21,6 +21,8 @@ impl Plugin for WeaponsPlugin {
 struct WeaponsAssets {
     #[asset(path = "sprites/arrow.png")]
     arrow: Handle<Image>,
+    #[asset(path = "sprites/molotov.png")]
+    molotov: Handle<Image>,
     #[asset(texture_atlas(tile_size_x = 32.0, tile_size_y = 32.0, columns = 3, rows = 1,))]
     #[asset(path = "sprites/fire.png")]
     pub fire: Handle<TextureAtlas>,

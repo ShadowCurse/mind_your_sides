@@ -33,7 +33,7 @@ impl Plugin for AreaPlugin {
 #[derive(Component)]
 pub struct DamageAreaMarker;
 
-#[derive(Component)]
+#[derive(Clone, Component)]
 pub struct DamageArea<S: Side> {
     size: f32,
     damage: i32,
@@ -74,32 +74,16 @@ pub struct DamageAreaBundle<S: Side> {
 }
 
 impl<S: Side> DamageAreaBundle<S> {
-    pub fn new(
-        texture_atlas: Handle<TextureAtlas>,
-        size: f32,
-        damage: i32,
-        crit_damage: i32,
-        crit_chance: f32,
-        attack_speed: f32,
-        lifespan: f32,
-        position: Vec3,
-    ) -> Self {
+    pub fn new(texture_atlas: Handle<TextureAtlas>, position: Vec3, area: DamageArea<S>) -> Self {
         Self {
             animation_bundle: AnimationBundle::new_with_size(
                 texture_atlas,
-                Vec2::new(size, size),
+                Vec2::new(area.size, area.size),
                 2,
                 12.0,
                 position,
             ),
-            area: DamageArea::new(
-                size,
-                damage,
-                crit_damage,
-                crit_chance,
-                attack_speed,
-                lifespan,
-            ),
+            area,
             marker: DamageAreaMarker,
         }
     }

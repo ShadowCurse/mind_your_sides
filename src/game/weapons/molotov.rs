@@ -4,7 +4,10 @@ use bevy::prelude::*;
 use rand::Rng;
 
 use crate::{
-    game::{damage::area::DamageAreaBundle, East, GameState, North, Side, South, West},
+    game::{
+        damage::area::{DamageArea, DamageAreaBundle},
+        East, GameState, North, Side, South, West,
+    },
     utils::remove_all_with,
     GlobalState,
 };
@@ -19,6 +22,10 @@ const DEFAULT_AREA_LIFESPAN: f32 = 3.0;
 const DEFAULT_MOLOTOV_MIN_RANGE: f32 = 150.0;
 const DEFAULT_MOLOTOV_RANGE: f32 = 300.0;
 const DEFAULT_MOLOTOV_ATTACK_SPEED: f32 = 3.0;
+const DEFAULT_MOLOTOV_BOTTLE_IN_FLIGHT_TIME: f32 = 2.0;
+const DEFAULT_MOLOTOV_BOTTLE_IN_FLIGHT_ROTATION: f32 = std::f32::consts::PI * 5.0;
+
+const DEFAULT_MOLOTOV_SPAWN_OFFSET: f32 = 30.0;
 
 pub struct MolotovPlugin;
 
@@ -31,6 +38,10 @@ impl Plugin for MolotovPlugin {
                     molotov_attack::<South>,
                     molotov_attack::<West>,
                     molotov_attack::<East>,
+                    molotov_bottle_update::<North>,
+                    molotov_bottle_update::<South>,
+                    molotov_bottle_update::<West>,
+                    molotov_bottle_update::<East>,
                 )
                     .in_set(OnUpdate(GameState::InGame)),
             )
@@ -97,6 +108,63 @@ impl<S: Side> Default for Molotov<S> {
     }
 }
 
+#[derive(Component)]
+pub struct MolotovBottle<S: Side> {
+    area: DamageArea<S>,
+    rotation: f32,
+    initial_position: Vec3,
+    target_position: Vec3,
+}
+
+#[derive(Bundle)]
+pub struct MolotovBottleBundle<S: Side> {
+    #[bundle]
+    sprite: SpriteBundle,
+    bottle: MolotovBottle<S>,
+    marker: MolotovMarker,
+}
+
+impl<S: Side> MolotovBottleBundle<S> {
+    pub fn new(
+        texture: Handle<Image>,
+        area_size: f32,
+        damage: i32,
+        crit_damage: i32,
+        crit_chance: f32,
+        attack_speed: f32,
+        lifespan: f32,
+        area_position: Vec3,
+        initial_position: Vec3,
+    ) -> Self {
+        Self {
+            sprite: SpriteBundle {
+                sprite: Sprite {
+                    // Flip on East and North
+                    flip_y: S::DIRECTION.x < 0.0 || S::DIRECTION.y > 0.0,
+                    ..default()
+                },
+                texture,
+                transform: Transform::from_translation(initial_position),
+                ..default()
+            },
+            bottle: MolotovBottle {
+                area: DamageArea::new(
+                    area_size,
+                    damage,
+                    crit_damage,
+                    crit_chance,
+                    attack_speed,
+                    lifespan,
+                ),
+                rotation: 0.0,
+                initial_position,
+                target_position: area_position,
+            },
+            marker: MolotovMarker,
+        }
+    }
+}
+
 impl<S: Side> Molotov<S> {
     pub fn with_buffs(
         self,
@@ -123,14 +191,14 @@ impl<S: Side> Molotov<S> {
 
 #[derive(Bundle)]
 pub struct MolotovBundle<S: Side> {
-    crossbow: Molotov<S>,
+    molotov: Molotov<S>,
     marker: MolotovMarker,
 }
 
 impl<S: Side> Default for MolotovBundle<S> {
     fn default() -> Self {
         Self {
-            crossbow: Default::default(),
+            molotov: Default::default(),
             marker: MolotovMarker,
         }
     }
@@ -170,6 +238,9 @@ fn molotov_attack<S: Side>(
         // convert angle to radians
         let direction = Vec2::from_angle(angle / 360.0 * std::f32::consts::PI).rotate(S::DIRECTION);
 
+        let mut initial_position = transform.translation;
+        initial_position += (direction * DEFAULT_MOLOTOV_SPAWN_OFFSET).extend(0.0);
+
         let mut area_position = transform.translation;
         area_position += (direction * distance).extend(0.0);
 
@@ -184,8 +255,8 @@ fn molotov_attack<S: Side>(
             * (1.0 + molotov_buffs.crit_damage + global_weapons_buffs.crit_damage))
             as i32;
 
-        commands.spawn(DamageAreaBundle::<S>::new(
-            weapon_assets.fire.clone(),
+        commands.spawn(MolotovBottleBundle::<S>::new(
+            weapon_assets.molotov.clone(),
             area_size,
             damage,
             crit_damage,
@@ -193,6 +264,44 @@ fn molotov_attack<S: Side>(
             area_attack_speed,
             area_lifespan,
             area_position,
+            initial_position,
         ));
+    }
+}
+
+fn molotov_bottle_update<S: Side>(
+    time: Res<Time>,
+    weapon_assets: Res<WeaponsAssets>,
+    mut commands: Commands,
+    mut bottles: Query<(Entity, &mut MolotovBottle<S>, &mut Transform)>,
+) {
+    for (entity, mut bottle, mut transform) in bottles.iter_mut() {
+        let direction = bottle.target_position - bottle.initial_position;
+
+        let distance = direction.length();
+        let speed = distance / DEFAULT_MOLOTOV_BOTTLE_IN_FLIGHT_TIME;
+        transform.translation += direction.normalize() * speed * time.delta().as_secs_f32();
+
+        let progression = (bottle.initial_position - transform.translation).length() / distance;
+        let rotation = progression * DEFAULT_MOLOTOV_BOTTLE_IN_FLIGHT_ROTATION;
+        let rotation_delta = rotation - bottle.rotation;
+        bottle.rotation = rotation;
+
+        // For East and South rotate in opposide direction
+        if S::DIRECTION.x > 0.0 || S::DIRECTION.y < 0.0 {
+            transform.rotate_z(-rotation_delta);
+        } else {
+            transform.rotate_z(rotation_delta);
+        }
+
+        if 1.0 <= progression {
+            commands.entity(entity).despawn();
+
+            commands.spawn(DamageAreaBundle::<S>::new(
+                weapon_assets.fire.clone(),
+                bottle.target_position,
+                bottle.area.clone(),
+            ));
+        }
     }
 }
