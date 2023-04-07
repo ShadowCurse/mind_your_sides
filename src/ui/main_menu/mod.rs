@@ -8,8 +8,8 @@ use crate::{
 
 use super::{spawn_button, UiConfig};
 
-mod settings;
-mod title_screen;
+pub mod settings;
+pub mod title_screen;
 
 pub struct UiMainMenuPlugin;
 

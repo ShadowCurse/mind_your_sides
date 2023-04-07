@@ -61,9 +61,24 @@ pub enum GlobalState {
 impl_into_state!(GlobalState);
 
 #[derive(AssetCollection, Resource)]
-struct GameAssets {
+pub struct GameAssets {
     #[asset(path = "fonts/MinimalPixel.ttf")]
     font: Handle<Font>,
+}
+
+#[derive(Resource)]
+pub struct GameSettings {
+    window_mode: WindowMode,
+    sound_volume: f32,
+}
+
+impl Default for GameSettings {
+    fn default() -> Self {
+        Self {
+            window_mode: WindowMode::Windowed,
+            sound_volume: 0.5,
+        }
+    }
 }
 
 /// Used to create initial global config
@@ -82,9 +97,14 @@ fn setup(
     camera_bundle.projection.scale = 1.5;
     commands.spawn(camera_bundle);
 
+    let game_settings = GameSettings::default();
+
     for mut window in windows.iter_mut() {
         window.present_mode = PresentMode::AutoVsync;
+        window.mode = game_settings.window_mode;
     }
+
+    commands.insert_resource(game_settings);
 
     global_state.set(GlobalState::MainMenu);
 }
