@@ -125,7 +125,7 @@ fn setup<S: Side>(
                     ..default()
                 }).with_children(|builder|{
                     builder.spawn(TextBundle {
-                        text: Text::from_section("North:", config.text_style.clone()),
+                        text: Text::from_section("North", config.title_text_style.clone()),
                         ..default()
                     });
                 });
