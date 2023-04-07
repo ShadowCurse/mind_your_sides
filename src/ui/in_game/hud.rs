@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use std::{marker::PhantomData, time::Instant};
 
 use bevy::prelude::*;
 
@@ -19,6 +19,7 @@ impl Plugin for HUDPlugin {
         app.add_system(setup.in_schedule(OnEnter(GlobalState::InGame)))
             .add_systems(
                 (
+                    update_time,
                     update_castle_level,
                     update_castle_exp,
                     update_castle_wall_hp::<North>,
@@ -33,8 +34,16 @@ impl Plugin for HUDPlugin {
     }
 }
 
+#[derive(Resource)]
+pub struct HUDTimer {
+    start_time: Instant,
+}
+
 #[derive(Debug, Clone, Copy, Component)]
 pub struct HUDMarker;
+
+#[derive(Debug, Clone, Copy, Component)]
+struct TimeText;
 
 #[derive(Debug, Clone, Copy, Component)]
 struct CastleLevelText;
@@ -57,6 +66,9 @@ enum HUDButton {
 }
 
 fn setup(mut commands: Commands, config: Res<UiConfig>) {
+    commands.insert_resource(HUDTimer {
+        start_time: std::time::Instant::now(),
+    });
     // root node
     commands
         .spawn((
@@ -89,6 +101,10 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
                     ..default()
                 })
                 .with_children(|parent| {
+                    parent.spawn((
+                        TextBundle::from_section("Time: ", config.text_style.clone()),
+                        TimeText,
+                    ));
                     // Castle info
                     parent
                         .spawn(NodeBundle {
@@ -258,6 +274,11 @@ fn button_system(
             }
         }
     }
+}
+
+fn update_time(hud_timer: Res<HUDTimer>, mut time_text: Query<&mut Text, With<TimeText>>) {
+    let mut text = time_text.single_mut();
+    text.sections[0].value = format!("Time: {:.1}", hud_timer.start_time.elapsed().as_secs_f32());
 }
 
 fn update_castle_level(
