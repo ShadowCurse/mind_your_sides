@@ -341,8 +341,6 @@ fn apply_global_weapon_upgrades(
     mut finish_event: EventWriter<FinishUpgradeEvent>,
 ) {
     for event in global_weapon_upgrade_events.iter() {
-        info!("global weapon upgrade: {:?}", event.upgrade);
-        info!("globla buffs before: {:?}", global_weapons_buffs);
         match event.upgrade {
             GlobalWeaponUpgrade::Damage(value) => global_weapons_buffs.damage += value / 100.0,
             GlobalWeaponUpgrade::DamageFlat(value) => global_weapons_buffs.damage_flat += value,
@@ -353,7 +351,6 @@ fn apply_global_weapon_upgrades(
                 global_weapons_buffs.crit_chance += value / 100.0
             }
         }
-        info!("globla buffs after: {:?}", global_weapons_buffs);
         finish_event.send(FinishUpgradeEvent);
     }
 }

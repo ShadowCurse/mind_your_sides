@@ -19,6 +19,9 @@ pub mod spawn;
 
 /// Needed to make enemies move.
 /// Otherwise we would need set enormous speeds.
+#[cfg(target_family = "wasm")]
+const ENEMY_FORCE_MULTIPLIER: f32 = 300.0;
+#[cfg(not(target_family = "wasm"))]
 const ENEMY_FORCE_MULTIPLIER: f32 = 1000.0;
 
 pub struct EnemyPlugin;

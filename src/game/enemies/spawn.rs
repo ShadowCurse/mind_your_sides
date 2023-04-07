@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+use bevy::prelude::*;
 use rand::prelude::*;
 
 use crate::{game::GameState, utils::remove_all_with, GlobalState};
@@ -10,9 +10,9 @@ use super::{
     PoisonIvy, Side, Skull, SpawnState, SpearGoblin,
 };
 
-const DEFAULT_ENEMY_SPAWN_POSITON: f32 = 1000.0;
+const DEFAULT_ENEMY_SPAWN_POSITON: f32 = 1500.0;
 
-const DEFAULT_ENEMY_SPAWN_RADIUS: f32 = 150.0;
+const DEFAULT_ENEMY_SPAWN_RADIUS: f32 = 200.0;
 const DEFAULT_ENEMY_SPAWN_RATE: f32 = 5.0;
 
 #[derive(Default)]
@@ -136,27 +136,14 @@ pub struct EnemySpawnBundle<S: Side, E: EnemyType<S>> {
 }
 
 /// Sets up 4 spawns at each side of the screen
-fn setup<S: Side>(
-    mut commands: Commands,
-    // TODO replace with sprites
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
-    let spawn_mesh = meshes.add(shape::Circle::new(15.0).into());
-    let spawn_material = materials.add(ColorMaterial::from(Color::ORANGE));
-
+fn setup<S: Side>(mut commands: Commands) {
     commands.insert_resource(EnemyBuffs::<S>::default());
 
     // North
     commands
-        .spawn(MaterialMesh2dBundle {
-            mesh: spawn_mesh.into(),
-            material: spawn_material,
-            transform: Transform::from_translation(
-                (S::DIRECTION * DEFAULT_ENEMY_SPAWN_POSITON).extend(0.0),
-            ),
-            ..default()
-        })
+        .spawn(TransformBundle::from_transform(
+            Transform::from_translation((S::DIRECTION * DEFAULT_ENEMY_SPAWN_POSITON).extend(0.0)),
+        ))
         .insert(EnemySpawnBundle::<S, Bat>::default())
         .insert(EnemySpawnBundle::<S, Goblin>::default())
         .insert(EnemySpawnBundle::<S, SpearGoblin>::default())

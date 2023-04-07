@@ -2,7 +2,7 @@
 
 use bevy::{
     prelude::*,
-    window::{PresentMode, WindowMode},
+    window::{PresentMode, WindowMode, WindowResolution},
 };
 use bevy_asset_loader::prelude::*;
 // use bevy_inspector_egui::quick::WorldInspectorPlugin;
@@ -26,6 +26,7 @@ fn main() {
                         // TODO Rename game
                         title: "Mad Crabs".to_string(),
                         mode: WindowMode::Windowed,
+                        resolution: WindowResolution::new(1920.0, 1080.0),
                         ..default()
                     }),
                     ..default()
@@ -39,7 +40,7 @@ fn main() {
         )
         .add_collection_to_loading_state::<_, GameAssets>(GlobalState::AssetLoading)
         // debug
-        .add_plugin(RapierDebugRenderPlugin::default())
+        // .add_plugin(RapierDebugRenderPlugin::default())
         // .add_plugin(WorldInspectorPlugin::new())
         //
         .add_plugin(game::GamePlugin)
