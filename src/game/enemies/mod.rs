@@ -25,10 +25,12 @@ pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_collection_to_loading_state::<_, EnemySprites>(GlobalState::AssetLoading)
+        app.add_state::<SpawnState>()
+            .add_collection_to_loading_state::<_, EnemySprites>(GlobalState::AssetLoading)
             .add_system(setup.in_schedule(OnEnter(GlobalState::InGame)))
             .add_systems(
                 (
+                    enemy_spawn_state_progress,
                     enemy_movement::<North>,
                     enemy_movement::<South>,
                     enemy_movement::<West>,
@@ -45,12 +47,70 @@ impl Plugin for EnemyPlugin {
                     .in_set(OnUpdate(GameState::InGame)),
             )
             .add_system(remove_all_with::<EnemyMarker>.in_schedule(OnExit(GlobalState::InGame)))
-            .add_plugin(spawn::SpawnPlugin);
+            .add_plugin(spawn::SpawnPlugin::<North>::default())
+            .add_plugin(spawn::SpawnPlugin::<South>::default())
+            .add_plugin(spawn::SpawnPlugin::<West>::default())
+            .add_plugin(spawn::SpawnPlugin::<East>::default());
+    }
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash, States)]
+pub enum SpawnState {
+    #[default]
+    // Bats and Gablin
+    // 1 min
+    Stage1,
+    // + Skull and Spear goblin
+    // 2 min
+    Stage2,
+    // + Huge ivy
+    // 3 min
+    Stage3,
+    // + Boss crab
+    Stage4,
+}
+
+#[derive(Debug, Resource)]
+pub struct SpawnStateTimer {
+    pub current_state: SpawnState,
+    pub timer: Option<Timer>,
+}
+
+impl Default for SpawnStateTimer {
+    fn default() -> Self {
+        Self {
+            current_state: Default::default(),
+            timer: Some(Timer::from_seconds(Self::FIST_STAGE, TimerMode::Once)),
+        }
+    }
+}
+
+impl SpawnStateTimer {
+    const FIST_STAGE: f32 = 60.0;
+    const SECOND_STAGE: f32 = 60.0 * 2.0;
+    const THIRD_STAGE: f32 = 60.0 * 3.0;
+
+    fn next_state(&mut self) {
+        match self.current_state {
+            SpawnState::Stage1 => {
+                self.current_state = SpawnState::Stage2;
+                self.timer = Some(Timer::from_seconds(Self::SECOND_STAGE, TimerMode::Once));
+            }
+            SpawnState::Stage2 => {
+                self.current_state = SpawnState::Stage3;
+                self.timer = Some(Timer::from_seconds(Self::THIRD_STAGE, TimerMode::Once));
+            }
+            SpawnState::Stage3 => {
+                self.current_state = SpawnState::Stage4;
+                self.timer = None;
+            }
+            _ => {}
+        }
     }
 }
 
 #[derive(AssetCollection, Resource)]
-struct EnemySprites {
+pub struct EnemySprites {
     #[asset(texture_atlas(tile_size_x = 32.0, tile_size_y = 32.0, columns = 4, rows = 1,))]
     #[asset(path = "sprites/mad_crab.png")]
     pub mad_crab: Handle<TextureAtlas>,
@@ -150,7 +210,8 @@ impl<S: Side, E: EnemyType<S>> EnemyBundle<S, E> {
         buffs: &EnemyBuffs<S>,
     ) -> Self {
         Self {
-            animation_bundle: AnimationBundle::new(texture_atlas, 3, 12.0, position),
+            // Double side for sprites to better correlate with collider size
+            animation_bundle: AnimationBundle::new(texture_atlas, size * 2.0, 3, 5.0, position),
             rigid_body: RigidBody::Dynamic,
             collider: Collider::ball(size),
             locked_axis: LockedAxes::ROTATION_LOCKED,
@@ -172,9 +233,11 @@ pub trait EnemyType<S: Side>: Component + Default {
     const SPEED: f32;
     const EXP: u32;
     const DAMAGE: i32;
+    const SIZE: f32;
     // Range should be bigger then enemy size / 2
     const RANGE: f32;
     const ATTACK_SPEED: f32;
+    const NUMBER_PER_SPAWN: u32;
 
     fn enemy(global_buffs: &GlobalEnemyBuffs, buffs: &EnemyBuffs<S>) -> Enemy<S> {
         Enemy::new(
@@ -191,6 +254,8 @@ pub trait EnemyType<S: Side>: Component + Default {
             Self::ATTACK_SPEED * (1.0 + global_buffs.attack_speed + buffs.attack_speed),
         )
     }
+
+    fn texture_atlas(enemy_sprites: &EnemySprites) -> Handle<TextureAtlas>;
 }
 
 #[derive(Debug, Default, Component)]
@@ -201,8 +266,14 @@ impl<S: Side> EnemyType<S> for MadCrab {
     const SPEED: f32 = 8.0;
     const EXP: u32 = 3;
     const DAMAGE: i32 = 5;
+    const SIZE: f32 = 128.0;
     const RANGE: f32 = 20.0;
     const ATTACK_SPEED: f32 = 1.1;
+    const NUMBER_PER_SPAWN: u32 = 1;
+
+    fn texture_atlas(enemy_sprites: &EnemySprites) -> Handle<TextureAtlas> {
+        enemy_sprites.mad_crab.clone()
+    }
 }
 
 #[derive(Debug, Default, Component)]
@@ -213,8 +284,14 @@ impl<S: Side> EnemyType<S> for Goblin {
     const SPEED: f32 = 15.0;
     const EXP: u32 = 5;
     const DAMAGE: i32 = 10;
+    const SIZE: f32 = 16.0;
     const RANGE: f32 = 20.0;
     const ATTACK_SPEED: f32 = 1.0;
+    const NUMBER_PER_SPAWN: u32 = 3;
+
+    fn texture_atlas(enemy_sprites: &EnemySprites) -> Handle<TextureAtlas> {
+        enemy_sprites.goblin.clone()
+    }
 }
 
 #[derive(Debug, Default, Component)]
@@ -225,8 +302,14 @@ impl<S: Side> EnemyType<S> for SpearGoblin {
     const SPEED: f32 = 10.0;
     const EXP: u32 = 8;
     const DAMAGE: i32 = 15;
+    const SIZE: f32 = 16.0;
     const RANGE: f32 = 20.0;
     const ATTACK_SPEED: f32 = 1.2;
+    const NUMBER_PER_SPAWN: u32 = 2;
+
+    fn texture_atlas(enemy_sprites: &EnemySprites) -> Handle<TextureAtlas> {
+        enemy_sprites.spear_goblin.clone()
+    }
 }
 
 #[derive(Debug, Default, Component)]
@@ -237,8 +320,14 @@ impl<S: Side> EnemyType<S> for Bat {
     const SPEED: f32 = 10.0;
     const EXP: u32 = 5;
     const DAMAGE: i32 = 5;
+    const SIZE: f32 = 16.0;
     const RANGE: f32 = 20.0;
     const ATTACK_SPEED: f32 = 1.5;
+    const NUMBER_PER_SPAWN: u32 = 5;
+
+    fn texture_atlas(enemy_sprites: &EnemySprites) -> Handle<TextureAtlas> {
+        enemy_sprites.bat.clone()
+    }
 }
 
 #[derive(Debug, Default, Component)]
@@ -249,8 +338,14 @@ impl<S: Side> EnemyType<S> for Skull {
     const SPEED: f32 = 8.0;
     const EXP: u32 = 5;
     const DAMAGE: i32 = 15;
+    const SIZE: f32 = 32.0;
     const RANGE: f32 = 20.0;
     const ATTACK_SPEED: f32 = 1.0;
+    const NUMBER_PER_SPAWN: u32 = 1;
+
+    fn texture_atlas(enemy_sprites: &EnemySprites) -> Handle<TextureAtlas> {
+        enemy_sprites.skull.clone()
+    }
 }
 
 #[derive(Debug, Default, Component)]
@@ -261,12 +356,32 @@ impl<S: Side> EnemyType<S> for PoisonIvy {
     const SPEED: f32 = 12.0;
     const EXP: u32 = 8;
     const DAMAGE: i32 = 20;
+    const SIZE: f32 = 64.0;
     const RANGE: f32 = 20.0;
     const ATTACK_SPEED: f32 = 1.0;
+    const NUMBER_PER_SPAWN: u32 = 2;
+
+    fn texture_atlas(enemy_sprites: &EnemySprites) -> Handle<TextureAtlas> {
+        enemy_sprites.poison_ivy.clone()
+    }
 }
 
 fn setup(mut commands: Commands) {
     commands.insert_resource(GlobalEnemyBuffs::default());
+    commands.insert_resource(SpawnStateTimer::default());
+}
+
+fn enemy_spawn_state_progress(
+    time: Res<Time>,
+    mut spawn_state_timer: ResMut<SpawnStateTimer>,
+    mut enemy_state: ResMut<NextState<SpawnState>>,
+) {
+    if let Some(timer) = &mut spawn_state_timer.timer {
+        if timer.tick(time.delta()).finished() {
+            spawn_state_timer.next_state();
+            enemy_state.set(spawn_state_timer.current_state);
+        }
+    }
 }
 
 /// Moved enemies in direction of the wall
