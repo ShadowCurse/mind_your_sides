@@ -64,6 +64,7 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
                 style: Style {
                     size: Size::width(Val::Percent(100.0)),
                     justify_content: JustifyContent::SpaceBetween,
+                    align_items: AlignItems::Center,
                     ..default()
                 },
                 ..default()
@@ -75,7 +76,7 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
             parent
                 .spawn(NodeBundle {
                     style: Style {
-                        size: Size::width(Val::Px(200.0)),
+                        size: Size { width: (Val::Px(200.0)), height: (Val::Percent(100.)) },
                         flex_direction: FlexDirection::Column,
                         justify_content: JustifyContent::SpaceEvenly,
                         align_items: AlignItems::Center,
@@ -160,7 +161,7 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
             parent
                 .spawn(NodeBundle {
                     style: Style {
-                        size: Size::width(Val::Px(200.0)),
+                        size: Size { width: (Val::Px(200.0)), height: (Val::Percent(100.)) },
                         flex_direction: FlexDirection::Column,
                         justify_content: JustifyContent::SpaceEvenly,
                         align_items: AlignItems::Center,
