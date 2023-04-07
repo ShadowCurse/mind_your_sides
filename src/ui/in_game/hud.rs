@@ -1,4 +1,4 @@
-use std::{marker::PhantomData, time::Instant};
+use std::{marker::PhantomData, time::Duration};
 
 use bevy::prelude::*;
 
@@ -36,7 +36,7 @@ impl Plugin for HUDPlugin {
 
 #[derive(Resource)]
 pub struct HUDTimer {
-    start_time: Instant,
+    start_time: Duration,
 }
 
 #[derive(Debug, Clone, Copy, Component)]
@@ -65,9 +65,9 @@ enum HUDButton {
     Pause,
 }
 
-fn setup(mut commands: Commands, config: Res<UiConfig>) {
+fn setup(time: Res<Time>, config: Res<UiConfig>, mut commands: Commands) {
     commands.insert_resource(HUDTimer {
-        start_time: std::time::Instant::now(),
+        start_time: time.elapsed(),
     });
     // root node
     commands
@@ -276,9 +276,16 @@ fn button_system(
     }
 }
 
-fn update_time(hud_timer: Res<HUDTimer>, mut time_text: Query<&mut Text, With<TimeText>>) {
+fn update_time(
+    time: Res<Time>,
+    hud_timer: Res<HUDTimer>,
+    mut time_text: Query<&mut Text, With<TimeText>>,
+) {
     let mut text = time_text.single_mut();
-    text.sections[0].value = format!("Time: {:.1}", hud_timer.start_time.elapsed().as_secs_f32());
+    text.sections[0].value = format!(
+        "Time: {:.1}",
+        (time.elapsed() - hud_timer.start_time).as_secs_f32()
+    );
 }
 
 fn update_castle_level(
