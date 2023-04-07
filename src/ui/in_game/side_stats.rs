@@ -89,7 +89,7 @@ fn setup<S: Side>(
         .spawn((
             NodeBundle {
                 style: Style {
-                    size: Size::new(Val::Px(500.0), Val::Auto),
+                    size: Size::new(Val::Px(900.0), Val::Px(600.0)),
                     padding: UiRect::all(Val::Percent(2.0)),
                     flex_direction: FlexDirection::Column,
                     justify_content: JustifyContent::Center,
@@ -102,53 +102,123 @@ fn setup<S: Side>(
             StatsMarker::<S>::default(),
         ))
         .with_children(|builder| {
-            builder.spawn(TextBundle {
-                text: Text::from_section("North:", config.text_style.clone()),
-                ..default()
-            });
+            builder
+                .spawn(NodeBundle {
+                    style: Style {
+                        size: Size::new(Val::Px(230.0), Val::Px(500.0)),
+                        padding: UiRect::all(Val::Percent(2.0)),
+                        flex_direction: FlexDirection::Row,
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    ..default()
+                })
+                .with_children(|builder| {
+                    builder
+                        .spawn(NodeBundle {
+                            style: Style {
+                                size: Size::new(Val::Px(230.0), Val::Px(500.0)),
+                                padding: UiRect::all(Val::Percent(2.0)),
+                                flex_direction: FlexDirection::Column,
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            ..default()
+                        })
+                        .with_children(|builder| {
+                            builder.spawn(TextBundle {
+                                text: Text::from_section(
+                                    format!("{:?}", S::default()),
+                                    config.title_text_style.clone(),
+                                ),
+                                ..default()
+                            });
+                        });
+                    builder
+                        .spawn(NodeBundle {
+                            style: Style {
+                                size: Size::new(Val::Px(230.0), Val::Px(500.0)),
+                                padding: UiRect::all(Val::Percent(2.0)),
+                                flex_direction: FlexDirection::Column,
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            ..default()
+                        })
+                        .with_children(|builder| {
+                            builder.spawn(TextBundle {
+                                text: Text::from_section("Crossbow:", config.text_style.clone()),
+                                ..default()
+                            });
 
-            builder.spawn(TextBundle {
-                text: Text::from_section("Crossbow:", config.text_style.clone()),
-                ..default()
-            });
+                            let buffed_crossbow = Crossbow::default()
+                                .with_buffs(&corssbow_buffs, &global_weapons_buffs);
+                            builder.spawn(TextBundle {
+                                text: Text::from_section(
+                                    format!("{buffed_crossbow}"),
+                                    config.buff_text_style.clone(),
+                                ),
+                                ..default()
+                            });
+                        });
+                    builder
+                        .spawn(NodeBundle {
+                            style: Style {
+                                size: Size::new(Val::Px(230.0), Val::Px(500.0)),
+                                padding: UiRect::all(Val::Percent(2.0)),
+                                flex_direction: FlexDirection::Column,
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            ..default()
+                        })
+                        .with_children(|builder| {
+                            builder.spawn(TextBundle {
+                                text: Text::from_section("Molotov:", config.text_style.clone()),
+                                ..default()
+                            });
 
-            let buffed_crossbow =
-                Crossbow::default().with_buffs(&corssbow_buffs, &global_weapons_buffs);
-            builder.spawn(TextBundle {
-                text: Text::from_section(
-                    format!("{buffed_crossbow}"),
-                    config.buff_text_style.clone(),
-                ),
-                ..default()
-            });
-
-            builder.spawn(TextBundle {
-                text: Text::from_section("Molotov:", config.text_style.clone()),
-                ..default()
-            });
-
-            let buffed_molotov =
-                Molotov::default().with_buffs(&molotov_buffs, &global_weapons_buffs);
-            builder.spawn(TextBundle {
-                text: Text::from_section(
-                    format!("{buffed_molotov}"),
-                    config.buff_text_style.clone(),
-                ),
-                ..default()
-            });
-
-            builder.spawn(TextBundle {
-                text: Text::from_section("Enemy:", config.text_style.clone()),
-                ..default()
-            });
-            let enemy_buffs = enemy_buffs.with_global_buffs(&global_enemy_buffs);
-            builder.spawn(TextBundle {
-                text: Text::from_section(
-                    format!("{enemy_buffs}"),
-                    config.debuff_text_style.clone(),
-                ),
-                ..default()
-            });
+                            let buffed_molotov = Molotov::default()
+                                .with_buffs(&molotov_buffs, &global_weapons_buffs);
+                            builder.spawn(TextBundle {
+                                text: Text::from_section(
+                                    format!("{buffed_molotov}"),
+                                    config.buff_text_style.clone(),
+                                ),
+                                ..default()
+                            });
+                        });
+                    builder
+                        .spawn(NodeBundle {
+                            style: Style {
+                                size: Size::new(Val::Px(230.0), Val::Px(500.0)),
+                                padding: UiRect::all(Val::Percent(2.0)),
+                                flex_direction: FlexDirection::Column,
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            ..default()
+                        })
+                        .with_children(|builder| {
+                            builder.spawn(TextBundle {
+                                text: Text::from_section("Enemy:", config.text_style.clone()),
+                                ..default()
+                            });
+                            let enemy_buffs = enemy_buffs.with_global_buffs(&global_enemy_buffs);
+                            builder.spawn(TextBundle {
+                                text: Text::from_section(
+                                    format!("{enemy_buffs}"),
+                                    config.debuff_text_style.clone(),
+                                ),
+                                ..default()
+                            });
+                        });
+                });
             spawn_button(builder, &config, StatsButton::Back);
         })
         .id();

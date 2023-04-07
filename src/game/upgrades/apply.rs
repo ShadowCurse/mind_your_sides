@@ -341,8 +341,6 @@ fn apply_global_weapon_upgrades(
     mut finish_event: EventWriter<FinishUpgradeEvent>,
 ) {
     for event in global_weapon_upgrade_events.iter() {
-        info!("global weapon upgrade: {:?}", event.upgrade);
-        info!("globla buffs before: {:?}", global_weapons_buffs);
         match event.upgrade {
             GlobalWeaponUpgrade::Damage(value) => global_weapons_buffs.damage += value / 100.0,
             GlobalWeaponUpgrade::DamageFlat(value) => global_weapons_buffs.damage_flat += value,
@@ -353,7 +351,6 @@ fn apply_global_weapon_upgrades(
                 global_weapons_buffs.crit_chance += value / 100.0
             }
         }
-        info!("globla buffs after: {:?}", global_weapons_buffs);
         finish_event.send(FinishUpgradeEvent);
     }
 }
@@ -401,7 +398,7 @@ fn apply_global_enemy_upgrades(
         match event.upgrade {
             GlobalEnemyUpgrade::Health(value) => global_enemy_buffs.health += value / 100.0,
             GlobalEnemyUpgrade::Speed(value) => global_enemy_buffs.speed += value / 100.0,
-            GlobalEnemyUpgrade::Exp(value) => global_enemy_buffs.exp -= value / 100.0,
+            GlobalEnemyUpgrade::Exp(value) => global_enemy_buffs.exp += value / 100.0,
             GlobalEnemyUpgrade::Damage(value) => global_enemy_buffs.damage += value / 100.0,
             GlobalEnemyUpgrade::AttackSpeed(value) => {
                 global_enemy_buffs.attack_speed += value / 100.0
@@ -420,7 +417,7 @@ fn apply_enemy_upgrades_to_side<S: Side>(
         match event.upgrade {
             EnemyUpgrade::Health(value) => enemy_spawn_buffs.health += value / 100.0,
             EnemyUpgrade::Speed(value) => enemy_spawn_buffs.speed += value / 100.0,
-            EnemyUpgrade::Exp(value) => enemy_spawn_buffs.exp -= value / 100.0,
+            EnemyUpgrade::Exp(value) => enemy_spawn_buffs.exp += value / 100.0,
             EnemyUpgrade::Damage(value) => enemy_spawn_buffs.damage += value / 100.0,
             EnemyUpgrade::AttackSpeed(value) => enemy_spawn_buffs.attack_speed += value / 100.0,
         }

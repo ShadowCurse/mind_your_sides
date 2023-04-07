@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use std::{marker::PhantomData, time::Duration};
 
 use bevy::prelude::*;
 
@@ -19,6 +19,7 @@ impl Plugin for HUDPlugin {
         app.add_system(setup.in_schedule(OnEnter(GlobalState::InGame)))
             .add_systems(
                 (
+                    update_time,
                     update_castle_level,
                     update_castle_exp,
                     update_castle_wall_hp::<North>,
@@ -33,8 +34,16 @@ impl Plugin for HUDPlugin {
     }
 }
 
+#[derive(Resource)]
+pub struct HUDTimer {
+    start_time: Duration,
+}
+
 #[derive(Debug, Clone, Copy, Component)]
 pub struct HUDMarker;
+
+#[derive(Debug, Clone, Copy, Component)]
+struct TimeText;
 
 #[derive(Debug, Clone, Copy, Component)]
 struct CastleLevelText;
@@ -56,7 +65,10 @@ enum HUDButton {
     Pause,
 }
 
-fn setup(mut commands: Commands, config: Res<UiConfig>) {
+fn setup(time: Res<Time>, config: Res<UiConfig>, mut commands: Commands) {
+    commands.insert_resource(HUDTimer {
+        start_time: time.elapsed(),
+    });
     // root node
     commands
         .spawn((
@@ -64,6 +76,7 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
                 style: Style {
                     size: Size::width(Val::Percent(100.0)),
                     justify_content: JustifyContent::SpaceBetween,
+                    align_items: AlignItems::Center,
                     ..default()
                 },
                 ..default()
@@ -75,7 +88,10 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
             parent
                 .spawn(NodeBundle {
                     style: Style {
-                        size: Size::width(Val::Px(200.0)),
+                        size: Size {
+                            width: Val::Px(200.0),
+                            height: Val::Percent(100.0),
+                        },
                         flex_direction: FlexDirection::Column,
                         justify_content: JustifyContent::SpaceEvenly,
                         align_items: AlignItems::Center,
@@ -85,6 +101,10 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
                     ..default()
                 })
                 .with_children(|parent| {
+                    parent.spawn((
+                        TextBundle::from_section("Time: ", config.text_style.clone()),
+                        TimeText,
+                    ));
                     // Castle info
                     parent
                         .spawn(NodeBundle {
@@ -160,7 +180,10 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
             parent
                 .spawn(NodeBundle {
                     style: Style {
-                        size: Size::width(Val::Px(200.0)),
+                        size: Size {
+                            width: (Val::Px(200.0)),
+                            height: (Val::Percent(100.)),
+                        },
                         flex_direction: FlexDirection::Column,
                         justify_content: JustifyContent::SpaceEvenly,
                         align_items: AlignItems::Center,
@@ -251,6 +274,18 @@ fn button_system(
             }
         }
     }
+}
+
+fn update_time(
+    time: Res<Time>,
+    hud_timer: Res<HUDTimer>,
+    mut time_text: Query<&mut Text, With<TimeText>>,
+) {
+    let mut text = time_text.single_mut();
+    text.sections[0].value = format!(
+        "Time: {:.1}",
+        (time.elapsed() - hud_timer.start_time).as_secs_f32()
+    );
 }
 
 fn update_castle_level(

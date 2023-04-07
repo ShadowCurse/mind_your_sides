@@ -2,25 +2,47 @@ use bevy::prelude::*;
 
 use crate::{
     game::GameState,
+    impl_into_state,
     ui::{spawn_button, UiConfig},
-    utils::remove_all_with,
+    utils::{remove_all_with, set_state, IntoState},
     GlobalState,
 };
 
 use super::{hud::HUDMarker, UiInGameState};
 
+pub mod settings;
+
 pub struct PausePlugin;
 
 impl Plugin for PausePlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(setup.in_schedule(OnEnter(UiInGameState::Pause)))
-            .add_system(button_system.in_set(OnUpdate(UiInGameState::Pause)))
-            .add_system(remove_all_with::<PauseMarker>.in_schedule(OnExit(UiInGameState::Pause)));
+        app.add_state::<UiPauseState>()
+            .add_system(
+                set_state::<UiPauseState, { UiPauseState::Pause as u8 }>
+                    .in_schedule(OnEnter(UiInGameState::Pause)),
+            )
+            .add_system(
+                set_state::<UiPauseState, { UiPauseState::Disabled as u8 }>
+                    .in_schedule(OnExit(UiInGameState::Pause)),
+            )
+            .add_system(setup.in_schedule(OnEnter(UiPauseState::Pause)))
+            .add_system(button_system.in_set(OnUpdate(UiPauseState::Pause)))
+            .add_system(remove_all_with::<PauseMarker>.in_schedule(OnExit(UiPauseState::Pause)))
+            .add_plugin(settings::SettingsPlugin);
     }
 }
 
 #[derive(Debug, Clone, Copy, Component)]
 struct PauseMarker;
+
+#[derive(Default, Debug, Clone, PartialEq, Eq, Hash, States)]
+enum UiPauseState {
+    #[default]
+    Disabled,
+    Pause,
+    Settings,
+}
+impl_into_state!(UiPauseState);
 
 #[derive(Debug, Clone, Copy, Component)]
 enum PauseButton {
@@ -52,8 +74,9 @@ fn setup(config: Res<UiConfig>, hud: Query<Entity, With<HUDMarker>>, mut command
 
 fn button_system(
     style: Res<UiConfig>,
-    mut global_state: ResMut<NextState<GlobalState>>,
     mut game_state: ResMut<NextState<GameState>>,
+    mut pause_state: ResMut<NextState<UiPauseState>>,
+    mut global_state: ResMut<NextState<GlobalState>>,
     mut interaction_query: Query<
         (&PauseButton, &Interaction, &mut BackgroundColor),
         (Changed<Interaction>, With<Button>),
@@ -67,7 +90,9 @@ fn button_system(
                     PauseButton::MainMenu => {
                         global_state.set(GlobalState::MainMenu);
                     }
-                    PauseButton::Settings => {}
+                    PauseButton::Settings => {
+                        pause_state.set(UiPauseState::Settings);
+                    }
                     PauseButton::Back => {
                         game_state.set(GameState::InGame);
                     }

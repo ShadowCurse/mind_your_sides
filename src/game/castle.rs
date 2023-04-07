@@ -255,7 +255,6 @@ fn check_wall_destroyed<S: Side>(
 ) {
     let wall = wall.single();
     if wall.health <= 0 {
-        info!("Wall {:?} destroyed", S::default());
         game_state.set(GameState::GameOver);
     }
 }

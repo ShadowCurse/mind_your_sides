@@ -32,12 +32,17 @@ pub struct AnimationBundle {
 impl AnimationBundle {
     pub fn new(
         texture_atlas: Handle<TextureAtlas>,
+        size: f32,
         frames: usize,
         fps: f64,
         position: Vec3,
     ) -> Self {
         Self {
             sprite: SpriteSheetBundle {
+                sprite: TextureAtlasSprite {
+                    custom_size: Some(Vec2::new(size, size)),
+                    ..default()
+                },
                 texture_atlas,
                 transform: Transform::from_translation(position),
                 ..default()

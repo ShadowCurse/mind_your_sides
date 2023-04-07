@@ -2,8 +2,8 @@ use bevy::prelude::*;
 
 use crate::{GameAssets, GlobalState};
 
-mod in_game;
-mod main_menu;
+pub mod in_game;
+pub mod main_menu;
 
 pub struct UiPlugin;
 
@@ -52,8 +52,9 @@ fn setup_ui_config(game_assets: Res<GameAssets>, mut commands: Commands) {
         button_color_hover: medium_blue,
         button_color_pressed: light_blue,
         menu_style: Style {
-            flex_direction: FlexDirection::Column,
+            size: Size::new(Val::Px(500.0), Val::Px(400.0)),
             margin: UiRect::all(Val::Auto),
+            flex_direction: FlexDirection::Column,
             justify_content: JustifyContent::Center,
             align_items: AlignItems::Center,
             ..default()
