@@ -53,7 +53,6 @@ impl Plugin for UiInGamePlugin {
                 set_state::<UiInGameState, { UiInGameState::StatsEast as u8 }>
                     .in_schedule(OnEnter(GameState::StatsEast)),
             )
-            .add_system(in_game_key_input.in_set(OnUpdate(UiInGameState::InGame)))
             .add_plugin(hud::HUDPlugin)
             .add_plugin(level_up::LevelUpPlugin)
             .add_plugin(pause::PausePlugin)
@@ -79,13 +78,3 @@ enum UiInGameState {
     StatsEast,
 }
 impl_into_state!(UiInGameState);
-
-fn in_game_key_input(keyboard: Res<Input<KeyCode>>, mut game_state: ResMut<NextState<GameState>>) {
-    if keyboard.pressed(KeyCode::Escape) {
-        game_state.set(GameState::Paused);
-    }
-
-    if keyboard.pressed(KeyCode::O) {
-        game_state.set(GameState::GameOver);
-    }
-}

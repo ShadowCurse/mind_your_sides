@@ -88,27 +88,25 @@ fn setup<S: Side>(
     let stats = commands
         .spawn((
             NodeBundle {
-                style: Style {
-                    size: Size::new(Val::Px(900.0), Val::Px(600.0)),
-                    padding: UiRect::all(Val::Percent(2.0)),
-                    flex_direction: FlexDirection::Column,
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    ..default()
-                },
+                style: config.stats_style.clone(),
                 background_color: config.panels_background.into(),
                 ..default()
             },
             StatsMarker::<S>::default(),
         ))
         .with_children(|builder| {
+            builder.spawn(TextBundle {
+                text: Text::from_section(
+                    format!("{:?}", S::default()),
+                    config.title_text_style.clone(),
+                ),
+                ..default()
+            });
             builder
                 .spawn(NodeBundle {
                     style: Style {
-                        size: Size::new(Val::Px(230.0), Val::Px(500.0)),
-                        padding: UiRect::all(Val::Percent(2.0)),
                         flex_direction: FlexDirection::Row,
-                        justify_content: JustifyContent::Center,
+                        justify_content: JustifyContent::SpaceEvenly,
                         align_items: AlignItems::Center,
                         ..default()
                     },
@@ -118,29 +116,7 @@ fn setup<S: Side>(
                     builder
                         .spawn(NodeBundle {
                             style: Style {
-                                size: Size::new(Val::Px(230.0), Val::Px(500.0)),
-                                padding: UiRect::all(Val::Percent(2.0)),
-                                flex_direction: FlexDirection::Column,
-                                justify_content: JustifyContent::Center,
-                                align_items: AlignItems::Center,
-                                ..default()
-                            },
-                            ..default()
-                        })
-                        .with_children(|builder| {
-                            builder.spawn(TextBundle {
-                                text: Text::from_section(
-                                    format!("{:?}", S::default()),
-                                    config.title_text_style.clone(),
-                                ),
-                                ..default()
-                            });
-                        });
-                    builder
-                        .spawn(NodeBundle {
-                            style: Style {
-                                size: Size::new(Val::Px(230.0), Val::Px(500.0)),
-                                padding: UiRect::all(Val::Percent(2.0)),
+                                margin: UiRect::all(Val::Percent(5.0)),
                                 flex_direction: FlexDirection::Column,
                                 justify_content: JustifyContent::Center,
                                 align_items: AlignItems::Center,
@@ -167,8 +143,7 @@ fn setup<S: Side>(
                     builder
                         .spawn(NodeBundle {
                             style: Style {
-                                size: Size::new(Val::Px(230.0), Val::Px(500.0)),
-                                padding: UiRect::all(Val::Percent(2.0)),
+                                margin: UiRect::all(Val::Percent(5.0)),
                                 flex_direction: FlexDirection::Column,
                                 justify_content: JustifyContent::Center,
                                 align_items: AlignItems::Center,
@@ -195,8 +170,7 @@ fn setup<S: Side>(
                     builder
                         .spawn(NodeBundle {
                             style: Style {
-                                size: Size::new(Val::Px(230.0), Val::Px(500.0)),
-                                padding: UiRect::all(Val::Percent(2.0)),
+                                margin: UiRect::all(Val::Percent(5.0)),
                                 flex_direction: FlexDirection::Column,
                                 justify_content: JustifyContent::Center,
                                 align_items: AlignItems::Center,

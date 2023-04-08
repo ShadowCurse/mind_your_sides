@@ -5,7 +5,7 @@ use bevy::{
     window::{PresentMode, WindowMode, WindowResolution},
 };
 use bevy_asset_loader::prelude::*;
-// use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use bevy_kira_audio::{AudioPlugin, AudioSource};
 use bevy_rapier2d::prelude::*;
 
 mod game;
@@ -14,35 +14,32 @@ mod utils;
 
 use utils::IntoState;
 
+const GAME_NAME: &str = "Assult on all fronts";
+
 fn main() {
     let mut app = App::new();
-    app.insert_resource(ClearColor(Color::rgb_u8(27, 62, 60)))
+    app.insert_resource(ClearColor(Color::rgb_u8(24, 20, 37)))
         .add_state::<GlobalState>()
         .add_plugins(
             DefaultPlugins
                 .set(ImagePlugin::default_nearest())
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        // TODO Rename game
-                        title: "Mad Crabs".to_string(),
+                        title: GAME_NAME.to_string(),
                         mode: WindowMode::Windowed,
-                        resolution: WindowResolution::new(1920.0, 1080.0),
+                        resolution: WindowResolution::new(1280.0, 720.0),
                         ..default()
                     }),
                     ..default()
                 }),
         )
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        // asests
         .add_loading_state(
             LoadingState::new(GlobalState::AssetLoading)
                 .continue_to_state(GlobalState::Initialization),
         )
         .add_collection_to_loading_state::<_, GameAssets>(GlobalState::AssetLoading)
-        // debug
-        // .add_plugin(RapierDebugRenderPlugin::default())
-        // .add_plugin(WorldInspectorPlugin::new())
-        //
+        .add_plugin(AudioPlugin)
         .add_plugin(game::GamePlugin)
         .add_plugin(ui::UiPlugin)
         .add_system(setup.in_set(OnUpdate(GlobalState::Initialization)));
@@ -63,21 +60,27 @@ impl_into_state!(GlobalState);
 
 #[derive(AssetCollection, Resource)]
 pub struct GameAssets {
-    #[asset(path = "fonts/MinimalPixel.ttf")]
+    #[asset(path = "fonts/ae-systematic-tt-brk.ae-systematic-tt-brk.ttf")]
     font: Handle<Font>,
+    #[asset(path = "sfx/background.wav")]
+    background: Handle<AudioSource>,
+    #[asset(path = "sfx/crossbow_shoot.wav")]
+    crossbow_shoot: Handle<AudioSource>,
+    #[asset(path = "sfx/explosion.wav")]
+    explosion: Handle<AudioSource>,
 }
 
 #[derive(Resource)]
 pub struct GameSettings {
     window_mode: WindowMode,
-    sound_volume: f32,
+    sound_volume: f64,
 }
 
 impl Default for GameSettings {
     fn default() -> Self {
         Self {
             window_mode: WindowMode::Windowed,
-            sound_volume: 0.5,
+            sound_volume: 0.6,
         }
     }
 }
@@ -95,7 +98,7 @@ fn setup(
 
     let mut camera_bundle = Camera2dBundle::default();
     // make everything smaller
-    camera_bundle.projection.scale = 1.5;
+    camera_bundle.projection.scale = 1.8;
     commands.spawn(camera_bundle);
 
     let game_settings = GameSettings::default();

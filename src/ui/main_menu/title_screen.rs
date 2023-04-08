@@ -1,6 +1,6 @@
 use bevy::{app::AppExit, prelude::*};
 
-use crate::{utils::remove_all_with, GlobalState};
+use crate::{utils::remove_all_with, GlobalState, GAME_NAME};
 
 use super::{spawn_button, UiConfig, UiMainMenuState};
 
@@ -32,7 +32,7 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
         .spawn((
             NodeBundle {
                 style: config.menu_style.clone(),
-                background_color: config.menu_color.into(),
+                background_color: config.panels_background.into(),
                 ..default()
             },
             TitleScreenMarker,
@@ -40,7 +40,7 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
         .with_children(|builder| {
             builder.spawn(
                 (TextBundle {
-                    text: Text::from_section("Mad Crabs", config.title_text_style.clone()),
+                    text: Text::from_section(GAME_NAME, config.title_text_style.clone()),
                     ..default()
                 })
                 .with_style(config.title_style.clone()),
@@ -54,7 +54,7 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
 }
 
 fn button_system(
-    style: Res<UiConfig>,
+    config: Res<UiConfig>,
     mut main_menu_state: ResMut<NextState<UiMainMenuState>>,
     mut global_state: ResMut<NextState<GlobalState>>,
     mut interaction_query: Query<
@@ -66,7 +66,7 @@ fn button_system(
     for (button, interaction, mut color) in interaction_query.iter_mut() {
         match *interaction {
             Interaction::Clicked => {
-                *color = style.button_color_pressed.into();
+                *color = config.button_color_pressed.into();
                 match button {
                     TitleScreenButton::Start => {
                         global_state.set(GlobalState::InGame);
@@ -78,10 +78,10 @@ fn button_system(
                 }
             }
             Interaction::Hovered => {
-                *color = style.button_color_hover.into();
+                *color = config.button_color_hover.into();
             }
             Interaction::None => {
-                *color = style.button_color_normal.into();
+                *color = config.button_color_normal.into();
             }
         }
     }

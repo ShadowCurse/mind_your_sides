@@ -1,4 +1,5 @@
 use bevy::{prelude::*, window::WindowMode};
+use bevy_kira_audio::prelude::*;
 
 use crate::{
     ui::{in_game::hud::HUDMarker, main_menu::settings::*, UiConfig},
@@ -35,7 +36,8 @@ fn setup(
 }
 
 fn button_system(
-    style: Res<UiConfig>,
+    config: Res<UiConfig>,
+    audio: ResMut<Audio>,
     mut windows: Query<&mut Window>,
     mut game_settings: ResMut<GameSettings>,
     mut pause_state: ResMut<NextState<UiPauseState>>,
@@ -47,7 +49,7 @@ fn button_system(
     for (button, interaction, mut color) in interaction_query.iter_mut() {
         match *interaction {
             Interaction::Clicked => {
-                *color = style.button_color_pressed.into();
+                *color = config.button_color_pressed.into();
                 match button {
                     SettingsButton::FullScreen => {
                         game_settings.window_mode = WindowMode::Fullscreen;
@@ -59,9 +61,11 @@ fn button_system(
                     }
                     SettingsButton::VolumeUp => {
                         game_settings.sound_volume += 0.05;
+                        audio.set_volume(game_settings.sound_volume);
                     }
                     SettingsButton::VolumeDown => {
                         game_settings.sound_volume -= 0.05;
+                        audio.set_volume(game_settings.sound_volume);
                     }
                     SettingsButton::Back => {
                         pause_state.set(UiPauseState::Pause);
@@ -69,10 +73,10 @@ fn button_system(
                 }
             }
             Interaction::Hovered => {
-                *color = style.button_color_hover.into();
+                *color = config.button_color_hover.into();
             }
             Interaction::None => {
-                *color = style.button_color_normal.into();
+                *color = config.button_color_normal.into();
             }
         }
     }

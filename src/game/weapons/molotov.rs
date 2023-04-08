@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 
 use bevy::prelude::*;
+use bevy_kira_audio::prelude::*;
 use rand::Rng;
 
 use crate::{
@@ -9,15 +10,15 @@ use crate::{
         East, GameState, North, Side, South, West,
     },
     utils::remove_all_with,
-    GlobalState,
+    GameAssets, GameSettings, GlobalState,
 };
 
 use super::{GlobalWeaponBuffs, WeaponsAssets};
 
-const DEFAULT_AREA_SIZE: f32 = 40.0;
+const DEFAULT_AREA_SIZE: f32 = 20.0;
 const DEFAULT_AREA_DAMAGE: i32 = 10;
 const DEFAULT_AREA_ATTACK_SPEED: f32 = 0.5;
-const DEFAULT_AREA_LIFESPAN: f32 = 3.0;
+const DEFAULT_AREA_LIFESPAN: f32 = 2.0;
 
 const DEFAULT_MOLOTOV_MIN_RANGE: f32 = 150.0;
 const DEFAULT_MOLOTOV_RANGE: f32 = 300.0;
@@ -26,6 +27,8 @@ const DEFAULT_MOLOTOV_BOTTLE_IN_FLIGHT_TIME: f32 = 2.0;
 const DEFAULT_MOLOTOV_BOTTLE_IN_FLIGHT_ROTATION: f32 = std::f32::consts::PI * 5.0;
 
 const DEFAULT_MOLOTOV_SPAWN_OFFSET: f32 = 30.0;
+
+const MOLOTOV_SFX_MULTIPLIER: f64 = 0.2;
 
 pub struct MolotovPlugin;
 
@@ -78,16 +81,16 @@ pub struct Molotov<S: Side> {
 
 impl<S: Side> std::fmt::Display for Molotov<S> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_fmt(format_args!(" @ damage {}\n", self.damage))?;
-        f.write_fmt(format_args!(" @ range {:.1}\n", self.range))?;
-        f.write_fmt(format_args!(" @ area size {:.1}\n", self.area_size))?;
+        f.write_fmt(format_args!("damage {}\n", self.damage))?;
+        f.write_fmt(format_args!("range {:.1}\n", self.range))?;
+        f.write_fmt(format_args!("area size {:.1}\n", self.area_size))?;
         f.write_fmt(format_args!(
-            " @ area attack speed {:.1}\n",
+            "area attack speed {:.1}/s\n",
             self.area_attack_speed
         ))?;
-        f.write_fmt(format_args!(" @ area lifespan {:.1}\n", self.area_lifespan))?;
+        f.write_fmt(format_args!("area lifespan {:.1}s\n", self.area_lifespan))?;
         f.write_fmt(format_args!(
-            " @ attack speed {:.1}\n",
+            "attack speed {:.1}/s\n",
             self.attack_timer.duration().as_secs_f32()
         ))?;
         Ok(())
@@ -271,6 +274,9 @@ fn molotov_attack<S: Side>(
 
 fn molotov_bottle_update<S: Side>(
     time: Res<Time>,
+    audio: Res<Audio>,
+    game_assets: Res<GameAssets>,
+    game_settings: Res<GameSettings>,
     weapon_assets: Res<WeaponsAssets>,
     mut commands: Commands,
     mut bottles: Query<(Entity, &mut MolotovBottle<S>, &mut Transform)>,
@@ -302,6 +308,10 @@ fn molotov_bottle_update<S: Side>(
                 bottle.target_position,
                 bottle.area.clone(),
             ));
+
+            audio
+                .play(game_assets.explosion.clone())
+                .with_volume(game_settings.sound_volume * MOLOTOV_SFX_MULTIPLIER);
         }
     }
 }

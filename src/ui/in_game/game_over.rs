@@ -35,7 +35,7 @@ fn setup(config: Res<UiConfig>, hud: Query<Entity, With<HUDMarker>>, mut command
         .spawn((
             NodeBundle {
                 style: config.menu_style.clone(),
-                background_color: config.menu_color.into(),
+                background_color: config.panels_background.into(),
                 ..default()
             },
             GameOverMarker,

@@ -10,7 +10,7 @@ use super::{
     PoisonIvy, Side, Skull, SpawnState, SpearGoblin,
 };
 
-const DEFAULT_ENEMY_SPAWN_POSITON: f32 = 1500.0;
+const DEFAULT_ENEMY_SPAWN_POSITON: f32 = 1000.0;
 
 const DEFAULT_ENEMY_SPAWN_RADIUS: f32 = 200.0;
 const DEFAULT_ENEMY_SPAWN_RATE: f32 = 5.0;
@@ -83,12 +83,12 @@ pub struct EnemyBuffs<S: Side> {
 
 impl<S: Side> std::fmt::Display for EnemyBuffs<S> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_fmt(format_args!(" @ health +{:.1}%\n", self.health * 100.0))?;
-        f.write_fmt(format_args!(" @ speed +{:.1}%\n", self.speed * 100.0))?;
-        f.write_fmt(format_args!(" @ exp -{:.1}%\n", self.exp * 100.0))?;
-        f.write_fmt(format_args!(" @ damage +{:.1}%\n", self.damage * 100.0))?;
+        f.write_fmt(format_args!("health +{:.1}%\n", self.health * 100.0))?;
+        f.write_fmt(format_args!("speed +{:.1}%\n", self.speed * 100.0))?;
+        f.write_fmt(format_args!("exp -{:.1}%\n", self.exp * 100.0))?;
+        f.write_fmt(format_args!("damage +{:.1}%\n", self.damage * 100.0))?;
         f.write_fmt(format_args!(
-            " @ attack speed +{:.1}%\n",
+            "attack speed +{:.1}%\n",
             self.attack_speed * 100.0
         ))?;
         Ok(())
