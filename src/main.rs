@@ -68,7 +68,9 @@ pub struct GameAssets {
     #[asset(path = "fonts/ae-systematic-tt-brk.ae-systematic-tt-brk.ttf")]
     font: Handle<Font>,
     #[asset(path = "sfx/background.wav")]
-    audio: Handle<AudioSource>,
+    background: Handle<AudioSource>,
+    #[asset(path = "sfx/crossbow_shoot.wav")]
+    crossbow_shoot: Handle<AudioSource>,
 }
 
 #[derive(Resource)]

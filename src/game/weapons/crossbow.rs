@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 
 use bevy::prelude::*;
+use bevy_kira_audio::prelude::*;
 
 use crate::{
     game::{
@@ -8,7 +9,7 @@ use crate::{
         West,
     },
     utils::remove_all_with,
-    GlobalState,
+    GameAssets, GameSettings, GlobalState,
 };
 
 use super::{GlobalWeaponBuffs, WeaponsAssets};
@@ -19,7 +20,7 @@ const DEFAULT_BOLT_SPEED: f32 = 200.0;
 const DEFAULT_CROSSBOW_DAMAGE: i32 = 20;
 const DEFAULT_CROSSBOW_CRIT_DAMAGE: f32 = 2.0;
 const DEFAULT_CROSSBOW_CRIT_CHANCE: f32 = 0.05;
-const DEFAULT_CROSSBOW_RANGE: f32 = 500.0;
+const DEFAULT_CROSSBOW_RANGE: f32 = 5000.0;
 const DEFAULT_CROSSBOW_ATTACK_SPEED: f32 = 1.0;
 
 /// Offsets arrow spawn point in the enemy direction
@@ -156,6 +157,9 @@ fn setup(mut commands: Commands) {
 
 fn crossbow_attack<S: Side>(
     time: Res<Time>,
+    audio: Res<Audio>,
+    game_assets: Res<GameAssets>,
+    game_settings: Res<GameSettings>,
     weapon_assets: Res<WeaponsAssets>,
     crossbow_buffs: Res<CrossbowBuffs<S>>,
     global_weapons_buffs: Res<GlobalWeaponBuffs>,
@@ -221,5 +225,9 @@ fn crossbow_attack<S: Side>(
             direction,
             projectile_transform,
         ));
+
+        audio
+            .play(game_assets.crossbow_shoot.clone())
+            .with_volume(game_settings.sound_volume);
     }
 }

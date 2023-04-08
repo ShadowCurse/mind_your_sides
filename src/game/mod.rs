@@ -108,7 +108,7 @@ impl Side for East {
 
 fn play_audio(audio: Res<Audio>, game_settings: Res<GameSettings>, game_assets: Res<GameAssets>) {
     audio
-        .play(game_assets.audio.clone())
+        .play(game_assets.background.clone())
         .with_volume(game_settings.sound_volume)
         .looped();
 }
