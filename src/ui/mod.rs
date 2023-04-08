@@ -7,8 +7,6 @@ pub mod main_menu;
 
 pub struct UiPlugin;
 
-const UI_SCALE: f32 = 1.0;
-
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(setup_ui_config.in_schedule(OnEnter(GlobalState::Initialization)))
