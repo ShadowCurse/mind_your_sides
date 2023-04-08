@@ -1,9 +1,12 @@
 use core::fmt::Debug;
 
 use bevy::prelude::*;
+use bevy_kira_audio::prelude::*;
+use bevy_kira_audio::Audio;
 use bevy_rapier2d::prelude::RapierConfiguration;
 
-use crate::{impl_into_state, utils::set_state, GlobalState, IntoState};
+use crate::GameSettings;
+use crate::{impl_into_state, utils::set_state, GameAssets, GlobalState, IntoState};
 
 pub mod animation;
 pub mod castle;
@@ -25,6 +28,8 @@ impl Plugin for GamePlugin {
                 set_state::<GameState, { GameState::NotInGame as u8 }>
                     .in_schedule(OnExit(GlobalState::InGame)),
             )
+            .add_system(play_audio.in_schedule(OnEnter(GlobalState::InGame)))
+            .add_system(stop_audio.in_schedule(OnExit(GlobalState::InGame)))
             .add_system(in_game_key_input.in_set(OnUpdate(GameState::InGame)))
             .add_system(stop_physics.in_schedule(OnEnter(GameState::Paused)))
             .add_system(resume_physics.in_schedule(OnExit(GameState::Paused)))
@@ -99,6 +104,17 @@ impl Side for West {
 }
 impl Side for East {
     const DIRECTION: Vec2 = Vec2::X;
+}
+
+fn play_audio(audio: Res<Audio>, game_settings: Res<GameSettings>, game_assets: Res<GameAssets>) {
+    audio
+        .play(game_assets.audio.clone())
+        .with_volume(game_settings.sound_volume)
+        .looped();
+}
+
+fn stop_audio(audio: Res<Audio>) {
+    audio.stop();
 }
 
 fn in_game_key_input(keyboard: Res<Input<KeyCode>>, mut game_state: ResMut<NextState<GameState>>) {

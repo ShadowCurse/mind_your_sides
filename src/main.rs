@@ -5,6 +5,7 @@ use bevy::{
     window::{PresentMode, WindowMode, WindowResolution},
 };
 use bevy_asset_loader::prelude::*;
+use bevy_kira_audio::{AudioPlugin, AudioSource};
 // use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::*;
 
@@ -43,6 +44,7 @@ fn main() {
         // .add_plugin(RapierDebugRenderPlugin::default())
         // .add_plugin(WorldInspectorPlugin::new())
         //
+        .add_plugin(AudioPlugin)
         .add_plugin(game::GamePlugin)
         .add_plugin(ui::UiPlugin)
         .add_system(setup.in_set(OnUpdate(GlobalState::Initialization)));
@@ -65,19 +67,21 @@ impl_into_state!(GlobalState);
 pub struct GameAssets {
     #[asset(path = "fonts/ae-systematic-tt-brk.ae-systematic-tt-brk.ttf")]
     font: Handle<Font>,
+    #[asset(path = "sfx/background.wav")]
+    audio: Handle<AudioSource>,
 }
 
 #[derive(Resource)]
 pub struct GameSettings {
     window_mode: WindowMode,
-    sound_volume: f32,
+    sound_volume: f64,
 }
 
 impl Default for GameSettings {
     fn default() -> Self {
         Self {
             window_mode: WindowMode::Windowed,
-            sound_volume: 0.5,
+            sound_volume: 0.6,
         }
     }
 }
