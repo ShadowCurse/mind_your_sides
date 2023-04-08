@@ -59,6 +59,7 @@ impl Plugin for EnemyPlugin {
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash, States)]
 pub enum SpawnState {
+    #[default]
     // Bats and Gablin
     // 1 min
     Stage1,
@@ -69,7 +70,6 @@ pub enum SpawnState {
     // 3 min
     Stage3,
     // + Boss crab
-    #[default]
     Stage4,
 }
 
