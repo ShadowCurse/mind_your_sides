@@ -78,7 +78,7 @@ impl<S: Side> DamageAreaBundle<S> {
         Self {
             animation_bundle: AnimationBundle::new_with_size(
                 texture_atlas,
-                Vec2::new(area.size, area.size),
+                Vec2::new(area.size * 2.0, area.size * 2.0),
                 2,
                 12.0,
                 position,

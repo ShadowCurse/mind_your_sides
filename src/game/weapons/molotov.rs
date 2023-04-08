@@ -15,10 +15,10 @@ use crate::{
 
 use super::{GlobalWeaponBuffs, WeaponsAssets};
 
-const DEFAULT_AREA_SIZE: f32 = 40.0;
+const DEFAULT_AREA_SIZE: f32 = 20.0;
 const DEFAULT_AREA_DAMAGE: i32 = 10;
 const DEFAULT_AREA_ATTACK_SPEED: f32 = 0.5;
-const DEFAULT_AREA_LIFESPAN: f32 = 3.0;
+const DEFAULT_AREA_LIFESPAN: f32 = 2.0;
 
 const DEFAULT_MOLOTOV_MIN_RANGE: f32 = 150.0;
 const DEFAULT_MOLOTOV_RANGE: f32 = 300.0;
@@ -28,7 +28,7 @@ const DEFAULT_MOLOTOV_BOTTLE_IN_FLIGHT_ROTATION: f32 = std::f32::consts::PI * 5.
 
 const DEFAULT_MOLOTOV_SPAWN_OFFSET: f32 = 30.0;
 
-const MOLOTOV_SFX_MULTIPLIER: f64 = 0.4;
+const MOLOTOV_SFX_MULTIPLIER: f64 = 0.2;
 
 pub struct MolotovPlugin;
 

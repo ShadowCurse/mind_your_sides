@@ -10,7 +10,7 @@ use super::{
     PoisonIvy, Side, Skull, SpawnState, SpearGoblin,
 };
 
-const DEFAULT_ENEMY_SPAWN_POSITON: f32 = 1500.0;
+const DEFAULT_ENEMY_SPAWN_POSITON: f32 = 1000.0;
 
 const DEFAULT_ENEMY_SPAWN_RADIUS: f32 = 200.0;
 const DEFAULT_ENEMY_SPAWN_RATE: f32 = 5.0;

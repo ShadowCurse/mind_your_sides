@@ -121,12 +121,4 @@ fn in_game_key_input(keyboard: Res<Input<KeyCode>>, mut game_state: ResMut<NextS
     if keyboard.pressed(KeyCode::Escape) {
         game_state.set(GameState::Paused);
     }
-
-    if keyboard.pressed(KeyCode::O) {
-        game_state.set(GameState::GameOver);
-    }
-
-    if keyboard.pressed(KeyCode::L) {
-        game_state.set(GameState::LevelUp);
-    }
 }

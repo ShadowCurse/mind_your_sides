@@ -1,6 +1,6 @@
 use bevy::{app::AppExit, prelude::*};
 
-use crate::{utils::remove_all_with, GlobalState};
+use crate::{utils::remove_all_with, GlobalState, GAME_NAME};
 
 use super::{spawn_button, UiConfig, UiMainMenuState};
 
@@ -40,7 +40,7 @@ fn setup(mut commands: Commands, config: Res<UiConfig>) {
         .with_children(|builder| {
             builder.spawn(
                 (TextBundle {
-                    text: Text::from_section("Mad Crabs", config.title_text_style.clone()),
+                    text: Text::from_section(GAME_NAME, config.title_text_style.clone()),
                     ..default()
                 })
                 .with_style(config.title_style.clone()),

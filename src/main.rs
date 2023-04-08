@@ -6,7 +6,6 @@ use bevy::{
 };
 use bevy_asset_loader::prelude::*;
 use bevy_kira_audio::{AudioPlugin, AudioSource};
-// use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::*;
 
 mod game;
@@ -14,6 +13,8 @@ mod ui;
 mod utils;
 
 use utils::IntoState;
+
+const GAME_NAME: &str = "Assult on all fronts";
 
 fn main() {
     let mut app = App::new();
@@ -24,8 +25,7 @@ fn main() {
                 .set(ImagePlugin::default_nearest())
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        // TODO Rename game
-                        title: "Mad Crabs".to_string(),
+                        title: GAME_NAME.to_string(),
                         mode: WindowMode::Windowed,
                         resolution: WindowResolution::new(1280.0, 720.0),
                         ..default()
@@ -34,16 +34,11 @@ fn main() {
                 }),
         )
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        // asests
         .add_loading_state(
             LoadingState::new(GlobalState::AssetLoading)
                 .continue_to_state(GlobalState::Initialization),
         )
         .add_collection_to_loading_state::<_, GameAssets>(GlobalState::AssetLoading)
-        // debug
-        // .add_plugin(RapierDebugRenderPlugin::default())
-        // .add_plugin(WorldInspectorPlugin::new())
-        //
         .add_plugin(AudioPlugin)
         .add_plugin(game::GamePlugin)
         .add_plugin(ui::UiPlugin)
@@ -103,7 +98,7 @@ fn setup(
 
     let mut camera_bundle = Camera2dBundle::default();
     // make everything smaller
-    camera_bundle.projection.scale = 1.5;
+    camera_bundle.projection.scale = 1.8;
     commands.spawn(camera_bundle);
 
     let game_settings = GameSettings::default();
