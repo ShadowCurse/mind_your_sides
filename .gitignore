@@ -58,6 +58,7 @@ shell.nix
 
 # CMake
 cmake-build-*/
+Makefile.toml
 
 # Mongo Explorer plugin
 .idea/**/mongoSettings.xml
@@ -91,3 +92,8 @@ fabric.properties
 
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
+
+# wasm bindgen
+wasm/assets
+wasm/bevy_game.js
+wasm/bevy_game_bg.wasm
