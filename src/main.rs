@@ -16,7 +16,7 @@ use utils::IntoState;
 
 fn main() {
     let mut app = App::new();
-    app.insert_resource(ClearColor(Color::rgb_u8(27, 62, 60)))
+    app.insert_resource(ClearColor(Color::rgb_u8(24, 20, 37)))
         .add_state::<GlobalState>()
         .add_plugins(
             DefaultPlugins
@@ -26,7 +26,7 @@ fn main() {
                         // TODO Rename game
                         title: "Mad Crabs".to_string(),
                         mode: WindowMode::Windowed,
-                        resolution: WindowResolution::new(1920.0, 1080.0),
+                        resolution: WindowResolution::new(1280.0, 720.0),
                         ..default()
                     }),
                     ..default()
@@ -63,7 +63,7 @@ impl_into_state!(GlobalState);
 
 #[derive(AssetCollection, Resource)]
 pub struct GameAssets {
-    #[asset(path = "fonts/MinimalPixel.ttf")]
+    #[asset(path = "fonts/ae-systematic-tt-brk.ae-systematic-tt-brk.ttf")]
     font: Handle<Font>,
 }
 

@@ -41,54 +41,85 @@ fn setup(
     let level_up = commands
         .spawn((
             NodeBundle {
-                style: ui_config.menu_style.clone(),
-                background_color: ui_config.menu_color.into(),
+                style: Style {
+                    flex_direction: FlexDirection::Column,
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
+                    ..default()
+                },
                 ..default()
             },
             LevelUpMarker,
         ))
-        .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(
-                "Buffs",
-                ui_config.title_text_style.clone(),
-            ));
-            parent
+        .with_children(|builder| {
+            builder.spawn(
+                TextBundle::from_section("Level up", ui_config.title_text_style.clone())
+                    .with_style(Style {
+                        margin: UiRect::all(Val::Percent(4.0)),
+                        ..default()
+                    }),
+            );
+            builder
                 .spawn(NodeBundle {
                     style: Style {
-                        flex_direction: FlexDirection::Row,
-                        margin: UiRect::all(Val::Auto),
+                        flex_direction: FlexDirection::Column,
                         justify_content: JustifyContent::Center,
                         align_items: AlignItems::Center,
                         ..default()
                     },
-                    background_color: ui_config.menu_color.into(),
                     ..default()
                 })
                 .with_children(|builder| {
-                    spawn_upgrade_button(
-                        builder,
-                        &ui_config,
-                        UpgradeButton::First,
-                        &upgrades.upgrades[0],
-                    );
-                    spawn_upgrade_button(
-                        builder,
-                        &ui_config,
-                        UpgradeButton::Second,
-                        &upgrades.upgrades[1],
-                    );
-                    spawn_upgrade_button(
-                        builder,
-                        &ui_config,
-                        UpgradeButton::Third,
-                        &upgrades.upgrades[2],
-                    );
-                    spawn_upgrade_button(
-                        builder,
-                        &ui_config,
-                        UpgradeButton::Fourth,
-                        &upgrades.upgrades[3],
-                    );
+                    builder
+                        .spawn(NodeBundle {
+                            style: Style {
+                                margin: UiRect::all(Val::Percent(1.0)),
+                                flex_direction: FlexDirection::Row,
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            ..default()
+                        })
+                        .with_children(|builder| {
+                            spawn_upgrade_button(
+                                builder,
+                                &ui_config,
+                                UpgradeButton::First,
+                                &upgrades.upgrades[0],
+                            );
+                            spawn_upgrade_button(
+                                builder,
+                                &ui_config,
+                                UpgradeButton::Second,
+                                &upgrades.upgrades[1],
+                            );
+                        });
+                    builder
+                        .spawn(NodeBundle {
+                            style: Style {
+                                margin: UiRect::all(Val::Percent(1.0)),
+                                flex_direction: FlexDirection::Row,
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            ..default()
+                        })
+                        .with_children(|builder| {
+                            spawn_upgrade_button(
+                                builder,
+                                &ui_config,
+                                UpgradeButton::Third,
+                                &upgrades.upgrades[2],
+                            );
+                            spawn_upgrade_button(
+                                builder,
+                                &ui_config,
+                                UpgradeButton::Fourth,
+                                &upgrades.upgrades[3],
+                            );
+                        });
                 });
         })
         .id();
@@ -98,7 +129,7 @@ fn setup(
 }
 
 fn button_system(
-    style: Res<UiConfig>,
+    config: Res<UiConfig>,
     mut apply_upgrade_event: EventWriter<ApplyUpgradeEvent>,
     mut interaction_query: Query<
         (&UpgradeButton, &Interaction, &mut BackgroundColor),
@@ -108,7 +139,7 @@ fn button_system(
     for (button, interaction, mut color) in interaction_query.iter_mut() {
         match *interaction {
             Interaction::Clicked => {
-                *color = style.button_color_pressed.into();
+                *color = config.button_color_pressed.into();
                 let event = match button {
                     UpgradeButton::First => ApplyUpgradeEvent::First,
                     UpgradeButton::Second => ApplyUpgradeEvent::Second,
@@ -118,54 +149,46 @@ fn button_system(
                 apply_upgrade_event.send(event);
             }
             Interaction::Hovered => {
-                *color = style.button_color_hover.into();
+                *color = config.button_color_hover.into();
             }
             Interaction::None => {
-                *color = style.button_color_normal.into();
+                *color = config.button_color_normal.into();
             }
         }
     }
 }
 
 fn spawn_upgrade_button<B>(
-    child_builder: &mut ChildBuilder,
+    builder: &mut ChildBuilder,
     style: &UiConfig,
     button: B,
     upgrade: &Upgrade,
 ) where
     B: Component + std::fmt::Debug + Copy,
 {
-    child_builder
+    builder
         .spawn((
             ButtonBundle {
-                style: Style {
-                    size: Size::new(Val::Px(330.0), Val::Px(400.0)),
-                    margin: UiRect::all(Val::Percent(1.0)),
-                    padding: UiRect::all(Val::Percent(3.0)),
-                    flex_direction: FlexDirection::Column,
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    ..default()
-                },
+                style: style.upgrade_button_style.clone(),
                 background_color: style.button_color_normal.into(),
                 ..default()
             },
             button,
         ))
-        .with_children(|parent| {
+        .with_children(|builder| {
             // Global
             if upgrade.has_global_upgrades() {
                 let (buffs, debuffs) = upgrade.global_upgrades();
 
-                parent.spawn(TextBundle {
+                builder.spawn(TextBundle {
                     text: Text::from_section("Global:", style.text_style.clone()),
                     ..default()
                 });
-                parent.spawn(TextBundle {
+                builder.spawn(TextBundle {
                     text: Text::from_section(format!("{buffs}"), style.buff_text_style.clone()),
                     ..default()
                 });
-                parent.spawn(TextBundle {
+                builder.spawn(TextBundle {
                     text: Text::from_section(format!("{debuffs}"), style.debuff_text_style.clone()),
                     ..default()
                 });
@@ -174,15 +197,15 @@ fn spawn_upgrade_button<B>(
             if upgrade.has_north_upgrades() {
                 let (buffs, debuffs) = upgrade.north_upgrades();
 
-                parent.spawn(TextBundle {
+                builder.spawn(TextBundle {
                     text: Text::from_section("North:", style.text_style.clone()),
                     ..default()
                 });
-                parent.spawn(TextBundle {
+                builder.spawn(TextBundle {
                     text: Text::from_section(format!("{buffs}"), style.buff_text_style.clone()),
                     ..default()
                 });
-                parent.spawn(TextBundle {
+                builder.spawn(TextBundle {
                     text: Text::from_section(format!("{debuffs}"), style.debuff_text_style.clone()),
                     ..default()
                 });
@@ -191,15 +214,15 @@ fn spawn_upgrade_button<B>(
             if upgrade.has_south_upgrades() {
                 let (buffs, debuffs) = upgrade.south_upgrades();
 
-                parent.spawn(TextBundle {
+                builder.spawn(TextBundle {
                     text: Text::from_section("South:", style.text_style.clone()),
                     ..default()
                 });
-                parent.spawn(TextBundle {
+                builder.spawn(TextBundle {
                     text: Text::from_section(format!("{buffs}"), style.buff_text_style.clone()),
                     ..default()
                 });
-                parent.spawn(TextBundle {
+                builder.spawn(TextBundle {
                     text: Text::from_section(format!("{debuffs}"), style.debuff_text_style.clone()),
                     ..default()
                 });
@@ -208,15 +231,15 @@ fn spawn_upgrade_button<B>(
             if upgrade.has_west_upgrades() {
                 let (buffs, debuffs) = upgrade.west_upgrades();
 
-                parent.spawn(TextBundle {
+                builder.spawn(TextBundle {
                     text: Text::from_section("West:", style.text_style.clone()),
                     ..default()
                 });
-                parent.spawn(TextBundle {
+                builder.spawn(TextBundle {
                     text: Text::from_section(format!("{buffs}"), style.buff_text_style.clone()),
                     ..default()
                 });
-                parent.spawn(TextBundle {
+                builder.spawn(TextBundle {
                     text: Text::from_section(format!("{debuffs}"), style.debuff_text_style.clone()),
                     ..default()
                 });
@@ -225,15 +248,15 @@ fn spawn_upgrade_button<B>(
             if upgrade.has_east_upgrades() {
                 let (buffs, debuffs) = upgrade.east_upgrades();
 
-                parent.spawn(TextBundle {
+                builder.spawn(TextBundle {
                     text: Text::from_section("East:", style.text_style.clone()),
                     ..default()
                 });
-                parent.spawn(TextBundle {
+                builder.spawn(TextBundle {
                     text: Text::from_section(format!("{buffs}"), style.buff_text_style.clone()),
                     ..default()
                 });
-                parent.spawn(TextBundle {
+                builder.spawn(TextBundle {
                     text: Text::from_section(format!("{debuffs}"), style.debuff_text_style.clone()),
                     ..default()
                 });

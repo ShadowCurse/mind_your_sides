@@ -78,16 +78,16 @@ pub struct Molotov<S: Side> {
 
 impl<S: Side> std::fmt::Display for Molotov<S> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_fmt(format_args!(" @ damage {}\n", self.damage))?;
-        f.write_fmt(format_args!(" @ range {:.1}\n", self.range))?;
-        f.write_fmt(format_args!(" @ area size {:.1}\n", self.area_size))?;
+        f.write_fmt(format_args!("damage {}\n", self.damage))?;
+        f.write_fmt(format_args!("range {:.1}\n", self.range))?;
+        f.write_fmt(format_args!("area size {:.1}\n", self.area_size))?;
         f.write_fmt(format_args!(
-            " @ area attack speed {:.1}\n",
+            "area attack speed {:.1}/s\n",
             self.area_attack_speed
         ))?;
-        f.write_fmt(format_args!(" @ area lifespan {:.1}\n", self.area_lifespan))?;
+        f.write_fmt(format_args!("area lifespan {:.1}s\n", self.area_lifespan))?;
         f.write_fmt(format_args!(
-            " @ attack speed {:.1}\n",
+            "attack speed {:.1}/s\n",
             self.attack_timer.duration().as_secs_f32()
         ))?;
         Ok(())

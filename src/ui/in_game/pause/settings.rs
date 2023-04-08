@@ -35,7 +35,7 @@ fn setup(
 }
 
 fn button_system(
-    style: Res<UiConfig>,
+    config: Res<UiConfig>,
     mut windows: Query<&mut Window>,
     mut game_settings: ResMut<GameSettings>,
     mut pause_state: ResMut<NextState<UiPauseState>>,
@@ -47,7 +47,7 @@ fn button_system(
     for (button, interaction, mut color) in interaction_query.iter_mut() {
         match *interaction {
             Interaction::Clicked => {
-                *color = style.button_color_pressed.into();
+                *color = config.button_color_pressed.into();
                 match button {
                     SettingsButton::FullScreen => {
                         game_settings.window_mode = WindowMode::Fullscreen;
@@ -69,10 +69,10 @@ fn button_system(
                 }
             }
             Interaction::Hovered => {
-                *color = style.button_color_hover.into();
+                *color = config.button_color_hover.into();
             }
             Interaction::None => {
-                *color = style.button_color_normal.into();
+                *color = config.button_color_normal.into();
             }
         }
     }

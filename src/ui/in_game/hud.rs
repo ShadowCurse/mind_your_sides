@@ -74,7 +74,7 @@ fn setup(time: Res<Time>, config: Res<UiConfig>, mut commands: Commands) {
         .spawn((
             NodeBundle {
                 style: Style {
-                    size: Size::width(Val::Percent(100.0)),
+                    size: Size::all(Val::Percent(100.0)),
                     justify_content: JustifyContent::SpaceBetween,
                     align_items: AlignItems::Center,
                     ..default()
@@ -89,7 +89,8 @@ fn setup(time: Res<Time>, config: Res<UiConfig>, mut commands: Commands) {
                 .spawn(NodeBundle {
                     style: Style {
                         size: Size {
-                            width: Val::Px(200.0),
+                            width: Val::Percent(3.5 / 16.0 * 100.0),
+                            // width: Val::Percent(20.0),
                             height: Val::Percent(100.0),
                         },
                         flex_direction: FlexDirection::Column,
@@ -181,8 +182,8 @@ fn setup(time: Res<Time>, config: Res<UiConfig>, mut commands: Commands) {
                 .spawn(NodeBundle {
                     style: Style {
                         size: Size {
-                            width: (Val::Px(200.0)),
-                            height: (Val::Percent(100.)),
+                            width: Val::Percent(3.5 / 16.0 * 100.0),
+                            height: (Val::Percent(100.0)),
                         },
                         flex_direction: FlexDirection::Column,
                         justify_content: JustifyContent::SpaceEvenly,

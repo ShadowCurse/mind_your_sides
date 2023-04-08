@@ -71,13 +71,19 @@ pub struct Crossbow<S: Side> {
 
 impl<S: Side> std::fmt::Display for Crossbow<S> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_fmt(format_args!(" @ damage {}\n", self.damage))?;
-        f.write_fmt(format_args!(" @ range {:.1}\n", self.range))?;
-        f.write_fmt(format_args!(" @ crit damage {:.1}\n", self.crit_damage))?;
-        f.write_fmt(format_args!(" @ crit chance {:.1}\n", self.crit_chance))?;
-        f.write_fmt(format_args!(" @ arrow speed {:.1}\n", self.arrow_speed))?;
+        f.write_fmt(format_args!("damage {}\n", self.damage))?;
+        f.write_fmt(format_args!("range {:.1}\n", self.range))?;
         f.write_fmt(format_args!(
-            " @ attack speed {:.1}\n",
+            "crit damage {:.1}%\n",
+            self.crit_damage * 100.0
+        ))?;
+        f.write_fmt(format_args!(
+            "crit chance {:.1}%\n",
+            self.crit_chance * 100.0
+        ))?;
+        f.write_fmt(format_args!("arrow speed {:.1}\n", self.arrow_speed))?;
+        f.write_fmt(format_args!(
+            "attack speed {:.1}/s\n",
             self.attack_timer.duration().as_secs_f32()
         ))?;
         Ok(())

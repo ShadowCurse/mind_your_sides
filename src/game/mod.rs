@@ -25,6 +25,7 @@ impl Plugin for GamePlugin {
                 set_state::<GameState, { GameState::NotInGame as u8 }>
                     .in_schedule(OnExit(GlobalState::InGame)),
             )
+            .add_system(in_game_key_input.in_set(OnUpdate(GameState::InGame)))
             .add_system(stop_physics.in_schedule(OnEnter(GameState::Paused)))
             .add_system(resume_physics.in_schedule(OnExit(GameState::Paused)))
             .add_system(stop_physics.in_schedule(OnEnter(GameState::GameOver)))
@@ -98,4 +99,18 @@ impl Side for West {
 }
 impl Side for East {
     const DIRECTION: Vec2 = Vec2::X;
+}
+
+fn in_game_key_input(keyboard: Res<Input<KeyCode>>, mut game_state: ResMut<NextState<GameState>>) {
+    if keyboard.pressed(KeyCode::Escape) {
+        game_state.set(GameState::Paused);
+    }
+
+    if keyboard.pressed(KeyCode::O) {
+        game_state.set(GameState::GameOver);
+    }
+
+    if keyboard.pressed(KeyCode::L) {
+        game_state.set(GameState::LevelUp);
+    }
 }

@@ -249,10 +249,10 @@ pub struct GlobalBuffs {
 impl std::fmt::Display for GlobalBuffs {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Some(upgrade) = self.wall_upgrade {
-            f.write_fmt(format_args!(" @ {upgrade}\n"))?;
+            f.write_fmt(format_args!("{upgrade}\n"))?;
         }
         if let Some(upgrade) = self.weapon_upgrade {
-            f.write_fmt(format_args!(" @ {upgrade}\n"))?;
+            f.write_fmt(format_args!("{upgrade}\n"))?;
         }
         Ok(())
     }
@@ -265,7 +265,7 @@ pub struct GlobalDebuffs {
 impl std::fmt::Display for GlobalDebuffs {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Some(upgrade) = self.enemy_upgrade {
-            f.write_fmt(format_args!(" @ {upgrade}\n"))?;
+            f.write_fmt(format_args!("{upgrade}\n"))?;
         }
         Ok(())
     }
@@ -290,10 +290,10 @@ impl<S: Side> SideBuffs<S> {
 impl<S: Side> std::fmt::Display for SideBuffs<S> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Some(upgrade) = self.wall_upgrade {
-            f.write_fmt(format_args!(" @ {upgrade}\n"))?;
+            f.write_fmt(format_args!("{upgrade}\n"))?;
         }
         if let Some(upgrade) = self.weapon_upgrade {
-            f.write_fmt(format_args!(" @ {upgrade}\n"))?;
+            f.write_fmt(format_args!("{upgrade}\n"))?;
         }
         Ok(())
     }
@@ -316,7 +316,7 @@ impl<S: Side> SideDebuffs<S> {
 impl<S: Side> std::fmt::Display for SideDebuffs<S> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Some(upgrade) = self.enemy_upgrade {
-            f.write_fmt(format_args!(" @ {upgrade}\n"))?;
+            f.write_fmt(format_args!("{upgrade}\n"))?;
         }
         Ok(())
     }

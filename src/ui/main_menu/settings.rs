@@ -136,8 +136,8 @@ pub fn spawn_layout(
                             ..default()
                         },))
                         .with_children(|builder| {
-                            spawn_button(builder, config, SettingsButton::VolumeUp);
                             spawn_button(builder, config, SettingsButton::VolumeDown);
+                            spawn_button(builder, config, SettingsButton::VolumeUp);
                         });
                 });
 
@@ -195,7 +195,7 @@ pub fn update_window_mode(
     mut window_mode_text: Query<&mut Text, With<WindowModeText>>,
 ) {
     let mut text = window_mode_text.single_mut();
-    text.sections[0].value = format!("Windwo mode: {:?}", game_settings.window_mode);
+    text.sections[0].value = format!("Window mode: {:?}", game_settings.window_mode);
 }
 
 pub fn update_volume_value(
