@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 
 use bevy::prelude::*;
+use bevy_kira_audio::prelude::*;
 use rand::Rng;
 
 use crate::{
@@ -9,7 +10,7 @@ use crate::{
         East, GameState, North, Side, South, West,
     },
     utils::remove_all_with,
-    GlobalState,
+    GameAssets, GameSettings, GlobalState,
 };
 
 use super::{GlobalWeaponBuffs, WeaponsAssets};
@@ -26,6 +27,8 @@ const DEFAULT_MOLOTOV_BOTTLE_IN_FLIGHT_TIME: f32 = 2.0;
 const DEFAULT_MOLOTOV_BOTTLE_IN_FLIGHT_ROTATION: f32 = std::f32::consts::PI * 5.0;
 
 const DEFAULT_MOLOTOV_SPAWN_OFFSET: f32 = 30.0;
+
+const MOLOTOV_SFX_MULTIPLIER: f64 = 0.4;
 
 pub struct MolotovPlugin;
 
@@ -271,6 +274,9 @@ fn molotov_attack<S: Side>(
 
 fn molotov_bottle_update<S: Side>(
     time: Res<Time>,
+    audio: Res<Audio>,
+    game_assets: Res<GameAssets>,
+    game_settings: Res<GameSettings>,
     weapon_assets: Res<WeaponsAssets>,
     mut commands: Commands,
     mut bottles: Query<(Entity, &mut MolotovBottle<S>, &mut Transform)>,
@@ -302,6 +308,10 @@ fn molotov_bottle_update<S: Side>(
                 bottle.target_position,
                 bottle.area.clone(),
             ));
+
+            audio
+                .play(game_assets.explosion.clone())
+                .with_volume(game_settings.sound_volume * MOLOTOV_SFX_MULTIPLIER);
         }
     }
 }

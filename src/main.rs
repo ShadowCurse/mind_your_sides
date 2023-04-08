@@ -71,6 +71,8 @@ pub struct GameAssets {
     background: Handle<AudioSource>,
     #[asset(path = "sfx/crossbow_shoot.wav")]
     crossbow_shoot: Handle<AudioSource>,
+    #[asset(path = "sfx/explosion.wav")]
+    explosion: Handle<AudioSource>,
 }
 
 #[derive(Resource)]
