@@ -227,7 +227,7 @@ fn molotov_attack<S: Side>(
         }
 
         molotov.attack_timer = Timer::from_seconds(
-            1.0 / DEFAULT_MOLOTOV_ATTACK_SPEED * (1.0 + molotov_buffs.attack_speed),
+            1.0 / (DEFAULT_MOLOTOV_ATTACK_SPEED * (1.0 + molotov_buffs.attack_speed)),
             TimerMode::Repeating,
         );
 
@@ -253,7 +253,7 @@ fn molotov_attack<S: Side>(
         let area_attack_speed = molotov.area_attack_speed * (1.0 + molotov_buffs.area_attack_speed);
         let area_lifespan = DEFAULT_AREA_LIFESPAN * (1.0 + molotov_buffs.area_lifespan);
         let crit_chance = molotov_buffs.crit_chance + global_weapons_buffs.crit_chance;
-        let crit_damage = (molotov.damage as f32
+        let crit_damage = (damage as f32
             * (1.0 + molotov_buffs.crit_damage + global_weapons_buffs.crit_damage))
             as i32;
 

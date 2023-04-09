@@ -13,7 +13,7 @@ use super::{
 const DEFAULT_ENEMY_SPAWN_POSITON: f32 = 1000.0;
 
 const DEFAULT_ENEMY_SPAWN_RADIUS: f32 = 200.0;
-const DEFAULT_ENEMY_SPAWN_RATE: f32 = 5.0;
+const DEFAULT_ENEMY_SPAWN_RATE: f32 = 10.0;
 
 #[derive(Default)]
 pub struct SpawnPlugin<S: Side> {
