@@ -1,4 +1,5 @@
 use bevy::{prelude::*, window::WindowMode};
+use bevy_kira_audio::prelude::*;
 
 use super::{spawn_button, UiConfig, UiMainMenuState};
 use crate::{utils::remove_all_with, GameSettings};
@@ -148,6 +149,7 @@ pub fn spawn_layout(
 
 fn button_system(
     style: Res<UiConfig>,
+    audio: ResMut<Audio>,
     mut windows: Query<&mut Window>,
     mut game_settings: ResMut<GameSettings>,
     mut main_menu_state: ResMut<NextState<UiMainMenuState>>,
@@ -171,9 +173,11 @@ fn button_system(
                     }
                     SettingsButton::VolumeUp => {
                         game_settings.sound_volume += 0.05;
+                        audio.set_volume(game_settings.sound_volume);
                     }
                     SettingsButton::VolumeDown => {
                         game_settings.sound_volume -= 0.05;
+                        audio.set_volume(game_settings.sound_volume);
                     }
                     SettingsButton::Back => {
                         main_menu_state.set(UiMainMenuState::TitleScreen);
