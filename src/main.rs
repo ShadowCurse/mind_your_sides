@@ -64,6 +64,8 @@ pub struct GameAssets {
     font: Handle<Font>,
     #[asset(path = "sfx/background.wav")]
     background: Handle<AudioSource>,
+    #[asset(path = "sfx/main_menu.wav")]
+    main_menu: Handle<AudioSource>,
     #[asset(path = "sfx/crossbow_shoot.wav")]
     crossbow_shoot: Handle<AudioSource>,
     #[asset(path = "sfx/explosion.wav")]

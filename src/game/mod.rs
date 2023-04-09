@@ -28,7 +28,9 @@ impl Plugin for GamePlugin {
                 set_state::<GameState, { GameState::NotInGame as u8 }>
                     .in_schedule(OnExit(GlobalState::InGame)),
             )
-            .add_system(play_audio.in_schedule(OnEnter(GlobalState::InGame)))
+            .add_system(play_main_menu_audio.in_schedule(OnEnter(GlobalState::MainMenu)))
+            .add_system(stop_audio.in_schedule(OnExit(GlobalState::MainMenu)))
+            .add_system(play_in_game_audio.in_schedule(OnEnter(GlobalState::InGame)))
             .add_system(stop_audio.in_schedule(OnExit(GlobalState::InGame)))
             .add_system(in_game_key_input.in_set(OnUpdate(GameState::InGame)))
             .add_system(stop_physics.in_schedule(OnEnter(GameState::Paused)))
@@ -106,9 +108,16 @@ impl Side for East {
     const DIRECTION: Vec2 = Vec2::X;
 }
 
-fn play_audio(audio: Res<Audio>, game_settings: Res<GameSettings>, game_assets: Res<GameAssets>) {
+fn play_in_game_audio(audio: Res<Audio>, game_settings: Res<GameSettings>, game_assets: Res<GameAssets>) {
     audio
         .play(game_assets.background.clone())
+        .with_volume(game_settings.sound_volume)
+        .looped();
+}
+
+fn play_main_menu_audio(audio: Res<Audio>, game_settings: Res<GameSettings>, game_assets: Res<GameAssets>) {
+    audio
+        .play(game_assets.main_menu.clone())
         .with_volume(game_settings.sound_volume)
         .looped();
 }
