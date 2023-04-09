@@ -7,7 +7,7 @@ use rand::Rng;
 use crate::{
     game::{
         damage::area::{DamageArea, DamageAreaBundle},
-        East, GameState, North, Side, South, West,
+        East, GameState, North, Side, South, West, castle::CastleWall,
     },
     utils::remove_all_with,
     GameAssets, GameSettings, GlobalState,
@@ -20,9 +20,9 @@ const DEFAULT_AREA_DAMAGE: i32 = 10;
 const DEFAULT_AREA_ATTACK_SPEED: f32 = 0.5;
 const DEFAULT_AREA_LIFESPAN: f32 = 2.0;
 
-const DEFAULT_MOLOTOV_MIN_RANGE: f32 = 150.0;
+const DEFAULT_MOLOTOV_MIN_RANGE: f32 = 30.0;
 const DEFAULT_MOLOTOV_RANGE: f32 = 300.0;
-const DEFAULT_MOLOTOV_ATTACK_SPEED: f32 = 3.0;
+const DEFAULT_MOLOTOV_ATTACK_SPEED: f32 = 0.3;
 const DEFAULT_MOLOTOV_BOTTLE_IN_FLIGHT_TIME: f32 = 2.0;
 const DEFAULT_MOLOTOV_BOTTLE_IN_FLIGHT_ROTATION: f32 = std::f32::consts::PI * 5.0;
 
@@ -103,7 +103,7 @@ impl<S: Side> Default for Molotov<S> {
             damage: DEFAULT_AREA_DAMAGE,
             range: DEFAULT_MOLOTOV_RANGE,
             area_size: DEFAULT_AREA_SIZE,
-            area_attack_speed: DEFAULT_AREA_ATTACK_SPEED,
+            area_attack_speed: 1.0 / DEFAULT_AREA_ATTACK_SPEED,
             area_lifespan: DEFAULT_AREA_LIFESPAN,
             attack_timer: Timer::from_seconds(DEFAULT_MOLOTOV_ATTACK_SPEED, TimerMode::Repeating),
             _phantom: PhantomData,
@@ -220,15 +220,15 @@ fn molotov_attack<S: Side>(
     molotov_buffs: Res<MolotovBuffs<S>>,
     global_weapons_buffs: Res<GlobalWeaponBuffs>,
     mut commands: Commands,
-    mut molotovs: Query<(&Transform, &mut Molotov<S>)>,
+    mut molotovs: Query<(&Transform, &CastleWall<S>, &mut Molotov<S>)>,
 ) {
-    for (transform, mut molotov) in molotovs.iter_mut() {
+    for (transform, wall, mut molotov) in molotovs.iter_mut() {
         if !molotov.attack_timer.tick(time.delta()).finished() {
             continue;
         }
 
         molotov.attack_timer = Timer::from_seconds(
-            DEFAULT_MOLOTOV_ATTACK_SPEED * (1.0 + molotov_buffs.attack_speed),
+            1.0 / DEFAULT_MOLOTOV_ATTACK_SPEED * (1.0 + molotov_buffs.attack_speed),
             TimerMode::Repeating,
         );
 
@@ -242,10 +242,10 @@ fn molotov_attack<S: Side>(
         let direction = Vec2::from_angle(angle / 360.0 * std::f32::consts::PI).rotate(S::DIRECTION);
 
         let mut initial_position = transform.translation;
-        initial_position += (direction * DEFAULT_MOLOTOV_SPAWN_OFFSET).extend(0.0);
+        initial_position += (direction * wall.half_thickness).extend(0.0);
 
         let mut area_position = transform.translation;
-        area_position += (direction * distance).extend(0.0);
+        area_position += (direction * (distance + wall.half_thickness)).extend(0.0);
 
         let damage =
             ((molotov.damage + molotov_buffs.damage_flat + global_weapons_buffs.damage_flat) as f32

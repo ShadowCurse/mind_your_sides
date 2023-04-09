@@ -94,7 +94,10 @@ impl<S: Side> Default for Crossbow<S> {
             range: DEFAULT_CROSSBOW_RANGE,
             crit_damage: DEFAULT_CROSSBOW_CRIT_DAMAGE,
             crit_chance: DEFAULT_CROSSBOW_CRIT_CHANCE,
-            attack_timer: Timer::from_seconds(DEFAULT_CROSSBOW_ATTACK_SPEED, TimerMode::Repeating),
+            attack_timer: Timer::from_seconds(
+                1.0 / DEFAULT_CROSSBOW_ATTACK_SPEED,
+                TimerMode::Repeating,
+            ),
             _phantom: PhantomData,
         }
     }
@@ -168,7 +171,7 @@ fn crossbow_attack<S: Side>(
 
         let attack_speed = DEFAULT_CROSSBOW_ATTACK_SPEED * (1.0 + crossbow_buffs.attack_speed);
 
-        crossbow.attack_timer = Timer::from_seconds(attack_speed, TimerMode::Repeating);
+        crossbow.attack_timer = Timer::from_seconds(1.0 / attack_speed, TimerMode::Repeating);
 
         let mut enemy_vec = Vec2::default();
         let mut min_range = crossbow.range;

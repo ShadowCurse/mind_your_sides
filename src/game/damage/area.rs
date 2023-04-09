@@ -58,7 +58,7 @@ impl<S: Side> DamageArea<S> {
             damage,
             crit_damage,
             crit_chance,
-            attack_timer: Timer::from_seconds(attack_speed, TimerMode::Repeating),
+            attack_timer: Timer::from_seconds(1.0 / attack_speed, TimerMode::Repeating),
             lifespan: Timer::from_seconds(lifespan, TimerMode::Once),
             _phatom: PhantomData,
         }
