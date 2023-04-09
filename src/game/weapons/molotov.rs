@@ -6,8 +6,9 @@ use rand::Rng;
 
 use crate::{
     game::{
+        castle::CastleWall,
         damage::area::{DamageArea, DamageAreaBundle},
-        East, GameState, North, Side, South, West, castle::CastleWall,
+        East, GameState, North, Side, South, West,
     },
     utils::remove_all_with,
     GameAssets, GameSettings, GlobalState,
