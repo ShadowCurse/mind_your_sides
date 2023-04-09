@@ -380,7 +380,8 @@ impl<S: Side> EnemyType<S> for PoisonIvy {
     }
 }
 
-fn setup(mut commands: Commands) {
+fn setup(mut spawn_state: ResMut<NextState<SpawnState>>, mut commands: Commands) {
+    spawn_state.set(SpawnState::Stage1);
     commands.insert_resource(GlobalEnemyBuffs::default());
     commands.insert_resource(SpawnStateTimer::default());
 }

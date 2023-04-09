@@ -1,4 +1,4 @@
-use std::{marker::PhantomData, time::Duration};
+use std::marker::PhantomData;
 
 use bevy::prelude::*;
 
@@ -37,7 +37,8 @@ impl Plugin for HUDPlugin {
 
 #[derive(Resource)]
 pub struct HUDTimer {
-    start_time: Duration,
+    start_time: f32,
+    time_passed: f32,
 }
 
 #[derive(Debug, Clone, Copy, Component)]
@@ -71,7 +72,8 @@ enum HUDButton {
 
 fn setup(time: Res<Time>, config: Res<UiConfig>, mut commands: Commands) {
     commands.insert_resource(HUDTimer {
-        start_time: time.elapsed(),
+        start_time: time.elapsed().as_secs_f32(),
+        time_passed: time.elapsed().as_secs_f32(),
     });
     // root node
     commands
@@ -286,14 +288,12 @@ fn button_system(
 
 fn update_time(
     time: Res<Time>,
-    hud_timer: Res<HUDTimer>,
+    mut hud_timer: ResMut<HUDTimer>,
     mut time_text: Query<&mut Text, With<TimeText>>,
 ) {
+    hud_timer.time_passed += time.delta_seconds();
     let mut text = time_text.single_mut();
-    text.sections[0].value = format!(
-        "Time: {:.1}",
-        (time.elapsed() - hud_timer.start_time).as_secs_f32()
-    );
+    text.sections[0].value = format!("Time: {:.1}", hud_timer.time_passed - hud_timer.start_time,);
 }
 
 fn update_spawn_state(
