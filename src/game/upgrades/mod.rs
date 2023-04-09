@@ -171,7 +171,7 @@ pub enum GlobalEnemyUpgrade {
 
 impl GlobalEnemyUpgrade {
     random_upgrade!(health, Health, f32, 1.0, 10.0);
-    random_upgrade!(speed, Speed, f32, 0.1, 1.0);
+    random_upgrade!(speed, Speed, f32, 1.0, 2.0);
     random_upgrade!(exp, Exp, f32, 1.0, 8.0);
     random_upgrade!(damage, Damage, f32, 2.0, 10.0);
     random_upgrade!(attack_speed, AttackSpeed, f32, 1.0, 5.0);
@@ -214,9 +214,9 @@ impl std::fmt::Display for EnemyUpgrade {
 
 impl EnemyUpgrade {
     random_upgrade!(health, Health, f32, 1.0, 20.0);
-    random_upgrade!(speed, Speed, f32, 0.1, 5.0);
+    random_upgrade!(speed, Speed, f32, 1.0, 2.0);
     random_upgrade!(exp, Exp, f32, 1.0, 15.0);
-    random_upgrade!(damage, Damage, f32, 2.0, 25.0);
+    random_upgrade!(damage, Damage, f32, 2.0, 15.0);
     random_upgrade!(attack_speed, AttackSpeed, f32, 1.0, 10.0);
 }
 
@@ -535,7 +535,7 @@ pub fn genereate_upgrade(mut rng: &mut impl rand::Rng) -> Upgrade {
 
     // weapon
     let (global_weapon_upgrade, weapon_upgrade) = if rng.gen_ratio(9, 10) || must_have_weapon {
-        if rng.gen_ratio(3, 10) {
+        if rng.gen_ratio(4, 10) {
             let upgrade = match rng.gen_range(0..4) {
                 0 => GlobalWeaponUpgrade::damage(&mut rng),
                 1 => GlobalWeaponUpgrade::damage_flat(&mut rng),
