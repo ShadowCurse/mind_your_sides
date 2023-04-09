@@ -4,7 +4,7 @@ use bevy::prelude::*;
 
 use crate::{
     game::{castle::Castle, Side},
-    game::{castle::CastleWall, East, GameState, North, South, West},
+    game::{castle::CastleWall, enemies::SpawnState, East, GameState, North, South, West},
     ui::{spawn_button, UiConfig},
     utils::remove_all_with,
     GlobalState,
@@ -20,6 +20,7 @@ impl Plugin for HUDPlugin {
             .add_systems(
                 (
                     update_time,
+                    update_spawn_state,
                     update_castle_level,
                     update_castle_exp,
                     update_castle_wall_hp::<North>,
@@ -44,6 +45,9 @@ pub struct HUDMarker;
 
 #[derive(Debug, Clone, Copy, Component)]
 struct TimeText;
+
+#[derive(Debug, Clone, Copy, Component)]
+struct SpawnStateText;
 
 #[derive(Debug, Clone, Copy, Component)]
 struct CastleLevelText;
@@ -90,7 +94,6 @@ fn setup(time: Res<Time>, config: Res<UiConfig>, mut commands: Commands) {
                     style: Style {
                         size: Size {
                             width: Val::Percent(3.5 / 16.0 * 100.0),
-                            // width: Val::Percent(20.0),
                             height: Val::Percent(100.0),
                         },
                         flex_direction: FlexDirection::Column,
@@ -105,6 +108,10 @@ fn setup(time: Res<Time>, config: Res<UiConfig>, mut commands: Commands) {
                     parent.spawn((
                         TextBundle::from_section("Time: ", config.text_style.clone()),
                         TimeText,
+                    ));
+                    parent.spawn((
+                        TextBundle::from_section("Stage: ", config.text_style.clone()),
+                        SpawnStateText,
                     ));
                     // Castle info
                     parent
@@ -287,6 +294,14 @@ fn update_time(
         "Time: {:.1}",
         (time.elapsed() - hud_timer.start_time).as_secs_f32()
     );
+}
+
+fn update_spawn_state(
+    spawn_state: Res<State<SpawnState>>,
+    mut spawn_state_text: Query<&mut Text, With<SpawnStateText>>,
+) {
+    let mut text = spawn_state_text.single_mut();
+    text.sections[0].value = format!("Stage: {}", spawn_state.0);
 }
 
 fn update_castle_level(

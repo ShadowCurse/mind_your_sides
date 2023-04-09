@@ -371,7 +371,6 @@ fn apply_weapon_upgrades_to_side<S: Side>(
             WeaponUpgrade::CrossbowAttackSpeed(value) => {
                 crossbow_buffs.attack_speed += value / 100.0
             }
-            WeaponUpgrade::CrossbowArrowSpeed(value) => crossbow_buffs.arrow_speed += value / 100.0,
             WeaponUpgrade::MolotovDamage(value) => molotov_buffs.damage += value / 100.0,
             WeaponUpgrade::MolotovDamageFlat(value) => molotov_buffs.damage_flat += value,
             WeaponUpgrade::MolotovCritDamage(value) => molotov_buffs.crit_damage += value / 100.0,

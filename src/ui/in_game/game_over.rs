@@ -26,7 +26,6 @@ struct GameOverMarker;
 #[derive(Debug, Clone, Copy, Component)]
 enum GameOverButton {
     Restart,
-    Settings,
     MainMenu,
 }
 
@@ -51,7 +50,6 @@ fn setup(config: Res<UiConfig>, hud: Query<Entity, With<HUDMarker>>, mut command
         })
         .with_children(|builder| {
             spawn_button(builder, &config, GameOverButton::Restart);
-            spawn_button(builder, &config, GameOverButton::Settings);
             spawn_button(builder, &config, GameOverButton::MainMenu);
         })
         .id();
@@ -79,7 +77,6 @@ fn button_system(
                     GameOverButton::MainMenu => {
                         global_state.set(GlobalState::MainMenu);
                     }
-                    GameOverButton::Settings => {}
                 }
             }
             Interaction::Hovered => {

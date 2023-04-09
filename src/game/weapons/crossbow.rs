@@ -15,7 +15,6 @@ use crate::{
 use super::{GlobalWeaponBuffs, WeaponsAssets};
 
 const DEFAULT_BOLT_SIZE: f32 = 3.0;
-const DEFAULT_BOLT_SPEED: f32 = 200.0;
 
 const DEFAULT_CROSSBOW_DAMAGE: i32 = 20;
 const DEFAULT_CROSSBOW_CRIT_DAMAGE: f32 = 2.0;
@@ -55,7 +54,6 @@ pub struct CrossbowBuffs<S: Side> {
     pub crit_chance: f32,
     pub range: f32,
     pub attack_speed: f32,
-    pub arrow_speed: f32,
     _phantom: PhantomData<S>,
 }
 
@@ -65,7 +63,6 @@ pub struct Crossbow<S: Side> {
     range: f32,
     crit_damage: f32,
     crit_chance: f32,
-    arrow_speed: f32,
     attack_timer: Timer,
     _phantom: PhantomData<S>,
 }
@@ -82,7 +79,6 @@ impl<S: Side> std::fmt::Display for Crossbow<S> {
             "crit chance {:.1}%\n",
             self.crit_chance * 100.0
         ))?;
-        f.write_fmt(format_args!("arrow speed {:.1}\n", self.arrow_speed))?;
         f.write_fmt(format_args!(
             "attack speed {:.1}/s\n",
             self.attack_timer.duration().as_secs_f32()
@@ -98,8 +94,10 @@ impl<S: Side> Default for Crossbow<S> {
             range: DEFAULT_CROSSBOW_RANGE,
             crit_damage: DEFAULT_CROSSBOW_CRIT_DAMAGE,
             crit_chance: DEFAULT_CROSSBOW_CRIT_CHANCE,
-            arrow_speed: DEFAULT_BOLT_SPEED,
-            attack_timer: Timer::from_seconds(DEFAULT_CROSSBOW_ATTACK_SPEED, TimerMode::Repeating),
+            attack_timer: Timer::from_seconds(
+                1.0 / DEFAULT_CROSSBOW_ATTACK_SPEED,
+                TimerMode::Repeating,
+            ),
             _phantom: PhantomData,
         }
     }
@@ -123,7 +121,6 @@ impl<S: Side> Crossbow<S> {
             crit_chance: self.crit_chance
                 + crossbow_buffs.crit_chance
                 + global_weapons_buffs.crit_chance,
-            arrow_speed: self.arrow_speed * (1.0 + crossbow_buffs.arrow_speed),
             attack_timer: Timer::from_seconds(
                 DEFAULT_CROSSBOW_ATTACK_SPEED * (1.0 + crossbow_buffs.attack_speed),
                 TimerMode::Repeating,
@@ -172,10 +169,9 @@ fn crossbow_attack<S: Side>(
             continue;
         }
 
-        crossbow.attack_timer = Timer::from_seconds(
-            DEFAULT_CROSSBOW_ATTACK_SPEED * (1.0 + crossbow_buffs.attack_speed),
-            TimerMode::Repeating,
-        );
+        let attack_speed = DEFAULT_CROSSBOW_ATTACK_SPEED * (1.0 + crossbow_buffs.attack_speed);
+
+        crossbow.attack_timer = Timer::from_seconds(1.0 / attack_speed, TimerMode::Repeating);
 
         let mut enemy_vec = Vec2::default();
         let mut min_range = crossbow.range;
@@ -194,6 +190,8 @@ fn crossbow_attack<S: Side>(
             continue;
         }
 
+        let arrow_speed = min_range * attack_speed;
+
         let direction = enemy_vec.normalize();
         let mut projectile_transform = *transform;
         projectile_transform.translation += (direction * DEFAULT_BOLT_SPAWN_OFFSET).extend(0.0);
@@ -207,7 +205,6 @@ fn crossbow_attack<S: Side>(
             ((crossbow.damage + crossbow_buffs.damage_flat + global_weapons_buffs.damage_flat)
                 as f32
                 * (1.0 + crossbow_buffs.damage + global_weapons_buffs.damage)) as i32;
-        let arrow_speed = crossbow.arrow_speed * (1.0 + crossbow_buffs.arrow_speed);
         let crit_chance =
             crossbow.crit_chance + crossbow_buffs.crit_chance + global_weapons_buffs.crit_chance;
         let crit_damage = (crossbow.damage as f32
