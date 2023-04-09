@@ -1,4 +1,4 @@
-# MAD CRABS GAME
+# Mind your sides
 
 ## Overview
 
