@@ -546,22 +546,22 @@ pub fn genereate_upgrade(mut rng: &mut impl rand::Rng) -> Upgrade {
             (Some(upgrade), None)
         } else {
             // one side wall
-            let upgrade = match rng.gen_range(0..15) {
+            let upgrade = match rng.gen_range(0..20) {
                 0 => WeaponUpgrade::crossbow_damage(&mut rng),
                 1 => WeaponUpgrade::crossbow_damage_flat(&mut rng),
                 2 => WeaponUpgrade::crossbow_crit_damage(&mut rng),
                 3 => WeaponUpgrade::crossbow_crit_chance(&mut rng),
                 4 => WeaponUpgrade::crossbow_range(&mut rng),
-                5 | 6 => WeaponUpgrade::crossbow_attack_speed(&mut rng),
+                5 | 6 | 7 | 8 => WeaponUpgrade::crossbow_attack_speed(&mut rng),
 
-                7 => WeaponUpgrade::molotov_damage(&mut rng),
-                8 => WeaponUpgrade::molotov_damage_flat(&mut rng),
-                9 => WeaponUpgrade::molotov_crit_damage(&mut rng),
-                10 => WeaponUpgrade::molotov_crit_chance(&mut rng),
-                11 => WeaponUpgrade::molotov_area_size(&mut rng),
-                12 => WeaponUpgrade::molotov_attack_speed(&mut rng),
-                13 => WeaponUpgrade::molotov_area_attack_speed(&mut rng),
-                14 => WeaponUpgrade::molotov_area_lifespan(&mut rng),
+                9 => WeaponUpgrade::molotov_damage(&mut rng),
+                10 => WeaponUpgrade::molotov_damage_flat(&mut rng),
+                11 => WeaponUpgrade::molotov_crit_damage(&mut rng),
+                12 => WeaponUpgrade::molotov_crit_chance(&mut rng),
+                13 => WeaponUpgrade::molotov_area_size(&mut rng),
+                14 | 15 | 16 | 17 => WeaponUpgrade::molotov_attack_speed(&mut rng),
+                18 => WeaponUpgrade::molotov_area_attack_speed(&mut rng),
+                19 => WeaponUpgrade::molotov_area_lifespan(&mut rng),
                 _ => unreachable!(),
             };
 

@@ -227,7 +227,7 @@ impl<S: Side, E: EnemyType<S>> EnemyBundle<S, E> {
             // Double side for sprites to better correlate with collider size
             animation_bundle: AnimationBundle::new(texture_atlas, size * 2.0, 3, 5.0, position),
             rigid_body: RigidBody::Dynamic,
-            collider: Collider::ball(size),
+            collider: Collider::ball(size * 0.5),
             locked_axis: LockedAxes::ROTATION_LOCKED,
             velocity: Velocity::default(),
             damping: Damping {
@@ -276,14 +276,14 @@ pub trait EnemyType<S: Side>: Component + Default {
 pub struct MadCrab;
 
 impl<S: Side> EnemyType<S> for MadCrab {
-    const HEALTH: i32 = 100;
+    const HEALTH: i32 = 1000;
     const SPEED: f32 = 8.0;
-    const EXP: u32 = 3;
-    const DAMAGE: i32 = 5;
+    const EXP: u32 = 200;
+    const DAMAGE: i32 = 100;
     const SIZE: f32 = 128.0;
-    const RANGE: f32 = 20.0;
+    const RANGE: f32 = 200.0;
     const ATTACK_SPEED: f32 = 1.1;
-    const NUMBER_PER_SPAWN: u32 = 1;
+    const NUMBER_PER_SPAWN: u32 = 3;
 
     fn texture_atlas(enemy_sprites: &EnemySprites) -> Handle<TextureAtlas> {
         enemy_sprites.mad_crab.clone()
@@ -348,12 +348,12 @@ impl<S: Side> EnemyType<S> for Bat {
 pub struct Skull;
 
 impl<S: Side> EnemyType<S> for Skull {
-    const HEALTH: i32 = 80;
+    const HEALTH: i32 = 120;
     const SPEED: f32 = 8.0;
-    const EXP: u32 = 5;
+    const EXP: u32 = 50;
     const DAMAGE: i32 = 15;
     const SIZE: f32 = 32.0;
-    const RANGE: f32 = 20.0;
+    const RANGE: f32 = 40.0;
     const ATTACK_SPEED: f32 = 1.0;
     const NUMBER_PER_SPAWN: u32 = 1;
 
@@ -366,12 +366,12 @@ impl<S: Side> EnemyType<S> for Skull {
 pub struct PoisonIvy;
 
 impl<S: Side> EnemyType<S> for PoisonIvy {
-    const HEALTH: i32 = 60;
+    const HEALTH: i32 = 250;
     const SPEED: f32 = 12.0;
-    const EXP: u32 = 8;
+    const EXP: u32 = 100;
     const DAMAGE: i32 = 20;
     const SIZE: f32 = 64.0;
-    const RANGE: f32 = 20.0;
+    const RANGE: f32 = 70.0;
     const ATTACK_SPEED: f32 = 1.0;
     const NUMBER_PER_SPAWN: u32 = 2;
 
