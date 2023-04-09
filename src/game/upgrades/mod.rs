@@ -149,7 +149,7 @@ impl std::fmt::Display for WeaponUpgrade {
             Self::CrossbowCritChance(value) => f.write_fmt(format_args!("crossbow crit chance: +{value:.1}%"))?,
             Self::CrossbowRange(value) => f.write_fmt(format_args!("crossbow range: +{value:.1}%"))?,
             Self::CrossbowAttackSpeed(value) => f.write_fmt(format_args!("crossbow attack speed: +{value:.1}%"))?,
-            Self::CrossbowArrowSpeed(value) => f.write_fmt(format_args!("crossbow arrow spped: +{value:.1}%"))?,
+            Self::CrossbowArrowSpeed(value) => f.write_fmt(format_args!("crossbow arrow speed: +{value:.1}%"))?,
             Self::MolotovDamage(value) => f.write_fmt(format_args!("molotov damage: +{value:.1}%"))?,
             Self::MolotovDamageFlat(value) => f.write_fmt(format_args!("molotov damage: +{value}"))?,
             Self::MolotovCritDamage(value) => f.write_fmt(format_args!("molotov crit damage: +{value:.1}%"))?,

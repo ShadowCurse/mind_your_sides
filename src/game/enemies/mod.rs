@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use std::{fmt::Display, marker::PhantomData};
 
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
@@ -73,6 +73,17 @@ pub enum SpawnState {
     Stage4,
 }
 
+impl Display for SpawnState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SpawnState::Stage1 => f.write_str("1"),
+            SpawnState::Stage2 => f.write_str("2"),
+            SpawnState::Stage3 => f.write_str("3"),
+            SpawnState::Stage4 => f.write_str("Final"),
+        }
+    }
+}
+
 #[derive(Debug, Resource)]
 pub struct SpawnStateTimer {
     pub current_state: SpawnState,
@@ -91,7 +102,7 @@ impl Default for SpawnStateTimer {
 impl SpawnStateTimer {
     const FIST_STAGE: f32 = 60.0;
     const SECOND_STAGE: f32 = 60.0 * 2.0;
-    const THIRD_STAGE: f32 = 60.0 * 3.0;
+    const THIRD_STAGE: f32 = 60.0 * 2.0;
 
     fn next_state(&mut self) {
         match self.current_state {
