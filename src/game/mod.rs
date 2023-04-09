@@ -108,14 +108,22 @@ impl Side for East {
     const DIRECTION: Vec2 = Vec2::X;
 }
 
-fn play_in_game_audio(audio: Res<Audio>, game_settings: Res<GameSettings>, game_assets: Res<GameAssets>) {
+fn play_in_game_audio(
+    audio: Res<Audio>,
+    game_settings: Res<GameSettings>,
+    game_assets: Res<GameAssets>,
+) {
     audio
         .play(game_assets.background.clone())
         .with_volume(game_settings.sound_volume)
         .looped();
 }
 
-fn play_main_menu_audio(audio: Res<Audio>, game_settings: Res<GameSettings>, game_assets: Res<GameAssets>) {
+fn play_main_menu_audio(
+    audio: Res<Audio>,
+    game_settings: Res<GameSettings>,
+    game_assets: Res<GameAssets>,
+) {
     audio
         .play(game_assets.main_menu.clone())
         .with_volume(game_settings.sound_volume)

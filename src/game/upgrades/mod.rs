@@ -32,8 +32,8 @@ pub enum GlobalWallUpgrade {
 }
 
 impl GlobalWallUpgrade {
-    random_upgrade!(additional_max_hp, AdditionalMaxHp, i32, 10, 30);
-    random_upgrade!(heal, Heal, i32, 20, 70);
+    random_upgrade!(additional_max_hp, AdditionalMaxHp, i32, 10, 90);
+    random_upgrade!(heal, Heal, i32, 20, 100);
 }
 
 impl std::fmt::Display for GlobalWallUpgrade {
@@ -53,8 +53,8 @@ pub enum WallUpgrade {
 }
 
 impl WallUpgrade {
-    random_upgrade!(additional_max_hp, AdditionalMaxHp, i32, 20, 50);
-    random_upgrade!(heal, Heal, i32, 40, 90);
+    random_upgrade!(additional_max_hp, AdditionalMaxHp, i32, 20, 120);
+    random_upgrade!(heal, Heal, i32, 40, 150);
 }
 
 impl std::fmt::Display for WallUpgrade {
@@ -76,10 +76,10 @@ pub enum GlobalWeaponUpgrade {
 }
 
 impl GlobalWeaponUpgrade {
-    random_upgrade!(damage, Damage, f32, 2.0, 15.0);
+    random_upgrade!(damage, Damage, f32, 5.0, 20.0);
     random_upgrade!(damage_flat, DamageFlat, i32, 20, 50);
     random_upgrade!(crit_dmamge, CritDamage, f32, 5.0, 20.0);
-    random_upgrade!(crit_chance, CritChance, f32, 1.0, 10.0);
+    random_upgrade!(crit_chance, CritChance, f32, 3.0, 15.0);
 }
 
 impl std::fmt::Display for GlobalWeaponUpgrade {
@@ -102,7 +102,6 @@ pub enum WeaponUpgrade {
     CrossbowCritChance(f32),
     CrossbowRange(f32),
     CrossbowAttackSpeed(f32),
-    CrossbowArrowSpeed(f32),
 
     MolotovDamage(f32),
     MolotovDamageFlat(i32),
@@ -115,28 +114,27 @@ pub enum WeaponUpgrade {
 }
 
 impl WeaponUpgrade {
-    random_upgrade!(crossbow_damage, CrossbowDamage, f32, 1.0, 10.0);
-    random_upgrade!(crossbow_damage_flat, CrossbowDamageFlat, i32, 5, 70);
-    random_upgrade!(crossbow_crit_damage, CrossbowCritDamage, f32, 1.0, 15.0);
-    random_upgrade!(crossbow_crit_chance, CrossbowCritChance, f32, 1.0, 10.0);
+    random_upgrade!(crossbow_damage, CrossbowDamage, f32, 3.0, 15.0);
+    random_upgrade!(crossbow_damage_flat, CrossbowDamageFlat, i32, 10, 80);
+    random_upgrade!(crossbow_crit_damage, CrossbowCritDamage, f32, 5.0, 15.0);
+    random_upgrade!(crossbow_crit_chance, CrossbowCritChance, f32, 5.0, 20.0);
     random_upgrade!(crossbow_range, CrossbowRange, f32, 10.0, 100.0);
-    random_upgrade!(crossbow_attack_speed, CrossbowAttackSpeed, f32, 1.0, 5.0);
-    random_upgrade!(crossbow_arrow_speed, CrossbowArrowSpeed, f32, 5.0, 20.0);
+    random_upgrade!(crossbow_attack_speed, CrossbowAttackSpeed, f32, 5.0, 50.0);
 
-    random_upgrade!(molotov_damage, MolotovDamage, f32, 1.0, 8.0);
-    random_upgrade!(molotov_damage_flat, MolotovDamageFlat, i32, 3, 40);
-    random_upgrade!(molotov_crit_damage, MolotovCritDamage, f32, 1.0, 5.0);
-    random_upgrade!(molotov_crit_chance, MolotovCritChance, f32, 10.0, 10.0);
-    random_upgrade!(molotov_area_size, MolotovAreaSize, f32, 5.0, 20.0);
-    random_upgrade!(molotov_attack_speed, MolotovAttackSpeed, f32, 1.0, 5.0);
+    random_upgrade!(molotov_damage, MolotovDamage, f32, 3.0, 20.0);
+    random_upgrade!(molotov_damage_flat, MolotovDamageFlat, i32, 5, 50);
+    random_upgrade!(molotov_crit_damage, MolotovCritDamage, f32, 5.0, 10.0);
+    random_upgrade!(molotov_crit_chance, MolotovCritChance, f32, 10.0, 30.0);
+    random_upgrade!(molotov_area_size, MolotovAreaSize, f32, 5.0, 25.0);
+    random_upgrade!(molotov_attack_speed, MolotovAttackSpeed, f32, 10.0, 50.0);
     random_upgrade!(
         molotov_area_attack_speed,
         MolotovAreaAttackSpeed,
         f32,
-        1.0,
-        5.0
+        5.0,
+        30.0
     );
-    random_upgrade!(molotov_area_lifespan, MolotovAreaLifespan, f32, 1.0, 3.0);
+    random_upgrade!(molotov_area_lifespan, MolotovAreaLifespan, f32, 10.0, 30.0);
 }
 
 #[rustfmt::skip]
@@ -149,7 +147,6 @@ impl std::fmt::Display for WeaponUpgrade {
             Self::CrossbowCritChance(value) => f.write_fmt(format_args!("crossbow crit chance: +{value:.1}%"))?,
             Self::CrossbowRange(value) => f.write_fmt(format_args!("crossbow range: +{value:.1}%"))?,
             Self::CrossbowAttackSpeed(value) => f.write_fmt(format_args!("crossbow attack speed: +{value:.1}%"))?,
-            Self::CrossbowArrowSpeed(value) => f.write_fmt(format_args!("crossbow arrow speed: +{value:.1}%"))?,
             Self::MolotovDamage(value) => f.write_fmt(format_args!("molotov damage: +{value:.1}%"))?,
             Self::MolotovDamageFlat(value) => f.write_fmt(format_args!("molotov damage: +{value}"))?,
             Self::MolotovCritDamage(value) => f.write_fmt(format_args!("molotov crit damage: +{value:.1}%"))?,
@@ -555,8 +552,7 @@ pub fn genereate_upgrade(mut rng: &mut impl rand::Rng) -> Upgrade {
                 2 => WeaponUpgrade::crossbow_crit_damage(&mut rng),
                 3 => WeaponUpgrade::crossbow_crit_chance(&mut rng),
                 4 => WeaponUpgrade::crossbow_range(&mut rng),
-                5 => WeaponUpgrade::crossbow_attack_speed(&mut rng),
-                6 => WeaponUpgrade::crossbow_arrow_speed(&mut rng),
+                5 | 6 => WeaponUpgrade::crossbow_attack_speed(&mut rng),
 
                 7 => WeaponUpgrade::molotov_damage(&mut rng),
                 8 => WeaponUpgrade::molotov_damage_flat(&mut rng),
