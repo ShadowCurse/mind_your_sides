@@ -108,9 +108,9 @@ fn damage_enemy<S: Side>(
             damage_text_transform.translation.z += 1.0;
 
             let (color, font_size) = if event.was_crit {
-                (Color::ORANGE_RED, 100.0)
+                (Color::ORANGE_RED, 50.0)
             } else {
-                (Color::GRAY, 80.0)
+                (Color::GRAY, 30.0)
             };
 
             commands.spawn((
